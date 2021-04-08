@@ -99,7 +99,7 @@ def generate_references_xml(nodes, references):
 
 def encode_values(nodes):
     is_variable = nodes['NodeClass'] == 'UAVariable'
-    if 'Value' in nodes.colums.values:
+    if 'Value' in nodes.columns.values:
         has_value = ~nodes['Value'].isna()
     else:
         has_value = False
