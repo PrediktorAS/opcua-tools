@@ -4,4 +4,4 @@ Python/pandas-based tools for OPC UA information models
 Work in progress.. 
 
 Author:
-Magnus Bakken <mailto:mba@prediktor.com>
+Magnus Bakken <mba@prediktor.com>
