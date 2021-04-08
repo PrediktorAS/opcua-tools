@@ -21,6 +21,7 @@ from datetime import datetime
 import pytz
 import pandas as pd
 from typing import List
+import numpy as np
 
 PATH_HERE = os.path.dirname(__file__)
 
@@ -101,12 +102,12 @@ def encode_values(nodes):
     is_variable = nodes['NodeClass'] == 'UAVariable'
     if 'Value' in nodes.columns.values:
         has_value = ~nodes['Value'].isna()
+        should_encode = is_variable & has_value
+        nodes.loc[should_encode, 'EncodedValue'] = nodes.loc[should_encode, 'Value'].map(
+            lambda x: x.xml_encode(include_xmlns=True))
     else:
-        has_value = False
+        nodes.loc['EncodedValue'] = np.nan
 
-    should_encode = is_variable & has_value
-
-    nodes.loc[should_encode, 'EncodedValue'] = nodes.loc[should_encode, 'Value'].map(lambda x:x.xml_encode(include_xmlns=True))
 
 
 def generate_nodes_xml(nodes:pd.DataFrame, references:pd.DataFrame, lookup_df:pd.DataFrame):
