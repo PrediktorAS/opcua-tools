@@ -106,7 +106,7 @@ def encode_values(nodes):
         nodes.loc[should_encode, 'EncodedValue'] = nodes.loc[should_encode, 'Value'].map(
             lambda x: x.xml_encode(include_xmlns=True))
     else:
-        nodes.loc['EncodedValue'] = np.nan
+        nodes['EncodedValue'] = np.nan
 
 
 
