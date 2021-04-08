@@ -1,0 +1,323 @@
+import os
+import re
+from typing import List, Dict, Any, Optional
+from .value_parser import parse_value, parse_nodeid
+from .ua_data_types import UANodeId
+
+import lxml.etree as ET
+import pandas as pd
+import logging
+import numpy as np
+
+logger = logging.getLogger(__name__)
+cl = logging.StreamHandler()
+logger.setLevel(logging.INFO)
+formatter = logging.Formatter('%(asctime)s - %(name)s - %(levelname)s - %(message)s')
+cl.setFormatter(formatter)
+logger.addHandler(cl)
+
+tagsplit = re.compile(r"({.*\})(.*)")
+
+
+def findrefs(elem, uaxsd, namespace_map: Dict[int, int], alias_map:Dict[str, UANodeId]):
+    return [(parse_nodeid(r.text.rstrip(), namespace_map, alias_map), fix_ref_attrib(r, namespace_map, alias_map))
+            for refs in elem.findall(uaxsd + 'References') for r in refs.findall(uaxsd + 'Reference')]
+
+
+def findval(elem, uaxsd):
+    val = elem.find(uaxsd + 'Value')
+    if val is not None:
+        return parse_value(val)
+    else:
+        return None
+
+
+def finddisplayname(elem, uaxsd):
+    val = elem.find(uaxsd + 'DisplayName')
+    if val is not None:
+        if val.text is not None:
+            return val.text.rstrip()
+        else:
+            return ''
+    else:
+        return None
+
+
+def finddescription(elem, uaxsd):
+    val = elem.find(uaxsd + 'Description')
+    if val is not None:
+        if val.text is not None:
+            return val.text.rstrip()
+        else:
+            return ''
+    else:
+        return None
+
+
+def parse_node_attrib(elem: ET.ElementBase, namespace_map: Dict[int, int], alias_map:Dict[str, UANodeId]) -> Dict[str, str]:
+    """
+    Parses the xml element for the node and maps NodeId, DataType (if any), ParentNodeID(if any)
+    in the Attribute Dictionary.
+
+    Parameters:
+    elem (XML element): the XML element to parse
+    namespace_map (Dict[str,str]): The dictionary used for mapping of ns index
+
+    Returns:
+    Dict[str,str] with attributes according to NodeClass in xml element
+    """
+    attrib = dict(elem.attrib)
+    # Map NodeId
+    attrib['NodeId'] = parse_nodeid(attrib['NodeId'], namespace_map, alias_map)
+    if 'DataType' in attrib:
+        attrib['DataType'] = parse_nodeid(attrib['DataType'], namespace_map, alias_map)
+    if 'ParentNodeId' in attrib:
+        attrib['ParentNodeId'] = parse_nodeid(attrib['ParentNodeId'], namespace_map, alias_map)
+    if 'MethodDeclarationId' in attrib:
+        attrib['MethodDeclarationId'] = parse_nodeid(attrib['MethodDeclarationId'], namespace_map, alias_map)
+
+    return attrib
+
+
+def fix_ref_attrib(elem: ET.ElementBase, namespace_map: Dict[int, int], alias_map:Dict[str, UANodeId]) -> Dict[str, str]:
+    """
+    Parses the xml element for the reference and maps ReferenceType  in the attribute Dictionary.
+
+    Parameters:
+    elem (XML element): the XML element to parse
+    namespace_map (Dict[str,str]): The dictionary used for mapping of ns index
+
+    Returns:
+    Dict[str,str] with attributes according to the reference xml element
+    """
+    attrib = dict(elem.attrib)
+    attrib['ReferenceType'] = parse_nodeid(attrib['ReferenceType'], namespace_map, alias_map=alias_map)
+    return attrib
+
+def process_elem_batch(elems: List[ET.ElementBase], uaxsd: str, namespace_map: Dict[int, int], alias_map:Dict[str, UANodeId]) -> pd.DataFrame:
+    """
+    Creates a Pandas DataFrame with node and reference info based on the provided XML element list
+
+    Parameters:
+
+    Returns:
+    Pandas DataFrame with columns:[Tag,Attrib,DisplayName, Description, References, ValueTmp]
+
+    """
+    df = pd.DataFrame({'elem': elems})
+    df['Tag'] = df['elem'].map(lambda x: x.tag).str.replace(uaxsd, '', regex=True)
+    df['Attrib'] = df['elem'].map(lambda x: parse_node_attrib(x, namespace_map, alias_map))
+    df['DisplayName'] = df['elem'].map(lambda x: finddisplayname(x, uaxsd))
+    df['Description'] = df['elem'].map(lambda x: finddescription(x, uaxsd))
+    df['References'] = df['elem'].map(lambda x: findrefs(x, uaxsd, namespace_map, alias_map))
+    df['Value'] = df['elem'].map(lambda x: findval(x, uaxsd))
+    df = df.drop(columns='elem')
+    return df
+
+
+def iterparse_xml(xmlfile: str, desired_namespace_list: List[str], batchsize=100000) -> Dict[str, Any]:
+    """
+    Parses the XML file to a dictionary with a nodes pd.DataFrame and an aliaslist with refrencetype aliasnames
+
+    Parameters:
+    xmlfile (str): Path to file to read.
+    desired_namespace_list (List[str]): The list with namspace uris in the desired order.
+
+    Returns:
+    Dictionary (str,object): The with dictionary with pd.Dataframe in 'nodes' key and alias dict in 'alias_map' key
+    Node Dataframe example:
+     Tag                                             Attrib                                          References                                           ValueTmp
+    ['UAVariable'    {'NodeId': '0:0:8244', 'BrowseName': 'Annotation', 'ParentNodeId': '0:0:7617', 'DataType': 'String'}   'Annotation' None
+
+    list([('0:0:69', {'ReferenceType': 'HasTypeDefinition'}), ('0:0:7617', {'ReferenceType': 'HasComponent', 'IsForward': 'false'})])
+
+    """
+    uaxsd = '{http://opcfoundation.org/UA/2011/03/UANodeSet.xsd}'
+
+    aliasnses = list(map(lambda x: uaxsd + x, ['NamespaceUris', 'Uri', 'Alias']))
+    namespace_list = []
+    alias_map = {}
+
+    nodeclasses = ['UAObjectType', 'UAObject', 'UAVariableType', 'UAVariable', 'UADataType', 'UAReferenceType',
+                   'UAView', 'UAMethod']
+    nodeclasses_xsd = list(map(lambda x: uaxsd + x, nodeclasses))
+
+    nodeset = uaxsd + 'UANodeSet'
+
+    tagiter = ET.iterparse(xmlfile,
+                           events=('start', 'end'),
+                           tag=[nodeset] + nodeclasses_xsd + aliasnses,
+                           encoding='utf-8')
+
+    elems = []
+    df_list = []
+    i = 1
+    foundnses = False
+    namespace_map = {0: 0}
+    xml_nsmap = {}
+    for event, elem in tagiter:
+        if elem.tag == nodeset:
+            if event == 'start':
+                xml_nsmap = elem.nsmap.copy()
+            if event == 'end':
+                pass
+        elif not foundnses and event == 'end' and elem.tag == uaxsd + 'Uri':
+            namespace_list.append(elem.text)
+            elem.clear()
+        elif event == 'end' and elem.tag == uaxsd + 'Alias':
+            alias_map[elem.attrib['Alias']] = parse_nodeid(elem.text, namespace_map)
+            elem.clear()
+        elif not foundnses and event == 'end' and elem.tag == uaxsd + 'NamespaceUris':
+            # All uris in "NamespaceUris" are parsed
+            foundnses = True
+            extend_namespace_map(desired_namespace_list, namespace_list, namespace_map)
+        elif event == 'end':
+            elems.append(elem)
+        if i % batchsize == 0:
+            logger.info('Processing ' + str(int(batchsize/2)) + ' nodes from ' + str(int(i*batchsize/2)))
+            df = process_elem_batch(elems=elems, uaxsd=uaxsd, namespace_map=namespace_map, alias_map=alias_map)
+            df_list.append(df)
+            #Release memory
+            list(map(lambda x: x.clear(), elems))
+            elems = []
+        i = i + 1
+
+    if len(elems) > 0:
+        print('Total: ' + str(i))
+        df = process_elem_batch(elems, uaxsd, namespace_map, alias_map)
+        #Release memory
+        list(map(lambda x: x.clear(), elems))
+        df_list.append(df)
+
+    nodes = pd.concat(df_list)
+
+    return {'nodes': nodes, 'alias_map': alias_map, 'namespace_map': namespace_map, 'xml_nsmap':xml_nsmap}
+
+
+def extend_namespace_map(existing_namespaces: List[str], namespace_list: List[str],
+                         namespace_map: Dict[int, int]) -> None:
+    """
+    Extends a dictionary with ns mapping based on the order from desired_namespace_list.
+
+    Parameters:
+    desired_namespace_list (List[str]) : The list of namespaces to map to
+    namespace_list (List[str]) : The list of namespaces to map from
+
+    Returns:
+    Dictionary (str,str): The mapping dictionary based on Namespace index: "From Idx":"To Idx"
+    """
+    if 0 not in namespace_map:
+        namespace_map[0] = 0
+    for i, n in enumerate(namespace_list):
+        if n not in existing_namespaces:
+            logger.warning(
+                'Namespace ' + n + ' not found in namespace list, adding with index ' + str(len(existing_namespaces)))
+            existing_namespaces.append(n)
+
+        namespace_map[i + 1] = existing_namespaces.index(n)
+
+def normalize_wrt_nodeid(nodes: pd.DataFrame, references:pd.DataFrame) -> pd.DataFrame:
+    logger.info('Started normalizing table structure with respect to nodeid')
+
+    nodecols = ['NodeId', 'ParentNodeId', 'DataType', 'MethodDeclarationId']
+    refcols = ['Src', 'Trg', 'ReferenceType']
+
+    allids = pd.concat([nodes[c].dropna() for c in nodecols if c in nodes.columns.values] +
+                       [references[c].dropna() for c in refcols if c in references.columns.values],
+                                  ignore_index=True)
+    codes, uniques = pd.factorize(allids)
+
+    lookup_df = pd.DataFrame({'uniques': uniques})
+
+    uniques_index = pd.Index(uniques)
+    convert_to_int_index = lambda x: uniques_index.get_indexer(pd.Index(x)).astype(pd.Int32Dtype)
+    for c in refcols:
+        references[c] = convert_to_int_index(references[c])
+
+    nodes['id'] = convert_to_int_index(nodes['NodeId'])
+    for c in nodecols[1:]: #Skip nodeids!
+        if c in nodes.columns.values:
+            nodes[c] = convert_to_int_index(nodes[c])
+            nodes[c] = nodes[c].replace(-1, pd.NA)
+
+    logger.info('Finished normalizing table structure with respect to nodeid')
+
+    return lookup_df
+
+
+def parse_xml(xmlfile: str, namespaces: Optional[List[str]]=None) -> Dict[str, Any]:
+    parse_dict = parse_xml_without_normalization(xmlfile, namespaces)
+    lookup_df = normalize_wrt_nodeid(parse_dict['nodes'], parse_dict['references'])
+    parse_dict['lookup_df'] = lookup_df
+    return parse_dict
+
+def parse_xml_without_normalization(xmlfile: str, namespaces: Optional[List[str]]=None) -> Dict[str, Any]:
+    if namespaces is None:
+        namespaces = []
+
+    uans = 'http://opcfoundation.org/UA/'
+    if uans not in namespaces:
+        namespaces.append(uans)
+
+    parse_dict = iterparse_xml(xmlfile, namespaces)
+    nodes = parse_dict['nodes'].reset_index()
+    nodes = nodes.rename(columns={'Tag': 'NodeClass'})
+    nodes = pd.concat([nodes, pd.DataFrame.from_records(nodes['Attrib'].values)], axis=1).drop(columns='Attrib')
+    if 'DataType' in nodes.columns.values:
+        nodes['DataType'] = nodes['DataType'].fillna('')
+
+    references = nodes.loc[:, ['NodeId', 'References']]
+    references = references.rename(columns={'NodeId': 'Src'}).explode('References').reset_index(drop=True)
+    references = references.loc[~references['References'].isna()]
+
+    references['Trg'] = references['References'].map(lambda x: x[0])
+    references['IsForward'] = references['References'].map(
+        lambda x: False if 'IsForward' in x[1] and x[1]['IsForward'] == 'false' else True)
+    refsrc = references[['Src']]
+    references.loc[~references['IsForward'], 'Src'] = references.loc[~references['IsForward'], 'Trg']
+    references.loc[~references['IsForward'], 'Trg'] = refsrc.loc[~references['IsForward'], 'Src']
+
+    references['ReferenceType'] = references['References'].map(lambda x: x[1]['ReferenceType'])
+    references = references.drop(columns=['References', 'IsForward'])
+    references = references.drop_duplicates().reset_index(drop=True)
+    nodes = nodes.drop(columns=['References', 'index'])
+
+    # Browsenames are prefixed with namespace indices, but this makes for difficult to follow browsepaths.
+    # We keep Browsename namespaces in its own column in order not to lose this information
+    namespace_map = parse_dict['namespace_map']
+    nodes['BrowseNameNamespace'] = nodes['BrowseName'].map(lambda x: int(x.split(':')[0]) if ':' in x else 0)
+    nodes['BrowseNameNamespace'] = nodes['BrowseNameNamespace'].map(namespace_map)
+    nodes['BrowseName'] = nodes['BrowseName'].map(lambda x: x.split(':')[1] if ':' in x else x)
+
+    if 'Value' not in nodes.columns.values:
+        nodes['Value'] = None
+    nodes['ns'] = nodes['NodeId'].map(lambda x:x.namespace).astype(pd.Int8Dtype())
+    return {'nodes': nodes, 'references': references, 'namespaces':namespaces, 'xml_nsmap':parse_dict['xml_nsmap']}
+
+
+def parse_xml_dir(xmldir: str, namespaces: Optional[List[str]]=None) -> Dict[str, Any]:
+    if namespaces is None:
+        namespaces = []
+
+    df_nodes_list = []
+    df_references_list = []
+    xml_nsmap = {}
+    for file in os.listdir(xmldir):
+        if file.endswith(".xml"):
+            print(file)
+            xmlfile = xmldir + '/' + file
+            parse_dict = parse_xml_without_normalization(xmlfile, namespaces)
+            namespaces = parse_dict['namespaces']
+            df_nodes_list.append(parse_dict['nodes'])
+            df_references_list.append((parse_dict['references']))
+            for k in parse_dict['xml_nsmap']:
+                xml_nsmap[k] = parse_dict['xml_nsmap'][k]
+
+    nodes = pd.concat(df_nodes_list)
+    references = pd.concat(df_references_list)
+    lookup_df = normalize_wrt_nodeid(nodes, references)
+    return {'nodes': nodes,
+            'references': references,
+            'namespaces':namespaces,
+            'xml_nsmap':xml_nsmap,
+            'lookup_df':lookup_df}
