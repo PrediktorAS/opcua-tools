@@ -24,7 +24,7 @@ setup(
     description="OPCUA Tools for Python using Pandas DataFrames",
     long_description=README,
     long_description_content_type="text/markdown",
-    url="https://github.com/mbapred/opcua-tools",
+    url="https://github.com/PrediktorAS/opcua-tools",
     author="Magnus Bakken",
     author_email="mba@prediktor.com",
     license="Apache License 2.0",
