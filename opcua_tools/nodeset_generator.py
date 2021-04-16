@@ -203,13 +203,11 @@ def denormalize_nodeids(nodes, references, lookup_df):
     refcols = ['Src', 'Trg', 'ReferenceType']
 
     for c in refcols:
-        assert pd.api.types.is_integer(references[c]), "Are you normalizing twice?"
         uniques = lookup_df.rename(columns={'uniques':c}, errors='raise')
         references = references.set_index(c).join(uniques).reset_index(drop=True)
 
     for c in nodecols:
         if c in nodes.columns.values:
-            assert pd.api.types.is_integer(nodes[c]), "Are you normalizing twice?"
             uniques = lookup_df.rename(columns={'uniques': c}, errors='raise')
             nodes = nodes.set_index(c).join(uniques).reset_index(drop=True)
 
