@@ -53,8 +53,9 @@ def create_header_xml(namespaces, serialize_namespace, xmlns_dict=None, last_mod
     header += '>\n'
     if len(namespaces) > 1:
         header += '<NamespaceUris>\n'
-        for n in namespaces:
-            header += '<Uri>' + n + '</Uri>\n'
+        for i, n in enumerate(namespaces):
+            if i > 0:
+                header += '<Uri>' + n + '</Uri>\n'
         header += '</NamespaceUris>\n'
     header += '<Models><Model ModelUri="' +  namespaces[serialize_namespace] + '" PublicationDate="' +\
               publication_date.isoformat() + '" Version="1.0.0"></Model></Models>\n'
