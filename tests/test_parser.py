@@ -20,3 +20,8 @@ PATH_HERE = os.path.dirname(__file__)
 def test_parsing_without_errors():
     ot.parse_xml_dir(PATH_HERE + '/testdata/parser')
 
+def test_parse_nodeid():
+    s = 'ns=1;i=0'
+    nid = ot.parse_nodeid(s)
+
+    assert type(nid.value) == int

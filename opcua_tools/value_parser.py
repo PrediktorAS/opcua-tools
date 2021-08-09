@@ -197,13 +197,20 @@ def parse_nodeid(nodeidstr:str, namespace_map:Optional[Dict[int, int]]=None, ali
         ns = int(fm_withns.group(1))
         if namespace_map is not None:
             ns = namespace_map[ns]
-        return UANodeId(ns, NodeIdType(fm_withns.group(2)), fm_withns.group(3))
+        nodeid_type = NodeIdType(fm_withns.group(2))
+        value =  fm_withns.group(3)
     else:
         withoutns = r'([isgb])=(.*)'
         fm_withoutns = re.fullmatch(withoutns, nodeidstr)
-        if fm_withoutns is None:
-            print('hi')
-        return UANodeId(0, NodeIdType(fm_withoutns.group(1)), fm_withoutns.group(2))
+        nodeid_type = NodeIdType(fm_withoutns.group(1))
+        ns = 0
+        value = fm_withoutns.group(2)
+
+    if nodeid_type == NodeIdType.NUMERIC:
+        value = int(value)
+
+    return UANodeId(ns, nodeid_type, value)
+
 
 def parse_localized_text(el):
     txt = el.find(uaxsd + 'Text')
