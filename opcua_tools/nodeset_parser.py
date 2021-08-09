@@ -40,7 +40,7 @@ def findrefs(elem, uaxsd, namespace_map: Dict[int, int], alias_map:Dict[str, UAN
 
 def findval(elem, uaxsd):
     val = elem.find(uaxsd + 'Value')
-    if val is not None:
+    if val is not None and len(val) > 0:
         return parse_value(val)
     else:
         return None
