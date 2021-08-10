@@ -316,7 +316,9 @@ def parse_xml_dir(xmldir: str, namespaces: Optional[List[str]]=None) -> Dict[str
     df_nodes_list = []
     df_references_list = []
     xml_nsmap = {}
-    for file in os.listdir(xmldir):
+    files = [file for file in os.listdir(xmldir)]
+    files.sort()
+    for file in files:
         if file.endswith(".xml"):
             print(file)
             xmlfile = xmldir + '/' + file
