@@ -65,7 +65,7 @@ def finddescription(elem, uaxsd):
         else:
             return ''
     else:
-        return None
+        return ''
 
 
 def parse_node_attrib(elem: ET.ElementBase, namespace_map: Dict[int, int], alias_map:Dict[str, UANodeId]) -> Dict[str, str]:
