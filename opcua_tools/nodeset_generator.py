@@ -13,15 +13,15 @@
 # limitations under the License.
 
 import os
-from typing import Optional
+from typing import Optional, Union, List
 import time
 from xml.sax.saxutils import escape
 import lxml.etree as ET
 from datetime import datetime
 import pytz
 import pandas as pd
-from typing import List
 import numpy as np
+from io import StringIO
 
 PATH_HERE = os.path.dirname(__file__)
 
@@ -162,7 +162,8 @@ def generate_nodes_xml(nodes:pd.DataFrame, references:pd.DataFrame, lookup_df:pd
 
 
 def create_nodeset2_file(nodes:pd.DataFrame, references:pd.DataFrame, lookup_df:pd.DataFrame,
-                         namespaces:List[str], serialize_namespace:int, filename='nodeset2.xml',
+                         namespaces:List[str], serialize_namespace:int,
+                         filename_or_stringio:Union[str, StringIO]='nodeset2.xml',
                          xmlns_dict=None, last_modified:Optional[datetime] = None, publication_date: Optional[datetime] = None):
     header = create_header_xml(namespaces, serialize_namespace, xmlns_dict=xmlns_dict, last_modified=last_modified,
                                publication_date=publication_date)
@@ -173,7 +174,8 @@ def create_nodeset2_file(nodes:pd.DataFrame, references:pd.DataFrame, lookup_df:
     print('Creating nodeset2xml-string took ' + str(end_time - start_time))
     print('Writing nodeset2xml')
     start_time = time.time()
-    with open(filename, 'w', encoding='utf-8') as f:
+
+    with open(filename_or_stringio, 'w', encoding='utf-8') as f:
         f.write(header)
         f.write('\n'.join(nodes_df.values))
         f.write('\n')

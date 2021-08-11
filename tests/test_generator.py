@@ -26,7 +26,7 @@ def test_idempotency():
                             lookup_df=parse_dict['lookup_df'].copy(),
                             namespaces=parse_dict['namespaces'],
                             serialize_namespace=0,
-                            filename=PATH_HERE + '/expected/generator/nodeset2.xml')
+                            filename_or_stringio=PATH_HERE + '/expected/generator/nodeset2.xml')
     parse_dict2 = ot.parse_xml_dir(PATH_HERE + '/expected/generator')
 
     nodes = parse_dict['nodes']
