@@ -14,14 +14,14 @@
 
 import os
 import re
-from typing import List, Dict, Any, Optional
+from typing import List, Dict, Any, Optional, Union
 from .value_parser import parse_value, parse_nodeid
 from .ua_data_types import UANodeId
 
 import lxml.etree as ET
 import pandas as pd
 import logging
-import numpy as np
+from io import BytesIO
 
 logger = logging.getLogger(__name__)
 cl = logging.StreamHandler()
@@ -259,13 +259,13 @@ def normalize_wrt_nodeid(nodes: pd.DataFrame, references:pd.DataFrame) -> pd.Dat
     return lookup_df
 
 
-def parse_xml(xmlfile: str, namespaces: Optional[List[str]]=None) -> Dict[str, Any]:
+def parse_xml(xmlfile: Union[str, BytesIO], namespaces: Optional[List[str]]=None) -> Dict[str, Any]:
     parse_dict = parse_xml_without_normalization(xmlfile, namespaces)
     lookup_df = normalize_wrt_nodeid(parse_dict['nodes'], parse_dict['references'])
     parse_dict['lookup_df'] = lookup_df
     return parse_dict
 
-def parse_xml_without_normalization(xmlfile: str, namespaces: Optional[List[str]]=None) -> Dict[str, Any]:
+def parse_xml_without_normalization(xmlfile: Union[str, BytesIO], namespaces: Optional[List[str]]=None) -> Dict[str, Any]:
     if namespaces is None:
         namespaces = []
 
