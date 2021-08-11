@@ -182,7 +182,6 @@ def create_nodeset2_file(nodes:pd.DataFrame, references:pd.DataFrame, lookup_df:
             f.write(outstr)
     else:
         filename_or_stringio.write(outstr)
-        filename_or_stringio.close()
     end_time = time.time()
     print('Writing nodeset2xml-file took: ' + str(end_time - start_time))
 
