@@ -175,11 +175,14 @@ def create_nodeset2_file(nodes:pd.DataFrame, references:pd.DataFrame, lookup_df:
     print('Writing nodeset2xml')
     start_time = time.time()
 
-    with open(filename_or_stringio, 'w', encoding='utf-8') as f:
-        f.write(header)
-        f.write('\n'.join(nodes_df.values))
-        f.write('\n')
-        f.write('</UANodeSet>')
+    outstr = header + '\n'.join(nodes_df.values) + '\n' + '</UANodeSet>'
+
+    if type(filename_or_stringio) == str:
+        with open(filename_or_stringio, 'w', encoding='utf-8') as f:
+            f.write(outstr)
+    else:
+        filename_or_stringio.write(outstr)
+        filename_or_stringio.close()
     end_time = time.time()
     print('Writing nodeset2xml-file took: ' + str(end_time - start_time))
 
