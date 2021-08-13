@@ -169,6 +169,16 @@ def create_nodeset2_file(nodes:pd.DataFrame, references:pd.DataFrame, lookup_df:
                                publication_date=publication_date)
     start_time = time.time()
     print('Creating nodeset2xml-node-string')
+
+    if 'ns' not in nodes.columns.values:
+        nodes['ns'] = nodes['NodeId'].map(lambda x:x.namespace)
+    nodes = nodes[nodes['ns'] == serialize_namespace].copy()
+    id_index = pd.Index(nodes['id'])
+    references = references.set_index('Src', drop=False)
+    references = references[references.index.isin(id_index)]
+    references = references.set_index('Trg', drop=False)
+    references = references[references.index.isin(id_index)].reset_index(drop=True)
+
     nodes_df = generate_nodes_xml(nodes, references, lookup_df)
     end_time = time.time()
     print('Creating nodeset2xml-string took ' + str(end_time - start_time))
