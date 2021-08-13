@@ -206,10 +206,7 @@ def parse_nodeid(nodeidstr:str, namespace_map:Optional[Dict[int, int]]=None, ali
         ns = 0
         value = fm_withoutns.group(2)
 
-    if nodeid_type == NodeIdType.NUMERIC:
-        value = int(value)
-
-    return UANodeId(ns, nodeid_type, value)
+    return UANodeId(ns, nodeid_type, str(value))
 
 
 def parse_localized_text(el):

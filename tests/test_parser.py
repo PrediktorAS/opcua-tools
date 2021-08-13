@@ -24,4 +24,4 @@ def test_parse_nodeid():
     s = 'ns=1;i=0'
     nid = ot.parse_nodeid(s)
 
-    assert type(nid.value) == int
+    assert type(nid.value) == str
