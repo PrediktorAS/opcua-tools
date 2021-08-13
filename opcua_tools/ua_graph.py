@@ -8,7 +8,6 @@ class UAGraph:
     def __init__(self, nodes:pd.DataFrame, references:pd.DataFrame, namespaces:List[str]):
         self.nodes = nodes
         self.nodes['id'] = self.nodes['id'].astype(pd.Int32Dtype())
-        self.nodes = self.nodes.set_index('id', drop=False)
         self.references = references
         self.references['Src'] = self.references['Src'].astype(pd.Int32Dtype())
         self.references['Trg'] = self.references['Trg'].astype(pd.Int32Dtype())

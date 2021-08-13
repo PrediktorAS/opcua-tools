@@ -170,8 +170,7 @@ def create_nodeset2_file(nodes:pd.DataFrame, references:pd.DataFrame, lookup_df:
     start_time = time.time()
     print('Creating nodeset2xml-node-string')
 
-    if 'ns' not in nodes.columns.values:
-        nodes['ns'] = nodes['NodeId'].map(lambda x:x.namespace)
+    nodes['ns'] = nodes['NodeId'].map(lambda x:x.namespace)
     nodes = nodes[nodes['ns'] == serialize_namespace].copy()
     id_index = pd.Index(nodes['id'])
     references = references.set_index('Src', drop=False)
