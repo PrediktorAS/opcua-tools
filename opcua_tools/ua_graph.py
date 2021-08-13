@@ -1,6 +1,7 @@
 import pandas as pd
 from .nodeset_parser import parse_xml_dir
 from .navigation import resolve_ids_from_browsenames
+from .nodeset_generator import create_nodeset2_file
 from typing import List
 
 class UAGraph:
@@ -49,3 +50,16 @@ class UAGraph:
             reference_type_id = object_ids.iloc[0]
 
         return int(reference_type_id)
+
+    def write_nodeset(self, filename_or_stringio:str, namespace_uri:str):
+        if namespace_uri not in self.namespaces:
+            raise ValueError('Could not find namespace uri: ' + namespace_uri)
+        namespace_index = self.namespaces.index(namespace_uri)
+        lookup_df = self.nodes[['id', 'NodeId']].rename(columns={'NodeId': 'uniques'}).set_index('id', drop=True)
+        create_nodeset2_file(nodes=self.nodes, references=self.references,
+                             serialize_namespace=namespace_index,
+                             lookup_df=lookup_df,
+                             namespaces=self.namespaces,
+                             filename_or_stringio=filename_or_stringio)
+
+

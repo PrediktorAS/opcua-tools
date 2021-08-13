@@ -197,7 +197,6 @@ def iterparse_xml(xmlfile: str, desired_namespace_list: List[str], batchsize=100
         i = i + 1
 
     if len(elems) > 0:
-        print('Total: ' + str(i))
         df = process_elem_batch(elems, uaxsd, namespace_map, alias_map)
         #Release memory
         list(map(lambda x: x.clear(), elems))
@@ -205,7 +204,7 @@ def iterparse_xml(xmlfile: str, desired_namespace_list: List[str], batchsize=100
 
     nodes = pd.concat(df_list)
 
-    return {'nodes': nodes, 'alias_map': alias_map, 'namespace_map': namespace_map, 'xml_nsmap':xml_nsmap}
+    return {'nodes': nodes, 'alias_map': alias_map, 'namespace_map': namespace_map}
 
 
 def extend_namespace_map(existing_namespaces: List[str], namespace_list: List[str],
@@ -255,7 +254,6 @@ def normalize_wrt_nodeid(nodes: pd.DataFrame, references:pd.DataFrame) -> pd.Dat
             nodes[c] = nodes[c].replace(-1, pd.NA)
 
     logger.info('Finished normalizing table structure with respect to nodeid')
-
     return lookup_df
 
 
@@ -306,7 +304,7 @@ def parse_xml_without_normalization(xmlfile: Union[str, BytesIO], namespaces: Op
     if 'Value' not in nodes.columns.values:
         nodes['Value'] = None
     nodes['ns'] = nodes['NodeId'].map(lambda x:x.namespace).astype(pd.Int8Dtype())
-    return {'nodes': nodes, 'references': references, 'namespaces':namespaces, 'xml_nsmap':parse_dict['xml_nsmap']}
+    return {'nodes': nodes, 'references': references, 'namespaces':namespaces}
 
 
 def parse_xml_dir(xmldir: str, namespaces: Optional[List[str]]=None) -> Dict[str, Any]:
@@ -315,19 +313,17 @@ def parse_xml_dir(xmldir: str, namespaces: Optional[List[str]]=None) -> Dict[str
 
     df_nodes_list = []
     df_references_list = []
-    xml_nsmap = {}
     files = [file for file in os.listdir(xmldir)]
     files.sort()
     for file in files:
         if file.endswith(".xml"):
-            print(file)
+            logger.info('Started parsing ' + str(file))
             xmlfile = xmldir + '/' + file
             parse_dict = parse_xml_without_normalization(xmlfile, namespaces)
             namespaces = parse_dict['namespaces']
             df_nodes_list.append(parse_dict['nodes'])
             df_references_list.append((parse_dict['references']))
-            for k in parse_dict['xml_nsmap']:
-                xml_nsmap[k] = parse_dict['xml_nsmap'][k]
+            logger.info('Finished parsing ' + str(file))
 
     nodes = pd.concat(df_nodes_list)
     references = pd.concat(df_references_list)
@@ -335,5 +331,4 @@ def parse_xml_dir(xmldir: str, namespaces: Optional[List[str]]=None) -> Dict[str
     return {'nodes': nodes,
             'references': references,
             'namespaces':namespaces,
-            'xml_nsmap':xml_nsmap,
             'lookup_df':lookup_df}
