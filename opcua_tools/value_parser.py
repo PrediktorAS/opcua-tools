@@ -237,6 +237,3 @@ def parse_engineering_units(el):
             description_tag = euinfo.find(uaxsd + 'Description')
             description = parse_localized_text(description_tag)
             return UAEngineeringUnits(display_name=display_name, description=description, unit_id=unit_id, namespace_uri=namespace_uri)
-
-
-            print('hello')
