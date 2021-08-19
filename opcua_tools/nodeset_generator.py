@@ -116,6 +116,7 @@ def generate_nodes_xml(nodes:pd.DataFrame, references:pd.DataFrame, lookup_df:pd
     replacer = lambda x: x.map(escape)
     nodes['DisplayName'] = replacer(nodes['DisplayName'])
     nodes['BrowseName'] = replacer(nodes['BrowseName'])
+    nodes['Description'] = replacer(nodes['Description'])
     nodes['NodeId'] = replacer(nodes['NodeId'].map(str))
 
     nodes, references = denormalize_nodeids(nodes, references, lookup_df=lookup_df)
