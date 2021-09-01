@@ -40,17 +40,32 @@ class UAGraph:
         if browsename is None or browsename == '':
             raise ValueError('"browsename" must not be None or empty string, should be BrowseName of ObjectType')
 
-        object_nodes = self.nodes[self.nodes['NodeClass'] == 'UAObjectType']
-        object_ids = resolve_ids_from_browsenames(nodes=object_nodes, browsenames=[browsename])
-        if len(object_ids) == 0:
-            raise ValueError('Could not find object ' + browsename)
-        elif len(object_ids) > 1:
-            raise ValueError('Multiple hits for object ' + browsename + ' please specify namespace')
+        object_type_nodes = self.nodes[self.nodes['NodeClass'] == 'UAObjectType']
+        object_type_ids = resolve_ids_from_browsenames(nodes=object_type_nodes, browsenames=[browsename])
+        if len(object_type_ids) == 0:
+            raise ValueError('Could not find object type ' + browsename)
+        elif len(object_type_ids) > 1:
+            raise ValueError('Multiple hits for object type ' + browsename + ' please specify namespace')
         else:
-            reference_type_id = object_ids.iloc[0]
+            object_type_id = object_type_ids.iloc[0]
 
-        return int(reference_type_id)
+        return int(object_type_id)
 
+
+    def data_type_by_browsename(self, browsename: str) -> int:
+        if browsename is None or browsename == '':
+            raise ValueError('"browsename" must not be None or empty string, should be BrowseName of DataType')
+
+        data_type_nodes = self.nodes[self.nodes['NodeClass'] == 'UADataType']
+        data_type_ids = resolve_ids_from_browsenames(nodes=data_type_nodes, browsenames=[browsename])
+        if len(data_type_ids) == 0:
+            raise ValueError('Could not find data type ' + browsename)
+        elif len(data_type_ids) > 1:
+            raise ValueError('Multiple hits for data type ' + browsename + ' please specify namespace')
+        else:
+            data_type_id = data_type_ids.iloc[0]
+
+        return int(data_type_id)
 
     def object_by_browsename(self, browsename: str) -> int:
         if browsename is None or browsename == '':
