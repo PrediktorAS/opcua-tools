@@ -29,7 +29,7 @@ simplevariants = {'Boolean', 'SByte', 'Byte', 'Int16', 'UInt16', 'Int32', 'UInt3
                   'Double', 'String', 'DateTime', 'Guid', 'ByteString'}
 
 
-def create_header_xml(namespaces, serialize_namespace, xmlns_dict=None, last_modified:Optional[datetime] = None, publication_date: Optional[datetime] = None):
+def create_header_xml(namespaces, serialize_namespace, namespaces_in_use, xmlns_dict=None, last_modified:Optional[datetime] = None, publication_date: Optional[datetime] = None):
     if xmlns_dict is None:
         xmlns_dict = {'xsd': 'http://www.w3.org/2001/XMLSchema',
                       'xsi': 'http://www.w3.org/2001/XMLSchema-instance',
@@ -53,7 +53,8 @@ def create_header_xml(namespaces, serialize_namespace, xmlns_dict=None, last_mod
     header += '>\n'
     if len(namespaces) > 1:
         header += '<NamespaceUris>\n'
-        for i, n in enumerate(namespaces):
+        for i in namespaces_in_use:
+            n = namespaces[i]
             if i > 0:
                 header += '<Uri>' + n + '</Uri>\n'
         header += '</NamespaceUris>\n'
@@ -165,8 +166,12 @@ def generate_nodes_xml(nodes:pd.DataFrame, references:pd.DataFrame, lookup_df:pd
 def create_nodeset2_file(nodes:pd.DataFrame, references:pd.DataFrame, lookup_df:pd.DataFrame,
                          namespaces:List[str], serialize_namespace:int,
                          filename_or_stringio:Union[str, StringIO]='nodeset2.xml',
-                         xmlns_dict=None, last_modified:Optional[datetime] = None, publication_date: Optional[datetime] = None):
-    header = create_header_xml(namespaces, serialize_namespace, xmlns_dict=xmlns_dict, last_modified=last_modified,
+                         xmlns_dict=None,
+                         last_modified:Optional[datetime] = None,
+                         publication_date: Optional[datetime] = None):
+    namespaces_in_use = find_namespaces_in_use(nodes=nodes, references=references, namespace_index=serialize_namespace)
+    header = create_header_xml(namespaces, serialize_namespace, namespaces_in_use=namespaces_in_use,
+                               xmlns_dict=xmlns_dict, last_modified=last_modified,
                                publication_date=publication_date)
     start_time = time.time()
     print('Creating nodeset2xml-node-string')
@@ -222,3 +227,36 @@ def denormalize_nodeids(nodes, references, lookup_df):
             nodes = nodes.set_index(c).join(uniques).reset_index(drop=True)
 
     return nodes, references
+
+def find_namespaces_in_use(nodes, references, namespace_index):
+    cs = ['DataType', 'ParentNodeId', 'MethodDeclarationId']
+    other_nodes = []
+    for c in cs:
+        if c in nodes.columns.values:
+            other_nodes.append(c)
+    ids_in_ns = nodes.loc[nodes['ns'] == namespace_index,
+                          ['id'] + other_nodes].copy()
+    ids_in_ns = ids_in_ns.set_index('id', drop=False)
+
+    references_source_in_ns = references.set_index('Src')
+    references_source_in_ns = references_source_in_ns[references_source_in_ns.index.isin(ids_in_ns)]
+
+    all_ids_set = set(ids_in_ns['id'])
+
+    all_ids_set = all_ids_set.union(set(references_source_in_ns['Trg']))
+    all_ids_set = all_ids_set.union(set(references_source_in_ns['ReferenceType']))
+
+    references_target_in_ns = references.set_index('Trg')
+    references_target_in_ns = references_target_in_ns[references_target_in_ns.index.isin(ids_in_ns)]
+
+    all_ids_set = all_ids_set.union(set(references_target_in_ns['Src']))
+    all_ids_set = all_ids_set.union(set(references_target_in_ns['ReferenceType']))
+
+    for c in other_nodes:
+        if c in nodes.columns.values:
+            all_ids_set = all_ids_set.union(nodes[c])
+
+    output_nodes = pd.DataFrame({'id':list(all_ids_set)}).set_index('id')
+    nodes = nodes.set_index('id')
+    namespaces_in_use = list(nodes.loc[nodes.index.isin(output_nodes.index), 'ns'].unique())
+    return namespaces_in_use

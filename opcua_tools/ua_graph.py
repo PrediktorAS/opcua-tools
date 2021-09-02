@@ -2,7 +2,7 @@ import pandas as pd
 from .nodeset_parser import parse_xml_dir
 from .navigation import resolve_ids_from_browsenames
 from .nodeset_generator import create_nodeset2_file
-from typing import List
+from typing import List, Optional
 
 class UAGraph:
     def __init__(self, nodes:pd.DataFrame, references:pd.DataFrame, namespaces:List[str]):
@@ -82,15 +82,39 @@ class UAGraph:
 
         return int(reference_type_id)
 
-    def write_nodeset(self, filename_or_stringio:str, namespace_uri:str):
+    def write_nodeset(self, filename_or_stringio:str, namespace_uri:str,
+                      include_outgoing_instance_level_references:Optional[bool] = True):
         if namespace_uri not in self.namespaces:
             raise ValueError('Could not find namespace uri: ' + namespace_uri)
         namespace_index = self.namespaces.index(namespace_uri)
         lookup_df = self.nodes[['id', 'NodeId']].rename(columns={'NodeId': 'uniques'}).set_index('id', drop=True)
-        create_nodeset2_file(nodes=self.nodes, references=self.references,
+        if not include_outgoing_instance_level_references:
+            use_references = self.remove_instance_level_outgoing_references(namespace_index=namespace_index)
+        else:
+            use_references = self.references
+
+        create_nodeset2_file(nodes=self.nodes,
+                             references=use_references,
                              serialize_namespace=namespace_index,
                              lookup_df=lookup_df,
                              namespaces=self.namespaces,
                              filename_or_stringio=filename_or_stringio)
+
+    def remove_instance_level_outgoing_references(self, namespace_index:int) -> pd.DataFrame:
+        hmr = self.reference_type_by_browsename('HasModellingRule')
+        htd = self.reference_type_by_browsename('HasTypeDefinition')
+        self.nodes['ns'] = self.nodes['NodeId'].map(lambda x:x.namespace)
+        ids_in_ns = self.nodes.loc[self.nodes['ns'] == namespace_index, [['id']]].copy()
+        ids_in_ns = ids_in_ns.set_index('id')
+
+        references = self.references.set_index('Trg', drop=False)
+
+        references = references[references.index.isin(ids_in_ns.index) |
+                                (references['ReferenceType'] == hmr) |
+                                (references['ReferenceType'] == htd)].copy()
+
+        return references
+
+
 
 
