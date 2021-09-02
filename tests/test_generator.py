@@ -23,7 +23,6 @@ def test_idempotency():
     parse_dict = ot.parse_xml_dir(PATH_HERE + '/testdata/generator')
     ot.create_nodeset2_file(nodes=parse_dict['nodes'].copy(),
                             references=parse_dict['references'].copy(),
-                            lookup_df=parse_dict['lookup_df'].copy(),
                             namespaces=parse_dict['namespaces'],
                             serialize_namespace=0,
                             filename_or_stringio=PATH_HERE + '/expected/generator/nodeset2.xml')

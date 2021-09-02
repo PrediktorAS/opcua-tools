@@ -22,14 +22,14 @@ import pytz
 import pandas as pd
 import numpy as np
 from io import StringIO
-
+from .ua_data_types import UANodeId, NodeIdType
 PATH_HERE = os.path.dirname(__file__)
 
 simplevariants = {'Boolean', 'SByte', 'Byte', 'Int16', 'UInt16', 'Int32', 'UInt32', 'Int64', 'UInt64', 'Float',
                   'Double', 'String', 'DateTime', 'Guid', 'ByteString'}
 
 
-def create_header_xml(namespaces, serialize_namespace, namespaces_in_use, xmlns_dict=None, last_modified:Optional[datetime] = None, publication_date: Optional[datetime] = None):
+def create_header_xml(namespaces, serialize_namespace, xmlns_dict=None, last_modified:Optional[datetime] = None, publication_date: Optional[datetime] = None):
     if xmlns_dict is None:
         xmlns_dict = {'xsd': 'http://www.w3.org/2001/XMLSchema',
                       'xsi': 'http://www.w3.org/2001/XMLSchema-instance',
@@ -53,8 +53,7 @@ def create_header_xml(namespaces, serialize_namespace, namespaces_in_use, xmlns_
     header += '>\n'
     if len(namespaces) > 1:
         header += '<NamespaceUris>\n'
-        for i in namespaces_in_use:
-            n = namespaces[i]
+        for i,n in enumerate(namespaces):
             if i > 0:
                 header += '<Uri>' + n + '</Uri>\n'
         header += '</NamespaceUris>\n'
@@ -163,20 +162,30 @@ def generate_nodes_xml(nodes:pd.DataFrame, references:pd.DataFrame, lookup_df:pd
     return nodes['nodexml'].astype(str)
 
 
-def create_nodeset2_file(nodes:pd.DataFrame, references:pd.DataFrame, lookup_df:pd.DataFrame,
+def create_nodeset2_file(nodes:pd.DataFrame, references:pd.DataFrame,
                          namespaces:List[str], serialize_namespace:int,
                          filename_or_stringio:Union[str, StringIO]='nodeset2.xml',
                          xmlns_dict=None,
                          last_modified:Optional[datetime] = None,
                          publication_date: Optional[datetime] = None):
+    nodes['ns'] = nodes['NodeId'].map(lambda x:x.namespace)
     namespaces_in_use = find_namespaces_in_use(nodes=nodes, references=references, namespace_index=serialize_namespace)
-    header = create_header_xml(namespaces, serialize_namespace, namespaces_in_use=namespaces_in_use,
+    namespaces_in_use.sort()
+    nodes = nodes[nodes['ns'].map(lambda x:x in (namespaces_in_use))].copy()
+    serialize_namespace_uri = namespaces[serialize_namespace]
+    original_namespaces = namespaces
+    namespaces = [namespaces[i] for i in namespaces_in_use]
+    serialize_namespace = namespaces.index(serialize_namespace_uri)
+    reindex_nodeids_browsenames(nodes, original_namespaces, namespaces)
+    nodes['ns'] = nodes['NodeId'].map(lambda x:x.namespace)
+    lookup_df = nodes[['id', 'NodeId']].rename(columns={'NodeId': 'uniques'}).set_index('id', drop=True)
+
+    header = create_header_xml(namespaces, serialize_namespace,
                                xmlns_dict=xmlns_dict, last_modified=last_modified,
                                publication_date=publication_date)
     start_time = time.time()
     print('Creating nodeset2xml-node-string')
 
-    nodes['ns'] = nodes['NodeId'].map(lambda x:x.namespace)
     nodes = nodes[nodes['ns'] == serialize_namespace].copy()
     #References restrict themselves
 
@@ -195,6 +204,18 @@ def create_nodeset2_file(nodes:pd.DataFrame, references:pd.DataFrame, lookup_df:
         filename_or_stringio.write(outstr)
     end_time = time.time()
     print('Writing nodeset2xml-file took: ' + str(end_time - start_time))
+
+
+def reindex_nodeids_browsenames(nodes:pd.DataFrame, original_namespaces:List[str], namespaces:List[str]):
+    namespace_map = {original_namespaces.index(n):i for i,n in enumerate(namespaces)}
+    nodes['NodeId'] = nodes['NodeId'].map(lambda x:copy_nodeid_with_new_namespace(x, namespace_map[x.namespace]))
+    nodes['BrowseNameNamespace'] = nodes['BrowseNameNamespace'].map(namespace_map)
+
+def copy_nodeid_with_new_namespace(uanodeid:UANodeId, new_ns:int):
+    return UANodeId(namespace=new_ns, value=uanodeid.value, nodeid_type=uanodeid.nodeid_type)
+
+def copy_browsename_with_new_namespace(uanodeid:UANodeId, new_ns:int):
+    return UANodeId(namespace=new_ns, value=uanodeid.value, nodeid_type=uanodeid.nodeid_type)
 
 
 def validate_nodeset2_file(filename:str):
@@ -239,7 +260,7 @@ def find_namespaces_in_use(nodes, references, namespace_index):
     ids_in_ns = ids_in_ns.set_index('id', drop=False)
 
     references_source_in_ns = references.set_index('Src')
-    references_source_in_ns = references_source_in_ns[references_source_in_ns.index.isin(ids_in_ns)]
+    references_source_in_ns = references_source_in_ns[references_source_in_ns.index.isin(ids_in_ns.index)]
 
     all_ids_set = set(ids_in_ns['id'])
 
@@ -247,16 +268,16 @@ def find_namespaces_in_use(nodes, references, namespace_index):
     all_ids_set = all_ids_set.union(set(references_source_in_ns['ReferenceType']))
 
     references_target_in_ns = references.set_index('Trg')
-    references_target_in_ns = references_target_in_ns[references_target_in_ns.index.isin(ids_in_ns)]
+    references_target_in_ns = references_target_in_ns[references_target_in_ns.index.isin(ids_in_ns.index)]
 
     all_ids_set = all_ids_set.union(set(references_target_in_ns['Src']))
     all_ids_set = all_ids_set.union(set(references_target_in_ns['ReferenceType']))
 
     for c in other_nodes:
         if c in nodes.columns.values:
-            all_ids_set = all_ids_set.union(nodes[c])
+            all_ids_set = all_ids_set.union(ids_in_ns[c].dropna())
 
     output_nodes = pd.DataFrame({'id':list(all_ids_set)}).set_index('id')
     nodes = nodes.set_index('id')
-    namespaces_in_use = list(nodes.loc[nodes.index.isin(output_nodes.index), 'ns'].unique())
+    namespaces_in_use = list(nodes.loc[nodes.index.isin(output_nodes.index), 'ns'].dropna().unique())
     return namespaces_in_use
