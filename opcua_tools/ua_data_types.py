@@ -41,6 +41,30 @@ class UAData(ABC):
     def __le__(self, other): return le(self, other)
     def __ge__(self, other): return ge(self, other)
 
+@dataclass(eq=True, frozen=True)
+class DataTypeField(UAData):
+    name: str
+    value: str
+
+    def xml_encode(self, include_xmlns:bool) -> str:
+        x = '<Field Name="' + self.name + '" Value="' + self.value + '"'
+        if include_xmlns:
+            x += ' ' + UAXMLNS_ATTRIB
+        x += ' />'
+        return x
+
+@dataclass(eq=True, frozen=True)
+class DataTypeDefinition(UAData):
+    fields: Tuple[DataTypeField]
+
+    def xml_encode(self, include_xmlns:bool) -> str:
+        encodedvalues = [v.xml_encode(include_xmlns=False) for v in self.fields]
+        x = '<Definition'
+        if include_xmlns:
+            x += ' ' + UAXMLNS_ATTRIB
+        x += '>' + '\n'.join(encodedvalues) + '</Definition>'
+        return x
+
 
 @dataclass(eq=True, frozen=True)
 class UABuiltIn(UAData):

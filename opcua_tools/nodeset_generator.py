@@ -129,6 +129,7 @@ def generate_nodes_xml(nodes:pd.DataFrame, references:pd.DataFrame, lookup_df:pd
     nodes = nodes.copy()
 
     encode_values(nodes)
+    encode_definitions(nodes)
     nodes['nodexml'] = '<' + nodes['NodeClass'] + ' NodeId="' + nodes['NodeId'] + '"'
     if ['SymbolicName'] in nodes.columns.values:
         hasSymbolicName = ~nodes['SymbolicName'].isna()
@@ -157,10 +158,20 @@ def generate_nodes_xml(nodes:pd.DataFrame, references:pd.DataFrame, lookup_df:pd
     has_encoded_value = ~nodes['EncodedValue'].isna()
     nodes.loc[has_encoded_value, 'nodexml'] = nodes.loc[has_encoded_value, 'nodexml'] + '<Value>' + \
                                               nodes.loc[has_encoded_value, 'EncodedValue'] + '</Value>'
+    if 'Definition' in nodes.columns.values:
+        has_encoded_definition = ~nodes['EncodedDefinition'].isna()
+        nodes.loc[has_encoded_definition, 'nodexml'] = nodes.loc[has_encoded_definition, 'nodexml'] + \
+                                                       nodes.loc[has_encoded_definition, 'EncodedDefinition']
 
     nodes['nodexml'] = nodes['nodexml'] + '</' + nodes['NodeClass'] + '>'
     return nodes['nodexml'].astype(str)
 
+
+def encode_definitions(nodes:pd.DataFrame):
+    if 'Definition' in nodes.columns.values:
+        has_definition = ~nodes['Definition'].isna()
+        nodes.loc[has_definition, 'EncodedDefinition'] = nodes.loc[has_definition, 'Definition'].map(
+            lambda x: x.xml_encode(include_xmlns=True))
 
 def create_nodeset2_file(nodes:pd.DataFrame, references:pd.DataFrame,
                          namespaces:List[str], serialize_namespace:int,
