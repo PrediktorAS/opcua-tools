@@ -171,7 +171,7 @@ def encode_definitions(nodes:pd.DataFrame):
     if 'Definition' in nodes.columns.values:
         has_definition = ~nodes['Definition'].isna()
         nodes.loc[has_definition, 'EncodedDefinition'] = nodes.loc[has_definition, 'Definition'].map(
-            lambda x: x.xml_encode(include_xmlns=True))
+            lambda x: x.xml_encode(include_xmlns=False))
 
 def create_nodeset2_file(nodes:pd.DataFrame, references:pd.DataFrame,
                          namespaces:List[str], serialize_namespace:int,

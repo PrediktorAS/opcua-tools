@@ -45,21 +45,25 @@ class UAData(ABC):
 class DataTypeField(UAData):
     name: str
     value: str
+    description: str
 
     def xml_encode(self, include_xmlns:bool) -> str:
         x = '<Field Name="' + self.name + '" Value="' + self.value + '"'
         if include_xmlns:
             x += ' ' + UAXMLNS_ATTRIB
-        x += ' />'
+        x += '>'
+        x += '<Description>' + self.description + '</Description>'
+        x += '</Field>'
         return x
 
 @dataclass(eq=True, frozen=True)
 class DataTypeDefinition(UAData):
+    name: str
     fields: Tuple[DataTypeField]
 
     def xml_encode(self, include_xmlns:bool) -> str:
         encodedvalues = [v.xml_encode(include_xmlns=False) for v in self.fields]
-        x = '<Definition'
+        x = '<Definition Name="' + self.name + '"'
         if include_xmlns:
             x += ' ' + UAXMLNS_ATTRIB
         x += '>' + '\n'.join(encodedvalues) + '</Definition>'

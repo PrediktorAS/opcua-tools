@@ -2,7 +2,8 @@ import pandas as pd
 from .nodeset_parser import parse_xml_dir
 from .navigation import resolve_ids_from_browsenames
 from .nodeset_generator import create_nodeset2_file
-from typing import List, Optional
+from typing import List, Optional, Union
+from io import StringIO
 
 class UAGraph:
     def __init__(self, nodes:pd.DataFrame, references:pd.DataFrame, namespaces:List[str]):
@@ -82,7 +83,7 @@ class UAGraph:
 
         return int(reference_type_id)
 
-    def write_nodeset(self, filename_or_stringio:str, namespace_uri:str,
+    def write_nodeset(self, filename_or_stringio:Union[str, StringIO], namespace_uri:str,
                       include_outgoing_instance_level_references:Optional[bool] = True):
         if namespace_uri not in self.namespaces:
             raise ValueError('Could not find namespace uri: ' + namespace_uri)

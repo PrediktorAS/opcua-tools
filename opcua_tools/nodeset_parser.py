@@ -275,8 +275,6 @@ def parse_xml_without_normalization(xmlfile: Union[str, BytesIO], namespaces: Op
     nodes = parse_dict['nodes'].reset_index()
     nodes = nodes.rename(columns={'Tag': 'NodeClass'})
     nodes = pd.concat([nodes, pd.DataFrame.from_records(nodes['Attrib'].values)], axis=1).drop(columns='Attrib')
-    if 'DataType' in nodes.columns.values:
-        nodes['DataType'] = nodes['DataType'].fillna('')
 
     references = nodes.loc[:, ['NodeId', 'References']]
     references = references.rename(columns={'NodeId': 'Src'}).explode('References').reset_index(drop=True)
