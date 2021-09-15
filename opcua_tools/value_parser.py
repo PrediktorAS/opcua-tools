@@ -146,7 +146,10 @@ def parse_singular_value(val, tagtype):
                 return UAGuid(value=None)
 
         elif tagtype == 'NodeId':
-            return parse_nodeid(val.text)
+            if val.text is not None:
+                return parse_nodeid(val.text)
+            else:
+                return None
 
     elif tagtype == 'TypeId':
         ident = val.find(uaxsd + 'Identifier')
@@ -228,12 +231,13 @@ def parse_engineering_units(el):
         euinfo = el.find(uaxsd + 'EUInformation')
         if euinfo is not None:
             namespace_uri_tag = euinfo.find(uaxsd + 'NamespaceUri')
-            namespace_uri = namespace_uri_tag.text.rstrip()
-            unit_id_tag = euinfo.find(uaxsd + 'UnitId')
-            unit_id = int(unit_id_tag.text.strip())
+            if namespace_uri_tag.text is not None:
+                namespace_uri = namespace_uri_tag.text.rstrip()
+                unit_id_tag = euinfo.find(uaxsd + 'UnitId')
+                unit_id = int(unit_id_tag.text.strip())
 
-            display_name_tag = euinfo.find(uaxsd + 'DisplayName')
-            display_name = parse_localized_text(display_name_tag)
-            description_tag = euinfo.find(uaxsd + 'Description')
-            description = parse_localized_text(description_tag)
-            return UAEngineeringUnits(display_name=display_name, description=description, unit_id=unit_id, namespace_uri=namespace_uri)
+                display_name_tag = euinfo.find(uaxsd + 'DisplayName')
+                display_name = parse_localized_text(display_name_tag)
+                description_tag = euinfo.find(uaxsd + 'Description')
+                description = parse_localized_text(description_tag)
+                return UAEngineeringUnits(display_name=display_name, description=description, unit_id=unit_id, namespace_uri=namespace_uri)
