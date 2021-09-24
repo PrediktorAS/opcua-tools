@@ -114,6 +114,28 @@ class UAGraph:
 
         return references
 
+    def get_object_types(self) -> List[str]:
+        object_type_nodes = self.nodes[self.nodes["NodeClass"] == "UAObjectType"]
+        # object_type_nodes.filter(items=['BrowseName', 'NodeId', 'id'])
+        return object_type_nodes["BrowseName"].unique().tolist()
 
+    def get_object_types_table(self):
+        object_type_nodes = self.nodes[self.nodes["NodeClass"] == "UAObjectType"].copy()
+        object_type_nodes = object_type_nodes.filter(
+            items=["BrowseName", "NodeId", "id"]
+        )
+        object_type_nodes.reset_index(inplace=True)
+        object_type_nodes.drop(columns=["index"], inplace=True)
+        has_type_def_id = self.reference_type_by_browsename("HasTypeDefinition")
 
+        for object_type_i, object_type_id in enumerate(object_type_nodes["id"]):
+            object_ref_count = self.references[
+                (self.references.ReferenceType == has_type_def_id)
+                & (self.references.Trg == object_type_id)
+            ].shape[0]
+            object_type_nodes.loc[object_type_i, "Count"] = object_ref_count
+
+        object_type_nodes["Count"] = object_type_nodes["Count"].astype(int)
+
+        return object_type_nodes
 
