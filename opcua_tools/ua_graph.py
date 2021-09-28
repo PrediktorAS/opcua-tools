@@ -114,9 +114,24 @@ class UAGraph:
 
         return references
 
-    def get_object_types(self) -> List[str]:
-        object_type_nodes = self.nodes[self.nodes["NodeClass"] == "UAObjectType"]
-        # object_type_nodes.filter(items=['BrowseName', 'NodeId', 'id'])
+    def get_types(self, node_class: str, namespace=None) -> List[str]:
+        """This function will provide the option of returning the list of references
+        present in the graph. The number of the namespace in which the reference type
+        is defined can be specified to further narrow the search. If none is provided
+        it will return all namespaces"""
+
+        object_type_nodes = self.nodes[self.nodes["NodeClass"] == node_class]
+
+        if namespace is not None:
+            namespace_str = "ns=" + str(namespace)
+            object_type_nodes.reset_index(inplace=True)
+            mask = (
+                object_type_nodes["NodeId"]
+                .astype(str)
+                .str.contains(namespace_str, regex=False, na=False)
+            )
+            object_type_nodes = object_type_nodes[mask]
+
         return object_type_nodes["BrowseName"].unique().tolist()
 
     def get_object_types_table(self):
