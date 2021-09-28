@@ -134,6 +134,9 @@ class UAGraph:
 
         return object_type_nodes["BrowseName"].unique().tolist()
 
+    def get_nodes_classes(self):
+        return self.nodes["NodeClass"].unique().tolist()
+
     def get_object_types_table(self):
         object_type_nodes = self.nodes[self.nodes["NodeClass"] == "UAObjectType"].copy()
         object_type_nodes = object_type_nodes.filter(
