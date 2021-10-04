@@ -157,3 +157,42 @@ class UAGraph:
 
         return object_type_nodes
 
+    def get_enum_dict(self, enum_name: str):
+        """This function will return the enum given its name in
+        the form of a dict."""
+
+        enum_node = self.nodes[
+            (self.nodes.NodeClass == "UADataType")
+            & (self.nodes.BrowseName == enum_name)
+        ]
+
+        if enum_node.shape[0] == 0:
+            raise ValueError("The enum was not found in the graph")
+
+        has_property_id = self.reference_type_by_browsename("HasProperty")
+        node_id = enum_node["id"].values[0]
+        outgoing_reference_row = self.references[
+            (self.references.ReferenceType == has_property_id)
+            & (self.references.Src == enum_node["id"].values[0])
+        ]
+        outgoing_id = outgoing_reference_row["Trg"].values[0]
+        has_property_node = self.nodes[self.nodes["id"] == outgoing_id]
+        has_property_name = has_property_node["BrowseName"].values[0]
+        enumeration_datatypes = ["EnumStrings", "EnumValues", "Enumeration"]
+        if has_property_name not in enumeration_datatypes:
+            raise ValueError(
+                "The ReferenceType associated with the enum_name is not an EnumStrings or EnumValues"
+            )
+
+        enum_dict = dict()
+        ua_list_of = has_property_node["Value"].values[0]
+        for localized_text_i, localized_text in enumerate(ua_list_of.value):
+            enum_dict[localized_text_i] = localized_text.text
+
+        return enum_dict
+
+    def get_enum_string(self, enum_name: str, number: int):
+        """This function will return the string value of within an enum,
+        provided you get both the of the enum and an integer value."""
+        enum_dict = self.get_enum_dict(enum_name)
+        return enum_dict[number]
