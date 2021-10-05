@@ -114,7 +114,7 @@ class UAGraph:
 
         return references
 
-    def get_types(self, node_class: str, namespace=None) -> List[str]:
+    def get_browsenames_for_nodeclass(self, node_class: str, namespace: Optional[int] = None) -> List[str]:
         """This function will provide the option of returning the list of references
         present in the graph. The number of the namespace in which the reference type
         is defined can be specified to further narrow the search. If none is provided
@@ -123,12 +123,9 @@ class UAGraph:
         object_type_nodes = self.nodes[self.nodes["NodeClass"] == node_class]
 
         if namespace is not None:
-            namespace_str = "ns=" + str(namespace)
             object_type_nodes.reset_index(inplace=True)
             mask = (
-                object_type_nodes["NodeId"]
-                .astype(str)
-                .str.contains(namespace_str, regex=False, na=False)
+                object_type_nodes["NodeId"].map(lambda x: x.namespace) == namespace
             )
             object_type_nodes = object_type_nodes[mask]
 
@@ -137,25 +134,15 @@ class UAGraph:
     def get_nodes_classes(self):
         return self.nodes["NodeClass"].unique().tolist()
 
-    def get_object_types_table(self):
-        object_type_nodes = self.nodes[self.nodes["NodeClass"] == "UAObjectType"].copy()
-        object_type_nodes = object_type_nodes.filter(
-            items=["BrowseName", "NodeId", "id"]
-        )
-        object_type_nodes.reset_index(inplace=True)
-        object_type_nodes.drop(columns=["index"], inplace=True)
+    def get_instances_with_type_info(self):
+        """Returns the UAObjects and the browsename of their type"""
+        nodes = self.nodes[["NodeClass", "BrowseName", "NodeId", "id"]].set_index('id', drop=False)
         has_type_def_id = self.reference_type_by_browsename("HasTypeDefinition")
-
-        for object_type_i, object_type_id in enumerate(object_type_nodes["id"]):
-            object_ref_count = self.references[
-                (self.references.ReferenceType == has_type_def_id)
-                & (self.references.Trg == object_type_id)
-            ].shape[0]
-            object_type_nodes.loc[object_type_i, "Count"] = object_ref_count
-
-        object_type_nodes["Count"] = object_type_nodes["Count"].astype(int)
-
-        return object_type_nodes
+        htd = self.references.loc[self.references['ReferenceType'] == has_type_def_id, [['Src', 'Trg']]]
+        typeinfo = nodes.rename(columns={'BrowseName':'TypeBrowseName', 'NodeId':'TypeNodeId',
+                                         'id':'Typeid'}, errors='raise').drop(columns=['NodeClass'])
+        htd = htd.set_index('Src').join(nodes).set_index('Trg').join(typeinfo)
+        return htd
 
     def get_enum_dict(self, enum_name: str):
         """This function will return the enum given its name in
@@ -169,25 +156,32 @@ class UAGraph:
         if enum_node.shape[0] == 0:
             raise ValueError("The enum was not found in the graph")
 
+        if enum_node.shape[0] > 1:
+            raise ValueError("The enum was found multiple times in the graph")
+
         has_property_id = self.reference_type_by_browsename("HasProperty")
         node_id = enum_node["id"].values[0]
         outgoing_reference_row = self.references[
             (self.references.ReferenceType == has_property_id)
-            & (self.references.Src == enum_node["id"].values[0])
+            & (self.references.Src == node_id)
         ]
         outgoing_id = outgoing_reference_row["Trg"].values[0]
         has_property_node = self.nodes[self.nodes["id"] == outgoing_id]
         has_property_name = has_property_node["BrowseName"].values[0]
-        enumeration_datatypes = ["EnumStrings", "EnumValues", "Enumeration"]
+        enumeration_datatypes = ["EnumStrings", "EnumValues"]
         if has_property_name not in enumeration_datatypes:
             raise ValueError(
                 "The ReferenceType associated with the enum_name is not an EnumStrings or EnumValues"
             )
 
         enum_dict = dict()
-        ua_list_of = has_property_node["Value"].values[0]
-        for localized_text_i, localized_text in enumerate(ua_list_of.value):
-            enum_dict[localized_text_i] = localized_text.text
+
+        if has_property_name == 'EnumStrings':
+            ua_list_of = has_property_node["Value"].values[0]
+            for localized_text_i, localized_text in enumerate(ua_list_of.value):
+                enum_dict[localized_text_i] = localized_text.text
+        else:
+            raise NotImplementedError('EnumValues not implemented')
 
         return enum_dict
 
@@ -195,4 +189,5 @@ class UAGraph:
         """This function will return the string value of within an enum,
         provided you get both the of the enum and an integer value."""
         enum_dict = self.get_enum_dict(enum_name)
+        #TODO: Cache enumdict for performance
         return enum_dict[number]
