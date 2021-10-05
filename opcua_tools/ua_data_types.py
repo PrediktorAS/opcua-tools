@@ -18,6 +18,7 @@ from datetime import datetime
 from abc import ABC, abstractmethod
 from base64 import b64encode
 from enum import Enum
+from xml.sax.saxutils import escape
 
 class NodeIdType(Enum):
     NUMERIC = 'i'
@@ -186,7 +187,7 @@ class UAString(UABuiltIn):
         x = '<String'
         if include_xmlns:
             x += ' ' + UAXMLNS_ATTRIB
-        x += '>' + (str(self.value) if self.value is not None else '') + '</String>'
+        x += '>' + (escape(str(self.value)) if self.value is not None else '') + '</String>'
         return x
 
 @dataclass(eq=True, frozen=True)
@@ -276,7 +277,7 @@ class UALocalizedText(UABuiltIn):
             x += ' ' + UAXMLNS_ATTRIB
         x += '>\n'
         x += '<Locale>' + (self.locale if self.locale is not None else '') + '</Locale>\n'
-        x += '<Text>' + (self.text if self.text is not None else '') + '</Text>\n'
+        x += '<Text>' + (escape(self.text) if self.text is not None else '') + '</Text>\n'
         x +='</LocalizedText>'
         return x
 
