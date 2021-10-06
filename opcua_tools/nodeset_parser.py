@@ -308,7 +308,10 @@ def parse_xml_without_normalization(xmlfile: Union[str, BytesIO], namespaces: Op
     return {'nodes': nodes, 'references': references, 'namespaces':namespaces}
 
 
-def parse_xml_dir(xmldir: str, namespaces: Optional[List[str]]=[]) -> Dict[str, Any]:
+def parse_xml_dir(xmldir: str, namespaces: Optional[List[str]]=None) -> Dict[str, Any]:
+    if namespaces is None:
+        namespaces = []
+
     df_nodes_list = []
     df_references_list = []
     files = [file for file in os.listdir(xmldir)]
