@@ -40,21 +40,24 @@ def findrefs(elem, uaxsd, namespace_map: Dict[int, int], alias_map:Dict[str, UAN
 
 def findval(elem, uaxsd):
     val = elem.find(uaxsd + 'Value')
-    if val is not None and len(val) > 0:
-        return parse_value(val)
-    else:
+    if val is None:
         return None
+
+    if len(val) < 1:
+        return None
+
+    return parse_value(val)
 
 
 def finddisplayname(elem, uaxsd):
     val = elem.find(uaxsd + 'DisplayName')
-    if val is not None:
-        if val.text is not None:
-            return val.text.rstrip()
-        else:
-            return ''
-    else:
+    if val is None:
         return None
+
+    if val.text is None:
+        return ''
+
+    return val.text.rstrip()
 
 
 def finddescription(elem, uaxsd):
