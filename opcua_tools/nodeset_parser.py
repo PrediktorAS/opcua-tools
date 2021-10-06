@@ -315,7 +315,8 @@ def parse_xml_dir(xmldir: str, namespaces: Optional[List[str]]=[]) -> Dict[str, 
     files.sort()
     for file in files:
         if not file.endswith(".xml"):
-            logger.info('Skipping non-xml ' + str(file))
+            if file:
+                logger.info('Skipping non-xml ' + str(file))
             continue
 
         logger.info('Started parsing ' + str(file))
