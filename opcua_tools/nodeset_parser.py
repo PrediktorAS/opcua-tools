@@ -40,32 +40,35 @@ def findrefs(elem, uaxsd, namespace_map: Dict[int, int], alias_map:Dict[str, UAN
 
 def findval(elem, uaxsd):
     val = elem.find(uaxsd + 'Value')
-    if val is not None and len(val) > 0:
-        return parse_value(val)
-    else:
+    if val is None:
         return None
+
+    if len(val) < 1:
+        return None
+
+    return parse_value(val)
 
 
 def finddisplayname(elem, uaxsd):
     val = elem.find(uaxsd + 'DisplayName')
-    if val is not None:
-        if val.text is not None:
-            return val.text.rstrip()
-        else:
-            return ''
-    else:
-        return None
+    if val is None:
+        return ''
+
+    if val.text is None:
+        return ''
+
+    return val.text.rstrip()
 
 
 def finddescription(elem, uaxsd):
     val = elem.find(uaxsd + 'Description')
-    if val is not None:
-        if val.text is not None:
-            return val.text.rstrip()
-        else:
-            return ''
-    else:
+    if val is None:
         return ''
+
+    if val.text is None:
+        return ''
+
+    return val.text.rstrip()
 
 
 def parse_node_attrib(elem: ET.ElementBase, namespace_map: Dict[int, int], alias_map:Dict[str, UANodeId]) -> Dict[str, str]:
@@ -263,10 +266,7 @@ def parse_xml(xmlfile: Union[str, BytesIO], namespaces: Optional[List[str]]=None
     parse_dict['lookup_df'] = lookup_df
     return parse_dict
 
-def parse_xml_without_normalization(xmlfile: Union[str, BytesIO], namespaces: Optional[List[str]]=None) -> Dict[str, Any]:
-    if namespaces is None:
-        namespaces = []
-
+def parse_xml_without_normalization(xmlfile: Union[str, BytesIO], namespaces: Optional[List[str]]=[]) -> Dict[str, Any]:
     uans = 'http://opcfoundation.org/UA/'
     if uans not in namespaces:
         namespaces.append(uans)
@@ -305,23 +305,22 @@ def parse_xml_without_normalization(xmlfile: Union[str, BytesIO], namespaces: Op
     return {'nodes': nodes, 'references': references, 'namespaces':namespaces}
 
 
-def parse_xml_dir(xmldir: str, namespaces: Optional[List[str]]=None) -> Dict[str, Any]:
-    if namespaces is None:
-        namespaces = []
-
+def parse_xml_dir(xmldir: str, namespaces: Optional[List[str]]=[]) -> Dict[str, Any]:
     df_nodes_list = []
     df_references_list = []
     files = [file for file in os.listdir(xmldir)]
     files.sort()
     for file in files:
-        if file.endswith(".xml"):
-            logger.info('Started parsing ' + str(file))
-            xmlfile = xmldir + '/' + file
-            parse_dict = parse_xml_without_normalization(xmlfile, namespaces)
-            namespaces = parse_dict['namespaces']
-            df_nodes_list.append(parse_dict['nodes'])
-            df_references_list.append((parse_dict['references']))
-            logger.info('Finished parsing ' + str(file))
+        if not file.endswith(".xml"):
+            continue
+
+        logger.info('Started parsing ' + str(file))
+        xmlfile = os.path.join(xmldir, file)
+        parse_dict = parse_xml_without_normalization(xmlfile, namespaces)
+        namespaces = parse_dict['namespaces']
+        df_nodes_list.append(parse_dict['nodes'])
+        df_references_list.append((parse_dict['references']))
+        logger.info('Finished parsing ' + str(file))
 
     nodes = pd.concat(df_nodes_list)
     references = pd.concat(df_references_list)

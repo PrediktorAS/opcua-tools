@@ -38,8 +38,8 @@ def parse_value_element(v):
 
     if tagtype.startswith('ListOf'):
         return parse_list_value(v, tagtype)
-    else:
-        return parse_singular_value(v, tagtype)
+
+    return parse_singular_value(v, tagtype)
 
 
 def parse_list_value(val, tagtype):
@@ -59,68 +59,68 @@ def parse_singular_value(val, tagtype):
         if tagtype == 'SByte':
             if stripped is not None and stripped != '':
                 return UASByte(value=int(stripped))
-            else:
-                return UASByte(value=None)
+
+            return UASByte(value=None)
 
         elif tagtype == 'Byte':
             if stripped is not None and stripped != '':
                 return UAByte(value=int(stripped))
-            else:
-                return UAByte(value=None)
+
+            return UAByte(value=None)
 
         elif tagtype == 'Int16':
             if stripped is not None and stripped != '':
                 return UAInt16(value=int(stripped))
-            else:
-                return UAInt16(value=None)
+
+            return UAInt16(value=None)
 
         elif tagtype == 'UInt16':
             if stripped is not None and stripped != '':
                 return UAUInt16(value=int(stripped))
-            else:
-                return UAUInt16(value=None)
+
+            return UAUInt16(value=None)
 
         elif tagtype == 'Int32':
             if stripped is not None and stripped != '':
                 return UAInt32(value=int(stripped))
-            else:
-                return UAInt32(value=None)
+
+            return UAInt32(value=None)
 
         elif tagtype == 'UInt32':
             if stripped is not None and stripped != '':
                 return UAUInt32(value=int(stripped))
-            else:
-                return UAUInt32(value=None)
+
+            return UAUInt32(value=None)
 
         elif tagtype == 'Int64':
             if stripped is not None and stripped != '':
                 return UAInt64(value=int(stripped))
-            else:
-                return UAInt64(value=None)
+
+            return UAInt64(value=None)
 
         elif tagtype == 'UInt64':
             if stripped is not None and stripped != '':
                 return UAUInt64(value=int(stripped))
-            else:
-                return UAUInt64(value=None)
+
+            return UAUInt64(value=None)
 
         elif tagtype == 'Float':
             if stripped is not None and stripped != '':
                 return UAFloat(value=float(stripped))
-            else:
-                return UAFloat(value=None)
+
+            return UAFloat(value=None)
 
         elif tagtype == 'Double':
             if stripped is not None and stripped != '':
                 return UADouble(value=float(stripped))
-            else:
-                return UADouble(value=None)
+
+            return UADouble(value=None)
 
         elif tagtype == 'String':
             if stripped is not None:
                 return UAString(value=stripped)
-            else:
-                return UAString(value=None)
+
+            return UAString(value=None)
 
 
         elif tagtype == 'DateTime':
@@ -130,26 +130,26 @@ def parse_singular_value(val, tagtype):
         elif tagtype == 'Boolean':
             if stripped == '':
                 return UABoolean(value=None)
-            else:
-                return UABoolean(value=bool(stripped))
+
+            return UABoolean(value=bool(stripped))
 
         elif tagtype == 'ByteString':
             if stripped is not None:
                 return UAByteString(value=base64.b64decode(stripped))
-            else:
-                return UAByteString(value=None)
+
+            return UAByteString(value=None)
 
         elif tagtype == 'Guid':
             if stripped is not None:
                 return UAGuid(value=stripped)
-            else:
-                return UAGuid(value=None)
+
+            return UAGuid(value=None)
 
         elif tagtype == 'NodeId':
             if val.text is not None:
                 return parse_nodeid(val.text)
-            else:
-                return None
+
+            return None
 
     elif tagtype == 'TypeId':
         ident = val.find(uaxsd + 'Identifier')
@@ -194,6 +194,7 @@ def parse_singular_value(val, tagtype):
 def parse_nodeid(nodeidstr:str, namespace_map:Optional[Dict[int, int]]=None, alias_map:Optional[Dict[str, UANodeId]]=None):
     if alias_map is not None and nodeidstr in alias_map:
         return alias_map[nodeidstr]
+
     withns = r'ns=(.*?);([isgb])=(.*)'
     fm_withns = re.fullmatch(withns, nodeidstr)
     if fm_withns is not None:
