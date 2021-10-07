@@ -319,7 +319,7 @@ def parse_xml_dir(xmldir: str, namespaces: Optional[List[str]]=None) -> Dict[str
     for file in files:
         if file.endswith(".xml"):
             logger.info('Started parsing ' + str(file))
-            xmlfile = os.path.join(xmldir, file)
+            xmlfile = xmldir + '/' + file
             parse_dict = parse_xml_without_normalization(xmlfile, namespaces)
             namespaces = parse_dict['namespaces']
             df_nodes_list.append(parse_dict['nodes'])
