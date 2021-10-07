@@ -317,16 +317,14 @@ def parse_xml_dir(xmldir: str, namespaces: Optional[List[str]]=None) -> Dict[str
     files = [file for file in os.listdir(xmldir)]
     files.sort()
     for file in files:
-        if not file.endswith(".xml"):
-            continue
-
-        logger.info('Started parsing ' + str(file))
-        xmlfile = os.path.join(xmldir, file)
-        parse_dict = parse_xml_without_normalization(xmlfile, namespaces)
-        namespaces = parse_dict['namespaces']
-        df_nodes_list.append(parse_dict['nodes'])
-        df_references_list.append((parse_dict['references']))
-        logger.info('Finished parsing ' + str(file))
+        if file.endswith(".xml"):
+            logger.info('Started parsing ' + str(file))
+            xmlfile = os.path.join(xmldir, file)
+            parse_dict = parse_xml_without_normalization(xmlfile, namespaces)
+            namespaces = parse_dict['namespaces']
+            df_nodes_list.append(parse_dict['nodes'])
+            df_references_list.append((parse_dict['references']))
+            logger.info('Finished parsing ' + str(file))
 
     nodes = pd.concat(df_nodes_list)
     references = pd.concat(df_references_list)
