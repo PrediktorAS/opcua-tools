@@ -266,10 +266,7 @@ def parse_xml(xmlfile: Union[str, BytesIO], namespaces: Optional[List[str]]=None
     parse_dict['lookup_df'] = lookup_df
     return parse_dict
 
-def parse_xml_without_normalization(xmlfile: Union[str, BytesIO], namespaces: Optional[List[str]]=None) -> Dict[str, Any]:
-    if namespaces is None:
-        namespaces = []
-
+def parse_xml_without_normalization(xmlfile: Union[str, BytesIO], namespaces: Optional[List[str]]=[]) -> Dict[str, Any]:
     uans = 'http://opcfoundation.org/UA/'
     if uans not in namespaces:
         namespaces.append(uans)
