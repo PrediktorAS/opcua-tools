@@ -29,39 +29,57 @@ simplevariants = {'Boolean', 'SByte', 'Byte', 'Int16', 'UInt16', 'Int32', 'UInt3
                   'Double', 'String', 'DateTime', 'Guid', 'ByteString'}
 
 
-def create_header_xml(namespaces, serialize_namespace, xmlns_dict=None, last_modified:Optional[datetime] = None, publication_date: Optional[datetime] = None):
-    if xmlns_dict is None:
+def create_header_xml(
+    namespaces,
+    serialize_namespace,
+    xmlns_dict: Optional[dict] = None,
+    last_modified: Optional[datetime] = None,
+    publication_date: Optional[datetime] = None):
+
+    if not xmlns_dict:
         xmlns_dict = {'xsd': 'http://www.w3.org/2001/XMLSchema',
                       'xsi': 'http://www.w3.org/2001/XMLSchema-instance',
                       None: 'http://opcfoundation.org/UA/2011/03/UANodeSet.xsd'}
-
-    if last_modified is None:
+    
+    if not last_modified:
         last_modified = datetime.now(tz=pytz.UTC)
 
-    if publication_date is None:
+    if not publication_date:
         publication_date = datetime.now(tz=pytz.UTC)
 
-    header = '<?xml version="1.0" encoding="utf-8"?>\n'
-    header += '<UANodeSet'
-    header += ' LastModified="' + last_modified.isoformat() + '"'
-    for k in xmlns_dict:
-        if k is None:
-            prefix = 'xmlns'
-        else:
-            prefix = 'xmlns:' + k
-        header += ' ' + prefix + '="' + xmlns_dict[k] + '"'
-    header += '>\n'
-    if len(namespaces) > 1:
-        header += '<NamespaceUris>\n'
-        for i,n in enumerate(namespaces):
-            if i > 0:
-                header += '<Uri>' + n + '</Uri>\n'
-        header += '</NamespaceUris>\n'
-    header += '<Models><Model ModelUri="' +  namespaces[serialize_namespace] + '" PublicationDate="' +\
-              publication_date.isoformat() + '" Version="1.0.0"></Model></Models>\n'
-    header += '<Aliases></Aliases>\n'
-    return header
+    prefixes = ""
+    for key in xmlns_dict:
+        prefix = 'xmlns'
+        if key:
+            prefix += ":{}".format(key)
+        prefixes += " {}=\"{}\"".format(prefix, xmlns_dict[key])
 
+    namespaceheader = ""
+    if len(namespaces) > 1:
+        namespaceheader += '<NamespaceUris>\n'
+        for i,n in enumerate(namespaces):
+            if i < 1:
+                continue
+
+            namespaceheader += "<Uri>{}</Uri>\n".format(n)
+        namespaceheader += '</NamespaceUris>\n'
+ 
+
+    return """<?xml version="1.0" encoding="utf-8"?>
+<UANodeSet LastModified="{}" {}>
+{}
+<Models>
+    <Model ModelUri="{}" PublicationDate="{}" Version="1.0.0"></Model>
+</Models>
+<Aliases></Aliases>
+""".format(
+            last_modified.isoformat(),
+            prefixes,
+            namespaceheader,
+            namespaces[serialize_namespace],
+            publication_date.isoformat()
+            )
+ 
 def generate_references_xml(nodes, references):
     '''
     :param nodes:
@@ -83,6 +101,18 @@ def generate_references_xml(nodes, references):
     references.loc[~references['target_same_ns'], 'NodeId'] = references.loc[~references['target_same_ns'], 'Src']
 
     # Outgoing reference when target is not in same nodeset
+    references.loc[~references['target_same_ns'], 'xml'] = "<Reference ReferenceType=\"{}\">{}</Reference>".format(
+        references.loc[~references['target_same_ns'], 'ReferenceType'],
+        references.loc[~references['target_same_ns'], 'Trg'])
+
+    # Incoming reference only when target is in same nodeset to be generated
+    references.loc[references['target_same_ns'], 'xml'] = "<Reference ReferenceType=\"{}\" IsForward=\"false\">{}</Reference>".format(
+        references.loc[references['target_same_ns'], 'ReferenceType'],
+        references.loc[references['target_same_ns'], 'Src'])
+
+
+    # Outgoing reference when target is not in same nodeset
+    print(~references['target_same_ns'])
     references.loc[~references['target_same_ns'], 'xml'] = '<Reference ReferenceType="' + references.loc[
         ~references['target_same_ns'], 'ReferenceType'] + \
                                                            '">' + references.loc[
