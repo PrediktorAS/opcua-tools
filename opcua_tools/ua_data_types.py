@@ -306,9 +306,9 @@ class UALocalizedText(UABuiltIn):
         x = '<LocalizedText'
         if include_xmlns:
             x += ' ' + UAXMLNS_ATTRIB
-        x += '>\n'
-        x += '<Locale>' + (self.locale if self.locale is not None else '') + '</Locale>\n'
-        x += '<Text>' + (escape(self.text) if self.text is not None else '') + '</Text>\n'
+        x += '>'
+        x += '<Locale>' + (self.locale if self.locale is not None else '') + '</Locale>'
+        x += '<Text>' + (escape(self.text) if self.text is not None else '') + '</Text>'
         x += '</LocalizedText>'
         return x
 
