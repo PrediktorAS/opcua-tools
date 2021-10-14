@@ -266,7 +266,10 @@ def parse_xml(xmlfile: Union[str, BytesIO], namespaces: Optional[List[str]]=None
     parse_dict['lookup_df'] = lookup_df
     return parse_dict
 
-def parse_xml_without_normalization(xmlfile: Union[str, BytesIO], namespaces: Optional[List[str]]=[]) -> Dict[str, Any]:
+def parse_xml_without_normalization(xmlfile: Union[str, BytesIO], namespaces: Optional[List[str]]=None) -> Dict[str, Any]:
+    if namespaces is None:
+        namespaces = []
+
     uans = 'http://opcfoundation.org/UA/'
     if uans not in namespaces:
         namespaces.append(uans)
@@ -305,7 +308,9 @@ def parse_xml_without_normalization(xmlfile: Union[str, BytesIO], namespaces: Op
     return {'nodes': nodes, 'references': references, 'namespaces':namespaces}
 
 
-def parse_xml_dir(xmldir: str, namespaces: Optional[List[str]]=[]) -> Dict[str, Any]:
+def parse_xml_dir(xmldir: str, namespaces: Optional[List[str]]= None) -> Dict[str, Any]:
+    if namespaces is None:
+        namespaces = []
     df_nodes_list = []
     df_references_list = []
     files = [file for file in os.listdir(xmldir)]
