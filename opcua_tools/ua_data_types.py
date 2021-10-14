@@ -360,10 +360,10 @@ class UnparsedUAExtensionObject(UABuiltIn):
         x = '<ExtensionObject'
         if include_xmlns:
             x += ' ' + UAXMLNS_ATTRIB
-        x += '>\n'
+        x += '>'
         x += '<TypeId>' + (
-            self.type_nodeid.xml_encode(include_xmlns=False) if self.type_nodeid is not None else '') + '</TypeId>\n'
-        x += '<Body>' + (self.body.xml_encode(include_xmlns=False) if self.body is not None else '') + '</Body>\n'
+            self.type_nodeid.xml_encode(include_xmlns=False) if self.type_nodeid is not None else '') + '</TypeId>'
+        x += '<Body>' + (self.body.xml_encode(include_xmlns=False) if self.body is not None else '') + '</Body>'
         x += '</ExtensionObject>'
         return x
 
