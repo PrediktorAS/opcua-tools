@@ -4,6 +4,7 @@ from .navigation import resolve_ids_from_browsenames
 from .nodeset_generator import create_nodeset2_file
 from typing import List, Optional, Union
 from io import StringIO
+from datetime import datetime
 
 class UAGraph:
     def __init__(self, nodes:pd.DataFrame, references:pd.DataFrame, namespaces:List[str]):
@@ -83,8 +84,11 @@ class UAGraph:
 
         return int(reference_type_id)
 
-    def write_nodeset(self, filename_or_stringio:Union[str, StringIO], namespace_uri:str,
-                      include_outgoing_instance_level_references:Optional[bool] = True):
+
+    def write_nodeset(self, filename_or_stringio: Union[str, StringIO], namespace_uri: str,
+                      include_outgoing_instance_level_references: Optional[bool] = True,
+                      last_modified: Optional[datetime] = None,
+                      publication_date: Optional[datetime] = None):
         if namespace_uri not in self.namespaces:
             raise ValueError('Could not find namespace uri: ' + namespace_uri)
         namespace_index = self.namespaces.index(namespace_uri)
@@ -97,7 +101,10 @@ class UAGraph:
                              references=use_references,
                              serialize_namespace=namespace_index,
                              namespaces=self.namespaces,
-                             filename_or_stringio=filename_or_stringio)
+                             filename_or_stringio=filename_or_stringio,
+                             last_modified=last_modified,
+                             publication_date=publication_date)
+
 
     def remove_instance_level_outgoing_references(self, namespace_index:int) -> pd.DataFrame:
         hmr = self.reference_type_by_browsename('HasModellingRule')
