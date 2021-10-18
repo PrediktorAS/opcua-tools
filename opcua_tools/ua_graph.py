@@ -1,4 +1,6 @@
 import pandas as pd
+from opcua_tools import UANodeId
+
 from .nodeset_parser import parse_xml_dir
 from .navigation import resolve_ids_from_browsenames
 from .nodeset_generator import create_nodeset2_file
@@ -97,10 +99,23 @@ class UAGraph:
         else:
             use_references = self.references
 
-        create_nodeset2_file(nodes=self.nodes,
+        #Always serialize namespace 1 in xml, so we need to remap indices
+        new_namespaces_list = [self.namespaces[0], self.namespaces[namespace_index]]
+        for i,n in enumerate(self.namespaces):
+            if i != 0 and i != namespace_index:
+                new_namespaces_list.append(n)
+
+        remapper = {i:new_namespaces_list.index(n) for i,n in enumerate(self.namespaces)}
+        use_nodes = self.nodes.copy()
+        use_nodes['NodeId'] = use_nodes['NodeId'].map(
+            lambda x:UANodeId(namespace=remapper[x.namespace],
+                              value=x.value,
+                              nodeid_type=x.nodeid_type))
+
+        create_nodeset2_file(nodes=use_nodes,
                              references=use_references,
-                             serialize_namespace=namespace_index,
-                             namespaces=self.namespaces,
+                             serialize_namespace=1,
+                             namespaces=new_namespaces_list,
                              filename_or_stringio=filename_or_stringio,
                              last_modified=last_modified,
                              publication_date=publication_date)
