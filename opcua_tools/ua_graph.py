@@ -111,6 +111,7 @@ class UAGraph:
             lambda x:UANodeId(namespace=remapper[x.namespace],
                               value=x.value,
                               nodeid_type=x.nodeid_type))
+        use_nodes['BrowseNameNamespace'] = use_nodes['BrowseNameNamespace'].map(remapper)
 
         create_nodeset2_file(nodes=use_nodes,
                              references=use_references,
