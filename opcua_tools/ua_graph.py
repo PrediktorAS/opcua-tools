@@ -212,3 +212,12 @@ class UAGraph:
                     string, enum_name
                 )
             )
+
+    def get_objects_of_type(self, type_name: str):
+        has_type_def = self.reference_type_by_browsename("HasTypeDefinition")
+        object_type_df = self.object_type_by_browsename(type_name)
+        reference_ids = self.references[
+            (self.references["ReferenceType"] == has_type_def)
+            & (self.references["Trg"] == object_type_df)
+        ]
+        return self.nodes.loc[self.nodes["id"].isin(reference_ids["Src"])]
