@@ -229,3 +229,33 @@ class UAGraph:
         enum_dict = self.get_enum_dict(enum_name)
         #TODO: Cache enumdict for performance
         return enum_dict[number]
+
+    def get_enum_int(self, enum_name: str, string: str):
+        """This function will return the integer value of within an enum,
+        provided you get both the of the enum and a string value."""
+        # Ad Hoc solution to ensure text in files does not include newlines and line breaks
+        string = string.replace("\r", "")
+        string = string.replace("\n", "")
+        enum_dict = self.get_enum_dict(enum_name)
+        # TODO: Cache enumdict for performance
+        # Getting the dict key based on the value
+        key_list = list(enum_dict.keys())
+        val_list = list(enum_dict.values())
+        try:
+            position = val_list.index(string)
+            return key_list[position]
+        except:
+            raise ValueError(
+                "Could not find the string: {}, for the enum_name: {}".format(
+                    string, enum_name
+                )
+            )
+
+    def get_objects_of_type(self, type_name: str):
+        has_type_def = self.reference_type_by_browsename("HasTypeDefinition")
+        object_type_df = self.object_type_by_browsename(type_name)
+        reference_ids = self.references[
+            (self.references["ReferenceType"] == has_type_def)
+            & (self.references["Trg"] == object_type_df)
+        ]
+        return self.nodes.loc[self.nodes["id"].isin(reference_ids["Src"])]
