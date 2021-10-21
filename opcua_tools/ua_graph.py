@@ -54,6 +54,21 @@ class UAGraph:
             object_type_id = object_type_ids.iloc[0]
 
         return int(object_type_id)
+    
+    def variable_type_by_browsename(self, browsename: str) -> int:
+        if browsename is None or browsename == '':
+            raise ValueError('"browsename" must not be None or empty string, should be BrowseName of VariableType')
+
+        variable_type_nodes = self.nodes[self.nodes['NodeClass'] == 'UAVariableType']
+        variable_type_ids = resolve_ids_from_browsenames(nodes=variable_type_nodes, browsenames=[browsename])
+        if len(variable_type_ids) == 0:
+            raise ValueError('Could not find variable type ' + browsename)
+        elif len(variable_type_ids) > 1:
+            raise ValueError('Multiple hits for variable type ' + browsename + ' please specify namespace')
+        else:
+            variable_type_id = variable_type_ids.iloc[0]
+
+        return int(variable_type_id)
 
 
     def data_type_by_browsename(self, browsename: str) -> int:

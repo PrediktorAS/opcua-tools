@@ -27,6 +27,9 @@ class NodeIdType(Enum):
     GUID = 'g'
     OPAQUE = 'b'
 
+    def __repr__(self):
+        return 'NodeIdType' + '.' + self.name
+
 
 UAXMLNS_ATTRIB = 'xmlns="http://opcfoundation.org/UA/2008/02/Types.xsd"'
 
@@ -67,7 +70,7 @@ class DataTypeField(UAData):
 @dataclass(eq=True, frozen=True)
 class DataTypeDefinition(UAData):
     name: str
-    fields: Tuple[DataTypeField]
+    fields: Tuple[DataTypeField, ...]
 
     def xml_encode(self, include_xmlns: bool) -> str:
         encodedvalues = [v.xml_encode(include_xmlns=False) for v in self.fields]
@@ -413,7 +416,7 @@ class UAEmpty(UAData):
 
 @dataclass(eq=True, frozen=True)
 class UAListOf(UAData):
-    value: Tuple[UAData]
+    value: Tuple[UAData, ...]
     typename: str
 
     def xml_encode(self, include_xmlns: bool) -> str:
