@@ -8,8 +8,9 @@ from typing import List, Optional, Union
 from io import StringIO
 from datetime import datetime
 
+
 class UAGraph:
-    def __init__(self, nodes:pd.DataFrame, references:pd.DataFrame, namespaces:List[str]):
+    def __init__(self, nodes: pd.DataFrame, references: pd.DataFrame, namespaces: List[str]):
         self.nodes = nodes
         self.nodes['id'] = self.nodes['id'].astype(pd.Int32Dtype())
         self.references = references
@@ -18,13 +19,16 @@ class UAGraph:
         self.references['ReferenceType'] = self.references['ReferenceType'].astype(pd.Int32Dtype())
         self.namespaces = namespaces
 
-    def from_path(path:str) -> 'UAGraph':
+    def from_path(path: str) -> 'UAGraph':
         parse_dict = parse_xml_dir(path)
         return UAGraph(nodes=parse_dict['nodes'],
-                             references=parse_dict['references'],
-                             namespaces=parse_dict['namespaces'])
+                       references=parse_dict['references'],
+                       namespaces=parse_dict['namespaces'])
 
-    def reference_type_by_browsename(self, browsename:str) -> int:
+    def all_references_of_type(self, browsename: str):
+        return self.references[self.references['ReferenceType'] == self.reference_type_by_browsename(browsename)].copy()
+
+    def reference_type_by_browsename(self, browsename: str) -> int:
         if browsename is None or browsename == '':
             raise ValueError('"browsename" must not be None or empty string, should be BrowseName of ReferenceType')
 
@@ -38,7 +42,6 @@ class UAGraph:
             reference_type_id = reference_type_ids.iloc[0]
 
         return int(reference_type_id)
-
 
     def object_type_by_browsename(self, browsename: str) -> int:
         if browsename is None or browsename == '':
@@ -54,7 +57,7 @@ class UAGraph:
             object_type_id = object_type_ids.iloc[0]
 
         return int(object_type_id)
-    
+
     def variable_type_by_browsename(self, browsename: str) -> int:
         if browsename is None or browsename == '':
             raise ValueError('"browsename" must not be None or empty string, should be BrowseName of VariableType')
@@ -69,7 +72,6 @@ class UAGraph:
             variable_type_id = variable_type_ids.iloc[0]
 
         return int(variable_type_id)
-
 
     def data_type_by_browsename(self, browsename: str) -> int:
         if browsename is None or browsename == '':
@@ -101,7 +103,6 @@ class UAGraph:
 
         return int(reference_type_id)
 
-
     def write_nodeset(self, filename_or_stringio: Union[str, StringIO], namespace_uri: str,
                       include_outgoing_instance_level_references: Optional[bool] = True,
                       last_modified: Optional[datetime] = None,
@@ -114,18 +115,19 @@ class UAGraph:
         else:
             use_references = self.references
 
-        #Always serialize namespace 1 in xml, so we need to remap indices
+        # Always serialize namespace 1 in xml, so we need to remap indices
         new_namespaces_list = [self.namespaces[0], self.namespaces[namespace_index]]
-        for i,n in enumerate(self.namespaces):
+        for i, n in enumerate(self.namespaces):
             if i != 0 and i != namespace_index:
                 new_namespaces_list.append(n)
 
-        remapper = {i:new_namespaces_list.index(n) for i,n in enumerate(self.namespaces)}
+        remapper = {i: new_namespaces_list.index(n) for i, n in enumerate(self.namespaces)}
         use_nodes = self.nodes.copy()
+        use_nodes['BrowseNameNamespace'] = use_nodes['BrowseNameNamespace'].astype(pd.Int32Dtype())
         use_nodes['NodeId'] = use_nodes['NodeId'].map(
-            lambda x:UANodeId(namespace=remapper[x.namespace],
-                              value=x.value,
-                              nodeid_type=x.nodeid_type))
+            lambda x: UANodeId(namespace=remapper[x.namespace],
+                               value=x.value,
+                               nodeid_type=x.nodeid_type))
         use_nodes['BrowseNameNamespace'] = use_nodes['BrowseNameNamespace'].map(remapper)
 
         create_nodeset2_file(nodes=use_nodes,
@@ -136,11 +138,10 @@ class UAGraph:
                              last_modified=last_modified,
                              publication_date=publication_date)
 
-
-    def remove_instance_level_outgoing_references(self, namespace_index:int) -> pd.DataFrame:
+    def remove_instance_level_outgoing_references(self, namespace_index: int) -> pd.DataFrame:
         hmr = self.reference_type_by_browsename('HasModellingRule')
         htd = self.reference_type_by_browsename('HasTypeDefinition')
-        self.nodes['ns'] = self.nodes['NodeId'].map(lambda x:x.namespace)
+        self.nodes['ns'] = self.nodes['NodeId'].map(lambda x: x.namespace)
         ids_in_ns = self.nodes.loc[self.nodes['ns'] == namespace_index, ['id']].copy()
         ids_in_ns = ids_in_ns.set_index('id', drop=False)
 
@@ -163,7 +164,7 @@ class UAGraph:
         if namespace is not None:
             object_type_nodes.reset_index(inplace=True)
             mask = (
-                object_type_nodes["NodeId"].map(lambda x: x.namespace) == namespace
+                    object_type_nodes["NodeId"].map(lambda x: x.namespace) == namespace
             )
             object_type_nodes = object_type_nodes[mask]
 
@@ -177,8 +178,8 @@ class UAGraph:
         nodes = self.nodes[["NodeClass", "BrowseName", "NodeId", "id"]].set_index('id', drop=False)
         has_type_def_id = self.reference_type_by_browsename("HasTypeDefinition")
         htd = self.references.loc[self.references['ReferenceType'] == has_type_def_id, [['Src', 'Trg']]]
-        typeinfo = nodes.rename(columns={'BrowseName':'TypeBrowseName', 'NodeId':'TypeNodeId',
-                                         'id':'Typeid'}, errors='raise').drop(columns=['NodeClass'])
+        typeinfo = nodes.rename(columns={'BrowseName': 'TypeBrowseName', 'NodeId': 'TypeNodeId',
+                                         'id': 'Typeid'}, errors='raise').drop(columns=['NodeClass'])
         htd = htd.set_index('Src').join(nodes).set_index('Trg').join(typeinfo)
         return htd
 
@@ -189,7 +190,7 @@ class UAGraph:
         enum_node = self.nodes[
             (self.nodes.NodeClass == "UADataType")
             & (self.nodes.BrowseName == enum_name)
-        ]
+            ]
 
         if enum_node.shape[0] == 0:
             raise ValueError("The enum was not found in the graph")
@@ -202,7 +203,7 @@ class UAGraph:
         outgoing_reference_row = self.references[
             (self.references.ReferenceType == has_property_id)
             & (self.references.Src == node_id)
-        ]
+            ]
         outgoing_id = outgoing_reference_row["Trg"].values[0]
         has_property_node = self.nodes[self.nodes["id"] == outgoing_id]
         has_property_name = has_property_node["BrowseName"].values[0]
@@ -227,5 +228,5 @@ class UAGraph:
         """This function will return the string value of within an enum,
         provided you get both the of the enum and an integer value."""
         enum_dict = self.get_enum_dict(enum_name)
-        #TODO: Cache enumdict for performance
+        # TODO: Cache enumdict for performance
         return enum_dict[number]

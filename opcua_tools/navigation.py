@@ -41,6 +41,18 @@ def hierarchical_references_trg_has_modelling_rule(references:pd.DataFrame,
         columns={'index': 'Trg'})
     return hierarchical_refs_has_modelling_rule[['Src', 'Trg', 'ReferenceType']].copy()
 
+#Useful for keeping forward refs for methods when instantiating
+def hierarchical_references_trg_has_no_modelling_rule(references:pd.DataFrame,
+                                                   type_references:pd.DataFrame,
+                                                   type_nodes:pd.DataFrame):
+    hierarchical_refs = hierarchical_references(inst_references=references, type_references=type_references, type_nodes=type_nodes)
+    has_modelling_rule = has_modelling_rule_references(inst_references=references, type_references=type_references, type_nodes=type_nodes)[['Src']].rename(columns={'Src': 'id'})
+    has_modelling_rule = has_modelling_rule.set_index('id')
+    hierarchical_refs_has_no_modelling_rule = hierarchical_refs.set_index('Trg', drop=False)
+    trg_no_modelling_rule = ~hierarchical_refs_has_no_modelling_rule.index.isin(has_modelling_rule.index)
+    hierarchical_refs_has_no_modelling_rule = hierarchical_refs_has_no_modelling_rule[trg_no_modelling_rule].copy()
+    return hierarchical_refs_has_no_modelling_rule[['Src', 'Trg', 'ReferenceType']].copy()
+
 
 def find_relatives(nodes: pd.DataFrame, nodes_key_col: str, edges: pd.DataFrame, relative_type: str, cutoff: int = None,
                    keep_paths: bool = False) -> pd.DataFrame:
