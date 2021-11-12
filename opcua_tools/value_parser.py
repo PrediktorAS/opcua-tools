@@ -18,6 +18,7 @@ import re
 import lxml.etree as ET
 from lxml import objectify
 from dateutil import parser
+import copy
 
 from typing import Dict
 from .ua_data_types import *
@@ -186,7 +187,12 @@ def parse_singular_value(val, tagtype):
                                  body=parsednextbody)
 
     else:
-        return UAStructure(xmlstring=ET.tostring(val).decode('utf-8'))
+        # Need to copy element, cleanup_namespaces only works if a copy is made
+        val_copy = copy.copy(val)
+        # Remove unused xml namespaces
+        ET.cleanup_namespaces(val_copy)
+
+        return UAStructure(xmlstring=ET.tostring(val_copy).decode('utf-8'))
 
     raise NotImplementedError(tagtype)
 
