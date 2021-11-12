@@ -101,18 +101,6 @@ def generate_references_xml(nodes, references):
     references.loc[~references['target_same_ns'], 'NodeId'] = references.loc[~references['target_same_ns'], 'Src']
 
     # Outgoing reference when target is not in same nodeset
-    references.loc[~references['target_same_ns'], 'xml'] = "<Reference ReferenceType=\"{}\">{}</Reference>".format(
-        references.loc[~references['target_same_ns'], 'ReferenceType'],
-        references.loc[~references['target_same_ns'], 'Trg'])
-
-    # Incoming reference only when target is in same nodeset to be generated
-    references.loc[references['target_same_ns'], 'xml'] = "<Reference ReferenceType=\"{}\" IsForward=\"false\">{}</Reference>".format(
-        references.loc[references['target_same_ns'], 'ReferenceType'],
-        references.loc[references['target_same_ns'], 'Src'])
-
-
-    # Outgoing reference when target is not in same nodeset
-    print(~references['target_same_ns'])
     references.loc[~references['target_same_ns'], 'xml'] = '<Reference ReferenceType="' + references.loc[
         ~references['target_same_ns'], 'ReferenceType'] + \
                                                            '">' + references.loc[
