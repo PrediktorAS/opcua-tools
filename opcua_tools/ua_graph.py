@@ -260,3 +260,56 @@ class UAGraph:
             & (self.references["Trg"] == object_type_df)
         ]
         return self.nodes.loc[self.nodes["id"].isin(reference_ids["Src"])]
+
+    def get_neighboring_nodes_by_browsename(self, browse_name: str, relation: str):
+        """This function will returning the references either pointing to
+        or from a node. The results contain the source and target contents of
+        the `references` table with actual text 'BrowseNames' and the corresponding
+        node 'NodeIdes'. The 'relation' parameter is special since it must
+        either be "outgoing" or "incoming". When inputting "child" it will return
+        the outgoing references of the node, while "parent" will provide the
+        references which point to the specific node."""
+
+        direction = None
+        if relation == "outgoing":
+            direction = "Src"
+        elif relation == "incoming":
+            direction = "Trg"
+
+        if direction == None:
+            raise ValueError(
+                'The relation of the neighbouring nodes must be' +
+                'indicated by setting "relation" to either "outgoing" or "incoming".'
+            )
+
+        # Creating duplicate for safety's sake
+        references = self.references.copy()
+
+        # Getting getting the subset of references which only contain the desired node
+        object_id = self.object_by_browsename(browse_name)
+        references = references[references[direction] == object_id]
+
+        # Creating a dataframe with only names to conduct joins and get names
+        names = self.nodes[["BrowseName", "NodeId", "id"]].set_index("id", drop=True)
+
+        # Getting the names of the ReferenceTypes into the tables instead of numbers
+        references.set_index("ReferenceType", drop=True, inplace=True)
+        references = references.join(names, how="inner")
+        references.rename(columns={"BrowseName": "ReferenceType"}, inplace=True)
+        references.drop("NodeId", axis=1, inplace=True)
+
+        # Getting names of the ids in the Src Column, joining in the same manner as before
+        references.set_index("Src", drop=True, inplace=True)
+        references = references.join(names, how="inner")
+        references.rename(
+            columns={"BrowseName": "Source", "NodeId": "SourceNodeId"}, inplace=True
+        )
+
+        # Getting names of the ids in the Trg Column, joining in the same manner as before
+        references.set_index("Trg", drop=True, inplace=True)
+        references = references.join(names, how="inner")
+        references.rename(
+            columns={"BrowseName": "Target", "NodeId": "TargetNodeId"}, inplace=True
+        )
+
+        return references
