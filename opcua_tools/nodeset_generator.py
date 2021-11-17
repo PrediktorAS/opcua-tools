@@ -31,11 +31,12 @@ simplevariants = {'Boolean', 'SByte', 'Byte', 'Int16', 'UInt16', 'Int32', 'UInt3
 
 
 def create_header_xml(
-        namespaces,
-        serialize_namespace,
-        xmlns_dict: Optional[dict] = None,
-        last_modified: Optional[datetime] = None,
-        publication_date: Optional[datetime] = None):
+    namespaces,
+    serialize_namespace,
+    xmlns_dict: Optional[dict] = None,
+    last_modified: Optional[datetime] = None,
+    publication_date: Optional[datetime] = None):
+
     if not xmlns_dict:
         xmlns_dict = {'xsd': 'http://www.w3.org/2001/XMLSchema',
                       'xsi': 'http://www.w3.org/2001/XMLSchema-instance',
@@ -57,12 +58,13 @@ def create_header_xml(
     namespaceheader = ""
     if len(namespaces) > 1:
         namespaceheader += '<NamespaceUris>\n'
-        for i, n in enumerate(namespaces):
+        for i,n in enumerate(namespaces):
             if i < 1:
                 continue
 
             namespaceheader += "<Uri>{}</Uri>\n".format(n)
         namespaceheader += '</NamespaceUris>\n'
+
 
     return """<?xml version="1.0" encoding="utf-8"?>
 <UANodeSet LastModified="{}" {}>
@@ -72,13 +74,12 @@ def create_header_xml(
 </Models>
 <Aliases></Aliases>
 """.format(
-        last_modified.isoformat(),
-        prefixes,
-        namespaceheader,
-        namespaces[serialize_namespace],
-        publication_date.isoformat()
-    )
-
+            last_modified.isoformat(),
+            prefixes,
+            namespaceheader,
+            namespaces[serialize_namespace],
+            publication_date.isoformat()
+            )
 
 def generate_references_xml(nodes, references):
     '''

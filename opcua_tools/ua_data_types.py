@@ -379,20 +379,20 @@ class UAEngineeringUnits(UAData):
     namespace_uri: str
 
     def xml_encode(self, include_xmlns: bool) -> str:
-        body_contents = '<EngineeringUnits>'
+        body_contents = '<EUInformation>'
         body_contents += '<NamespaceUri>' + self.namespace_uri + '</NamespaceUri>'
         body_contents += '<UnitId>' + str(self.unit_id) + '</UnitId>'
         body_contents += '<DisplayName>'
         body_contents += '<Locale>' + (
-            self.display_name.locale if self.display_name.locale is not None else '') + '</Locale>'
+            self.display_name.locale if self.display_name.locale is not None else 'en') + '</Locale>'
         body_contents += '<Text>' + (self.display_name.text if self.display_name.text is not None else '') + '</Text>'
         body_contents += '</DisplayName>'
         body_contents += '<Description>'
         body_contents += '<Locale>' + (
-            self.description.locale if self.description.locale is not None else '') + '</Locale>'
+            self.description.locale if self.description.locale is not None else 'en') + '</Locale>'
         body_contents += '<Text>' + (self.description.text if self.description.text is not None else '') + '</Text>'
         body_contents += '</Description>'
-        body_contents += '</EngineeringUnits>'
+        body_contents += '</EUInformation>'
 
         # Todo fix hacky implementation
         return UnparsedUAExtensionObject(UANodeId(0, NodeIdType.NUMERIC, '888'),
