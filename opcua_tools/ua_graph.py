@@ -3,7 +3,8 @@ from opcua_tools import UANodeId
 
 from .nodeset_parser import parse_xml_dir
 from .navigation import resolve_ids_from_browsenames
-from .nodeset_generator import create_nodeset2_file
+from .nodeset_generator import create_nodeset2_file, create_lookup_df, denormalize_nodes_nodeids, \
+    denormalize_references_nodeids
 from typing import List, Optional, Union
 from io import StringIO
 from datetime import datetime
@@ -138,6 +139,39 @@ class UAGraph:
                              last_modified=last_modified,
                              publication_date=publication_date)
 
+    def get_normalized_nodes_df(self, namespace_uri: Optional[str] = None):
+        lookup_df = create_lookup_df(self.nodes)
+        if namespace_uri is not None:
+            ns = self.namespaces.index(namespace_uri)
+            nodes = self.nodes[self.nodes['ns'] == ns].copy()
+        else:
+            nodes = self.nodes.copy()
+        nodes = denormalize_nodes_nodeids(nodes, lookup_df)
+        nodes = nodes.drop(columns=['id'])
+        nodes = nodes.sort_values(by=nodes.columns.values.tolist(), ignore_index=True)
+        return nodes
+
+    def get_normalized_references_df(self, namespace_uri: Optional[str] = None):
+        lookup_df = create_lookup_df(self.nodes)
+
+        if namespace_uri is not None:
+            ns = self.namespaces.index(namespace_uri)
+            nodes_ns = self.nodes.loc[self.nodes['ns'] == ns, ['id']].set_index('id')
+            nodes_ns['in_ns'] = True
+            references = self.references.set_index('Src', drop=False).join(nodes_ns).rename(columns={'in_ns': 'src_in_ns'},
+                                                                                            errors='raise')
+            references = references.set_index('Trg', drop=False).join(nodes_ns).rename(columns={'in_ns': 'trg_in_ns'},
+                                                                                       errors='raise')
+            references = references.loc[
+                (references['src_in_ns'] == True) | (references['trg_in_ns'] == True), ['Src', 'Trg',
+                                                                                        'ReferenceType']].copy()
+        else:
+            references = self.references.copy()
+
+        references = denormalize_references_nodeids(references, lookup_df)
+        references = references.sort_values(by=references.columns.values.tolist(), ignore_index=True)
+        return references
+
     def remove_instance_level_outgoing_references(self, namespace_index: int) -> pd.DataFrame:
         hmr = self.reference_type_by_browsename('HasModellingRule')
         htd = self.reference_type_by_browsename('HasTypeDefinition')
@@ -258,5 +292,5 @@ class UAGraph:
         reference_ids = self.references[
             (self.references["ReferenceType"] == has_type_def)
             & (self.references["Trg"] == object_type_df)
-        ]
+            ]
         return self.nodes.loc[self.nodes["id"].isin(reference_ids["Src"])]
