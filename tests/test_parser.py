@@ -14,6 +14,7 @@
 
 import opcua_tools as ot
 import os
+import pandas as pd
 PATH_HERE = os.path.dirname(__file__)
 
 
@@ -25,3 +26,28 @@ def test_parse_nodeid():
     nid = ot.parse_nodeid(s)
 
     assert type(nid.value) == str
+
+def test_parser_easy_example_stays_put():
+    gr = ot.UAGraph.from_path(PATH_HERE + '/testdata/generator')
+    nodes = gr.get_normalized_nodes_df()
+    references = gr.get_normalized_references_df()
+
+    nodes.to_csv(PATH_HERE + '/expected/parser/nodes.csv', index=False)
+    references.to_csv(PATH_HERE + '/expected/parser/references.csv', index=False)
+
+    actual_nodes = pd.read_csv(PATH_HERE + '/expected/parser/nodes.csv')
+    actual_references = pd.read_csv(PATH_HERE + '/expected/parser/references.csv')
+
+    expected_nodes = pd.read_csv(PATH_HERE + '/expected/parser/expected_nodes.csv')
+    expected_references = pd.read_csv(PATH_HERE + '/expected/parser/expected_references.csv')
+
+    pd.testing.assert_frame_equal(expected_references, actual_references)
+
+    for c in expected_nodes.columns:
+        if c != 'Value':
+            pd.testing.assert_series_equal(expected_nodes[c], actual_nodes[c])
+        else:
+            #Todo fix test error for value between linux/windows
+            pass
+
+

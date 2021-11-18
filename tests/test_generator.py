@@ -13,7 +13,7 @@
 # limitations under the License.
 
 import opcua_tools as ot
-from opcua_tools.nodeset_generator import denormalize_nodeids
+from opcua_tools.nodeset_generator import denormalize_nodes_nodeids, denormalize_references_nodeids
 import os
 import pandas as pd
 PATH_HERE = os.path.dirname(__file__)
@@ -30,14 +30,16 @@ def test_idempotency():
 
     nodes = parse_dict['nodes']
     references = parse_dict['references']
-    nodes, references = denormalize_nodeids(nodes, references, parse_dict['lookup_df'])
+    nodes = denormalize_nodes_nodeids(nodes, parse_dict['lookup_df'])
+    references = denormalize_references_nodeids(references, parse_dict['lookup_df'])
     nodes = nodes.drop(columns=['id'])
     nodes = nodes.sort_values(by=nodes.columns.values.tolist()).reset_index(drop=True)
     references = references.sort_values(by=references.columns.values.tolist()).reset_index(drop=True)
 
     nodes2 = parse_dict2['nodes']
     references2 = parse_dict2['references']
-    nodes2, references2 = denormalize_nodeids(nodes2, references2, parse_dict2['lookup_df'])
+    nodes2 = denormalize_nodes_nodeids(nodes2, parse_dict2['lookup_df'])
+    references2 = denormalize_references_nodeids(references2, parse_dict2['lookup_df'])
     nodes2 = nodes2.drop(columns=['id'])
     nodes2 = nodes2.sort_values(by=nodes.columns.values.tolist()).reset_index(drop=True)
     references2 = references2.sort_values(by=references.columns.values.tolist()).reset_index(drop=True)
