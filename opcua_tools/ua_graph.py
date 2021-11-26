@@ -26,7 +26,7 @@ class UAGraph:
                        references=parse_dict['references'],
                        namespaces=parse_dict['namespaces'])
 
-    def from_file_list(file_list: list[str]) -> 'UAGraph':
+    def from_file_list(file_list: List[str]) -> 'UAGraph':
         parse_dict = parse_xml_files(file_list)
         return UAGraph(nodes=parse_dict['nodes'],
                        references=parse_dict['references'],
