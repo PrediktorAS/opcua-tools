@@ -1,7 +1,7 @@
 import pandas as pd
 from opcua_tools import UANodeId
 
-from .nodeset_parser import parse_xml_dir
+from .nodeset_parser import parse_xml_dir, parse_xml_files
 from .navigation import resolve_ids_from_browsenames
 from .nodeset_generator import create_nodeset2_file, create_lookup_df, denormalize_nodes_nodeids, \
     denormalize_references_nodeids
@@ -22,6 +22,12 @@ class UAGraph:
 
     def from_path(path: str) -> 'UAGraph':
         parse_dict = parse_xml_dir(path)
+        return UAGraph(nodes=parse_dict['nodes'],
+                       references=parse_dict['references'],
+                       namespaces=parse_dict['namespaces'])
+
+    def from_file_list(file_list: list[str]) -> 'UAGraph':
+        parse_dict = parse_xml_files(file_list)
         return UAGraph(nodes=parse_dict['nodes'],
                        references=parse_dict['references'],
                        namespaces=parse_dict['namespaces'])
