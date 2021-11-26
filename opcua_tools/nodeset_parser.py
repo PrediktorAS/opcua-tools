@@ -308,29 +308,48 @@ def parse_xml_without_normalization(xmlfile: Union[str, BytesIO], namespaces: Op
     return {'nodes': nodes, 'references': references, 'namespaces':namespaces}
 
 
-def parse_xml_dir(xmldir: str, namespaces: Optional[List[str]]= None) -> Dict[str, Any]:
+
+def parse_xml_dir(
+    xmldir: str, namespaces: Optional[List[str]] = None
+) -> Dict[str, Any]:
+    files = []
+    for file in os.listdir(xmldir):
+        full_path = os.path.join(xmldir, file)
+        if os.path.isfile(full_path):
+            files.append(full_path)
+    return parse_xml_files(files, namespaces)
+
+
+def parse_xml_files(
+    files: List[str], namespaces: Optional[List[str]] = None
+) -> Dict[str, Any]:
     if namespaces is None:
         namespaces = []
     df_nodes_list = []
     df_references_list = []
-    files = [file for file in os.listdir(xmldir)]
+
     files.sort()
     for file in files:
         if not file.endswith(".xml"):
             continue
+        if not os.path.exists(file):
+            raise FileNotFoundError(
+                "The specified xml file does not exist or incorrect path was provided"
+            )
 
-        logger.info('Started parsing ' + str(file))
-        xmlfile = os.path.join(xmldir, file)
-        parse_dict = parse_xml_without_normalization(xmlfile, namespaces)
-        namespaces = parse_dict['namespaces']
-        df_nodes_list.append(parse_dict['nodes'])
-        df_references_list.append((parse_dict['references']))
-        logger.info('Finished parsing ' + str(file))
+        logger.info("Started parsing " + str(file))
+        parse_dict = parse_xml_without_normalization(file, namespaces)
+        namespaces = parse_dict["namespaces"]
+        df_nodes_list.append(parse_dict["nodes"])
+        df_references_list.append((parse_dict["references"]))
+        logger.info("Finished parsing " + str(file))
 
     nodes = pd.concat(df_nodes_list)
     references = pd.concat(df_references_list)
     lookup_df = normalize_wrt_nodeid(nodes, references)
-    return {'nodes': nodes,
-            'references': references,
-            'namespaces':namespaces,
-            'lookup_df':lookup_df}
+    return {
+        "nodes": nodes,
+        "references": references,
+        "namespaces": namespaces,
+        "lookup_df": lookup_df,
+    }
