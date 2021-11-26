@@ -15,6 +15,7 @@
 import opcua_tools as ot
 import os
 import pandas as pd
+from pathlib import Path
 PATH_HERE = os.path.dirname(__file__)
 
 
@@ -51,3 +52,12 @@ def test_parser_easy_example_stays_put():
             pass
 
 
+def test_parse_file_list():
+    path_to_xmls = str(Path(PATH_HERE) / "testdata" / "parser")
+    xml_list = []
+    for xml in os.listdir(path_to_xmls):
+        full_xml_path = os.path.join(path_to_xmls, xml)
+        if os.path.isfile(full_xml_path):
+            xml_list.append(full_xml_path)
+
+    ot.parse_xml_files(xml_list)
