@@ -5,7 +5,7 @@ from .nodeset_parser import parse_xml_dir, parse_xml_files
 from .navigation import resolve_ids_from_browsenames
 from .nodeset_generator import create_nodeset2_file, create_lookup_df, denormalize_nodes_nodeids, \
     denormalize_references_nodeids
-from typing import List, Optional, Union
+from typing import List, Optional, Union, Dict
 from io import StringIO
 from datetime import datetime
 
@@ -20,11 +20,26 @@ class UAGraph:
         self.references['ReferenceType'] = self.references['ReferenceType'].astype(pd.Int32Dtype())
         self.namespaces = namespaces
 
-    def from_path(path: str) -> 'UAGraph':
-        parse_dict = parse_xml_dir(path)
-        return UAGraph(nodes=parse_dict['nodes'],
-                       references=parse_dict['references'],
-                       namespaces=parse_dict['namespaces'])
+    def from_path(
+        path: str, namespace_dict: Optional[Dict[int, str]] = None
+    ) -> "UAGraph":
+        if namespace_dict:
+            namespace_list = []
+            max_namespace = max(namespace_dict.keys()) + 1
+            for namespace_index in range(0, max_namespace):
+                if namespace_index in namespace_dict.keys():
+                    namespace_list.append(namespace_dict[namespace_index])
+                else:
+                    namespace_list.append("None")
+            parse_dict = parse_xml_dir(path, namespace_list)
+        else:
+            parse_dict = parse_xml_dir(path)
+
+        return UAGraph(
+            nodes=parse_dict["nodes"],
+            references=parse_dict["references"],
+            namespaces=parse_dict["namespaces"],
+        )
 
     def from_file_list(file_list: List[str]) -> 'UAGraph':
         parse_dict = parse_xml_files(file_list)
