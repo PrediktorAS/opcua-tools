@@ -13,21 +13,26 @@
 # limitations under the License.
 
 import opcua_tools as ot
-from opcua_tools.nodeset_generator import denormalize_nodes_nodeids, denormalize_references_nodeids
+from opcua_tools.nodeset_generator import (
+    denormalize_nodes_nodeids,
+    denormalize_references_nodeids,
+)
 import os
+
 PATH_HERE = os.path.dirname(__file__)
 
-def test_values_correct():
-    parse_dict = ot.parse_xml_dir(PATH_HERE + '/testdata/paper_example')
 
-    nodes = parse_dict['nodes']
-    references = parse_dict['references']
-    lookup_df = parse_dict['lookup_df']
+def test_values_correct():
+    parse_dict = ot.parse_xml_dir(PATH_HERE + "/testdata/paper_example")
+
+    nodes = parse_dict["nodes"]
+    references = parse_dict["references"]
+    lookup_df = parse_dict["lookup_df"]
     nodes = denormalize_nodes_nodeids(nodes, lookup_df)
     references = denormalize_references_nodeids(references, lookup_df)
-    nodes = nodes.drop(columns=['id'])
+    nodes = nodes.drop(columns=["id"])
     nodes = nodes.sort_values(by=nodes.columns.values.tolist()).reset_index(drop=True)
 
-    nodes = nodes[nodes['ns'] == 1] #Select only example namespace.
+    nodes = nodes[nodes["ns"] == 1]  # Select only example namespace.
 
-    nodes.to_csv(PATH_HERE + '/expected/paper_example/nodes.csv', index=False)
+    nodes.to_csv(PATH_HERE + "/expected/paper_example/nodes.csv", index=False)

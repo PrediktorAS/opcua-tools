@@ -22,13 +22,13 @@ from xml.sax.saxutils import escape
 
 
 class NodeIdType(Enum):
-    NUMERIC = 'i'
-    STRING = 's'
-    GUID = 'g'
-    OPAQUE = 'b'
+    NUMERIC = "i"
+    STRING = "s"
+    GUID = "g"
+    OPAQUE = "b"
 
     def __repr__(self):
-        return 'NodeIdType' + '.' + self.name
+        return "NodeIdType" + "." + self.name
 
 
 UAXMLNS_ATTRIB = 'xmlns="http://opcfoundation.org/UA/2008/02/Types.xsd"'
@@ -42,13 +42,17 @@ class UAData(ABC):
     def xml_encode(self, include_xmlns: bool) -> str:
         pass
 
-    def __lt__(self, other): return lt(self, other)
+    def __lt__(self, other):
+        return lt(self, other)
 
-    def __gt__(self, other): return gt(self, other)
+    def __gt__(self, other):
+        return gt(self, other)
 
-    def __le__(self, other): return le(self, other)
+    def __le__(self, other):
+        return le(self, other)
 
-    def __ge__(self, other): return ge(self, other)
+    def __ge__(self, other):
+        return ge(self, other)
 
 
 @dataclass(eq=True, frozen=True)
@@ -60,10 +64,10 @@ class DataTypeField(UAData):
     def xml_encode(self, include_xmlns: bool) -> str:
         x = '<Field Name="' + self.name + '" Value="' + self.value + '"'
         if include_xmlns:
-            x += ' ' + UAXMLNS_ATTRIB
-        x += '>'
-        x += '<Description>' + self.description + '</Description>'
-        x += '</Field>'
+            x += " " + UAXMLNS_ATTRIB
+        x += ">"
+        x += "<Description>" + self.description + "</Description>"
+        x += "</Field>"
         return x
 
 
@@ -76,8 +80,8 @@ class DataTypeDefinition(UAData):
         encodedvalues = [v.xml_encode(include_xmlns=False) for v in self.fields]
         x = '<Definition Name="' + self.name + '"'
         if include_xmlns:
-            x += ' ' + UAXMLNS_ATTRIB
-        x += '>' + '\n'.join(encodedvalues) + '</Definition>'
+            x += " " + UAXMLNS_ATTRIB
+        x += ">" + "\n".join(encodedvalues) + "</Definition>"
         return x
 
 
@@ -93,87 +97,81 @@ class UAInteger(UABuiltIn):  # TODO make unsigned / signed integers type
 
 @dataclass(eq=True, frozen=True)
 class UASByte(UAInteger):
-
     def xml_encode(self, include_xmlns: bool) -> str:
-        x = '<SByte'
+        x = "<SByte"
         if include_xmlns:
-            x += ' ' + UAXMLNS_ATTRIB
-        x += '>' + (str(self.value) if self.value is not None else '') + '</SByte>'
+            x += " " + UAXMLNS_ATTRIB
+        x += ">" + (str(self.value) if self.value is not None else "") + "</SByte>"
         return x
 
 
 @dataclass(eq=True, frozen=True)
 class UAByte(UAInteger):
-
     def xml_encode(self, include_xmlns: bool) -> str:
-        x = '<UAByte'
+        x = "<UAByte"
         if include_xmlns:
-            x += ' ' + UAXMLNS_ATTRIB
-        x += '>' + (str(self.value) if self.value is not None else '') + '</UAByte>'
+            x += " " + UAXMLNS_ATTRIB
+        x += ">" + (str(self.value) if self.value is not None else "") + "</UAByte>"
         return x
 
 
 @dataclass(eq=True, frozen=True)
 class UAInt16(UAInteger):
-
     def xml_encode(self, include_xmlns: bool) -> str:
-        x = '<Int16'
+        x = "<Int16"
         if include_xmlns:
-            x += ' ' + UAXMLNS_ATTRIB
-        x += '>' + (str(self.value) if self.value is not None else '') + '</Int16>'
+            x += " " + UAXMLNS_ATTRIB
+        x += ">" + (str(self.value) if self.value is not None else "") + "</Int16>"
         return x
 
 
 @dataclass(eq=True, frozen=True)
 class UAUInt16(UAInteger):
-
     def xml_encode(self, include_xmlns: bool) -> str:
-        x = '<UInt16'
+        x = "<UInt16"
         if include_xmlns:
-            x += ' ' + UAXMLNS_ATTRIB
-        x += '>' + (str(self.value) if self.value is not None else '') + '</UInt16>'
+            x += " " + UAXMLNS_ATTRIB
+        x += ">" + (str(self.value) if self.value is not None else "") + "</UInt16>"
         return x
 
 
 @dataclass(eq=True, frozen=True)
 class UAInt32(UAInteger):
-
     def xml_encode(self, include_xmlns: bool) -> str:
-        x = '<Int32'
+        x = "<Int32"
         if include_xmlns:
-            x += ' ' + UAXMLNS_ATTRIB
-        x += '>' + (str(self.value) if self.value is not None else '') + '</Int32>'
+            x += " " + UAXMLNS_ATTRIB
+        x += ">" + (str(self.value) if self.value is not None else "") + "</Int32>"
         return x
 
 
 @dataclass(eq=True, frozen=True)
 class UAUInt32(UAInteger):
-
     def xml_encode(self, include_xmlns: bool) -> str:
-        x = '<UInt32'
+        x = "<UInt32"
         if include_xmlns:
-            x += ' ' + UAXMLNS_ATTRIB
-        x += '>' + (str(self.value) if self.value is not None else '') + '</UInt32>'
+            x += " " + UAXMLNS_ATTRIB
+        x += ">" + (str(self.value) if self.value is not None else "") + "</UInt32>"
         return x
 
 
 @dataclass(eq=True, frozen=True)
 class UAInt64(UAInteger):
     def xml_encode(self, include_xmlns: bool) -> str:
-        x = '<Int64'
+        x = "<Int64"
         if include_xmlns:
-            x += ' ' + UAXMLNS_ATTRIB
-        x += '>' + (str(self.value) if self.value is not None else '') + '</Int64>'
+            x += " " + UAXMLNS_ATTRIB
+        x += ">" + (str(self.value) if self.value is not None else "") + "</Int64>"
         return x
 
 
 @dataclass(eq=True, frozen=True)
 class UAUInt64(UAInteger):
     def xml_encode(self, include_xmlns: bool) -> str:
-        x = '<UInt64'
+        x = "<UInt64"
         if include_xmlns:
-            x += ' ' + UAXMLNS_ATTRIB
-        x += '>' + (str(self.value) if self.value is not None else '') + '</UInt64>'
+            x += " " + UAXMLNS_ATTRIB
+        x += ">" + (str(self.value) if self.value is not None else "") + "</UInt64>"
         return x
 
 
@@ -185,20 +183,20 @@ class UAFloatingPoint(UABuiltIn):
 @dataclass(eq=True, frozen=True)
 class UAFloat(UAFloatingPoint):
     def xml_encode(self, include_xmlns: bool) -> str:
-        x = '<Float'
+        x = "<Float"
         if include_xmlns:
-            x += ' ' + UAXMLNS_ATTRIB
-        x += '>' + (str(self.value) if self.value is not None else '') + '</Float>'
+            x += " " + UAXMLNS_ATTRIB
+        x += ">" + (str(self.value) if self.value is not None else "") + "</Float>"
         return x
 
 
 @dataclass(eq=True, frozen=True)
 class UADouble(UAFloatingPoint):
     def xml_encode(self, include_xmlns: bool) -> str:
-        x = '<Double'
+        x = "<Double"
         if include_xmlns:
-            x += ' ' + UAXMLNS_ATTRIB
-        x += '>' + (str(self.value) if self.value is not None else '') + '</Double>'
+            x += " " + UAXMLNS_ATTRIB
+        x += ">" + (str(self.value) if self.value is not None else "") + "</Double>"
         return x
 
 
@@ -207,10 +205,14 @@ class UAString(UABuiltIn):
     value: Optional[str]
 
     def xml_encode(self, include_xmlns: bool) -> str:
-        x = '<String'
+        x = "<String"
         if include_xmlns:
-            x += ' ' + UAXMLNS_ATTRIB
-        x += '>' + (escape(str(self.value)) if self.value is not None else '') + '</String>'
+            x += " " + UAXMLNS_ATTRIB
+        x += (
+            ">"
+            + (escape(str(self.value)) if self.value is not None else "")
+            + "</String>"
+        )
         return x
 
 
@@ -219,10 +221,14 @@ class UADateTime(UABuiltIn):
     value: datetime
 
     def xml_encode(self, include_xmlns: bool) -> str:
-        x = '<DateTime'
+        x = "<DateTime"
         if include_xmlns:
-            x += ' ' + UAXMLNS_ATTRIB
-        x += '>' + (self.value.isoformat() if self.value is not None else '') + '</DateTime>'
+            x += " " + UAXMLNS_ATTRIB
+        x += (
+            ">"
+            + (self.value.isoformat() if self.value is not None else "")
+            + "</DateTime>"
+        )
         return x
 
 
@@ -236,10 +242,14 @@ class UAByteString(UABuiltIn):
     value: Optional[ByteString]
 
     def xml_encode(self, include_xmlns: bool) -> str:
-        x = '<ByteString '
+        x = "<ByteString "
         if include_xmlns:
-            x += ' ' + UAXMLNS_ATTRIB
-        x += '>' + (b64encode(self.value).decode('utf-8') if self.value is not None else '') + '</ByteString>'
+            x += " " + UAXMLNS_ATTRIB
+        x += (
+            ">"
+            + (b64encode(self.value).decode("utf-8") if self.value is not None else "")
+            + "</ByteString>"
+        )
         return x
 
 
@@ -248,10 +258,18 @@ class UABoolean(UABuiltIn):
     value: Optional[bool]
 
     def xml_encode(self, include_xmlns: bool) -> str:
-        x = '<Boolean '
+        x = "<Boolean "
         if include_xmlns:
-            x += ' ' + UAXMLNS_ATTRIB
-        x += '>' + (('true' if self.value is True else 'false') if self.value is not None else '') + '</Boolean>'
+            x += " " + UAXMLNS_ATTRIB
+        x += (
+            ">"
+            + (
+                ("true" if self.value is True else "false")
+                if self.value is not None
+                else ""
+            )
+            + "</Boolean>"
+        )
         return x
 
 
@@ -268,15 +286,15 @@ class UANodeId(UAData):
 
     def __str__(self):
         if self.namespace == 0:
-            return f'{self.nodeid_type.value}={self.value}'
+            return f"{self.nodeid_type.value}={self.value}"
         else:
-            return f'ns={self.namespace};{self.nodeid_type.value}={self.value}'
+            return f"ns={self.namespace};{self.nodeid_type.value}={self.value}"
 
     def xml_encode(self, include_xmlns: bool) -> str:
-        x = '<Identifier'
+        x = "<Identifier"
         if include_xmlns:
-            x += ' ' + UAXMLNS_ATTRIB
-        x += '>' + self.__str__() + '</Identifier>'
+            x += " " + UAXMLNS_ATTRIB
+        x += ">" + self.__str__() + "</Identifier>"
         return x
 
 
@@ -306,13 +324,13 @@ class UALocalizedText(UABuiltIn):
     locale: Optional[str]
 
     def xml_encode(self, include_xmlns: bool) -> str:
-        x = '<LocalizedText'
+        x = "<LocalizedText"
         if include_xmlns:
-            x += ' ' + UAXMLNS_ATTRIB
-        x += '>'
-        x += '<Locale>' + (self.locale if self.locale is not None else '') + '</Locale>'
-        x += '<Text>' + (escape(self.text) if self.text is not None else '') + '</Text>'
-        x += '</LocalizedText>'
+            x += " " + UAXMLNS_ATTRIB
+        x += ">"
+        x += "<Locale>" + (self.locale if self.locale is not None else "") + "</Locale>"
+        x += "<Text>" + (escape(self.text) if self.text is not None else "") + "</Text>"
+        x += "</LocalizedText>"
         return x
 
 
@@ -360,14 +378,29 @@ class UnparsedUAExtensionObject(UABuiltIn):
     body: Optional[Union[UAByteString, UAStructure]]
 
     def xml_encode(self, include_xmlns: bool) -> str:
-        x = '<ExtensionObject'
+        x = "<ExtensionObject"
         if include_xmlns:
-            x += ' ' + UAXMLNS_ATTRIB
-        x += '>'
-        x += '<TypeId>' + (
-            self.type_nodeid.xml_encode(include_xmlns=False) if self.type_nodeid is not None else '') + '</TypeId>'
-        x += '<Body>' + (self.body.xml_encode(include_xmlns=False) if self.body is not None else '') + '</Body>'
-        x += '</ExtensionObject>'
+            x += " " + UAXMLNS_ATTRIB
+        x += ">"
+        x += (
+            "<TypeId>"
+            + (
+                self.type_nodeid.xml_encode(include_xmlns=False)
+                if self.type_nodeid is not None
+                else ""
+            )
+            + "</TypeId>"
+        )
+        x += (
+            "<Body>"
+            + (
+                self.body.xml_encode(include_xmlns=False)
+                if self.body is not None
+                else ""
+            )
+            + "</Body>"
+        )
+        x += "</ExtensionObject>"
         return x
 
 
@@ -379,24 +412,43 @@ class UAEngineeringUnits(UAData):
     namespace_uri: str
 
     def xml_encode(self, include_xmlns: bool) -> str:
-        body_contents = '<EUInformation>'
-        body_contents += '<NamespaceUri>' + self.namespace_uri + '</NamespaceUri>'
-        body_contents += '<UnitId>' + str(self.unit_id) + '</UnitId>'
-        body_contents += '<DisplayName>'
-        body_contents += '<Locale>' + (
-            self.display_name.locale if self.display_name.locale is not None else 'en') + '</Locale>'
-        body_contents += '<Text>' + (self.display_name.text if self.display_name.text is not None else '') + '</Text>'
-        body_contents += '</DisplayName>'
-        body_contents += '<Description>'
-        body_contents += '<Locale>' + (
-            self.description.locale if self.description.locale is not None else 'en') + '</Locale>'
-        body_contents += '<Text>' + (self.description.text if self.description.text is not None else '') + '</Text>'
-        body_contents += '</Description>'
-        body_contents += '</EUInformation>'
+        body_contents = "<EUInformation>"
+        body_contents += "<NamespaceUri>" + self.namespace_uri + "</NamespaceUri>"
+        body_contents += "<UnitId>" + str(self.unit_id) + "</UnitId>"
+        body_contents += "<DisplayName>"
+        body_contents += (
+            "<Locale>"
+            + (
+                self.display_name.locale
+                if self.display_name.locale is not None
+                else "en"
+            )
+            + "</Locale>"
+        )
+        body_contents += (
+            "<Text>"
+            + (self.display_name.text if self.display_name.text is not None else "")
+            + "</Text>"
+        )
+        body_contents += "</DisplayName>"
+        body_contents += "<Description>"
+        body_contents += (
+            "<Locale>"
+            + (self.description.locale if self.description.locale is not None else "en")
+            + "</Locale>"
+        )
+        body_contents += (
+            "<Text>"
+            + (self.description.text if self.description.text is not None else "")
+            + "</Text>"
+        )
+        body_contents += "</Description>"
+        body_contents += "</EUInformation>"
 
         # Todo fix hacky implementation
-        return UnparsedUAExtensionObject(UANodeId(0, NodeIdType.NUMERIC, '888'),
-                                         UAStructure(xmlstring=body_contents)).xml_encode(include_xmlns)
+        return UnparsedUAExtensionObject(
+            UANodeId(0, NodeIdType.NUMERIC, "888"), UAStructure(xmlstring=body_contents)
+        ).xml_encode(include_xmlns)
 
 
 @dataclass(eq=True, frozen=True)
@@ -424,10 +476,10 @@ class UAListOf(UAData):
         if self.value is not None:
             encodedvalues = [v.xml_encode(include_xmlns=False) for v in self.value]
 
-        x = '<ListOf' + self.typename + ' '
+        x = "<ListOf" + self.typename + " "
         if include_xmlns:
-            x += ' ' + UAXMLNS_ATTRIB
-        x += '>' + ''.join(encodedvalues) + '</ListOf' + self.typename + '>'
+            x += " " + UAXMLNS_ATTRIB
+        x += ">" + "".join(encodedvalues) + "</ListOf" + self.typename + ">"
         return x
 
 
