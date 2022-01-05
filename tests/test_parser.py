@@ -61,3 +61,65 @@ def test_parse_file_list():
             xml_list.append(full_xml_path)
 
     ot.parse_xml_files(xml_list)
+
+
+def test_parse_no_namespace_list():
+    path_to_xmls = str(Path(PATH_HERE) / "testdata" / "paper_example")
+    ua_graph = ot.UAGraph.from_path(path_to_xmls)
+
+    # Checking that content is in correct namespace
+    i_scd_ca_row = ua_graph.nodes[ua_graph.nodes["DisplayName"] == "I_SCD_CA"]
+    oil_and_gas_system_row = ua_graph.nodes[
+        ua_graph.nodes["DisplayName"] == "OilAndGasSystemType"
+    ]
+    site1_row = ua_graph.nodes[ua_graph.nodes["DisplayName"] == "Site1"]
+
+    assert i_scd_ca_row["ns"].values[0] == 3
+    assert oil_and_gas_system_row["ns"].values[0] == 2
+    assert site1_row["ns"].values[0] == 1
+
+
+def test_parse_regular_namespace_list():
+    namespace_dict = {
+        0: "http://opcfoundation.org/UA/",
+        1: "http://prediktor.no/apis/ua/",
+        2: "http://prediktor.com/paper_example",
+        3: "http://prediktor.com/iec63131_fragment",
+        4: "http://prediktor.com/RDS-OG-Fragment",
+    }
+    path_to_xmls = str(Path(PATH_HERE) / "testdata" / "paper_example")
+    ua_graph = ot.UAGraph.from_path(path_to_xmls, namespace_dict)
+
+    # Checking that content is in correct namespace
+    i_scd_ca_row = ua_graph.nodes[ua_graph.nodes["DisplayName"] == "I_SCD_CA"]
+    oil_and_gas_system_row = ua_graph.nodes[
+        ua_graph.nodes["DisplayName"] == "OilAndGasSystemType"
+    ]
+    site1_row = ua_graph.nodes[ua_graph.nodes["DisplayName"] == "Site1"]
+
+    assert i_scd_ca_row["ns"].values[0] == 3
+    assert oil_and_gas_system_row["ns"].values[0] == 4
+    assert site1_row["ns"].values[0] == 2
+
+
+def test_parse_scattered_namespace_list():
+    namespace_dict = {
+        0: "http://opcfoundation.org/UA/",
+        7: "http://prediktor.no/apis/ua/",
+        8: "http://prediktor.com/paper_example",
+        3: "http://prediktor.com/iec63131_fragment",
+        6: "http://prediktor.com/RDS-OG-Fragment",
+    }
+    path_to_xmls = str(Path(PATH_HERE) / "testdata" / "paper_example")
+    ua_graph = ot.UAGraph.from_path(path_to_xmls, namespace_dict)
+
+    # Checking that content is in correct namespace
+    i_scd_ca_row = ua_graph.nodes[ua_graph.nodes["DisplayName"] == "I_SCD_CA"]
+    oil_and_gas_system_row = ua_graph.nodes[
+        ua_graph.nodes["DisplayName"] == "OilAndGasSystemType"
+    ]
+    site1_row = ua_graph.nodes[ua_graph.nodes["DisplayName"] == "Site1"]
+
+    assert i_scd_ca_row["ns"].values[0] == 3
+    assert oil_and_gas_system_row["ns"].values[0] == 6
+    assert site1_row["ns"].values[0] == 8
