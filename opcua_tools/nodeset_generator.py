@@ -156,12 +156,15 @@ def generate_nodes_xml(nodes: pd.DataFrame, references: pd.DataFrame, lookup_df:
     nodes['nodexml'] = nodes['nodexml'] + ' BrowseName="' + nodes['BrowseNameNamespace'].astype(str) + ':' + nodes[
         'BrowseName'] + '" '
     for a in ['DataType', 'ValueRank', 'AccessLevel', 'UserAccessLevel', 'IsAbstract', 'Symmetric', 'ParentNodeId',
-              'ArrayDimensions', 'MinimumSamplingInterval', 'MethodDeclarationId', 'EventNotifier']:
+              'ArrayDimensions', 'MinimumSamplingInterval', 'MethodDeclarationId', 'EventNotifier', 'Historizing']:
         if a in nodes.columns.values:
             notna = ~nodes[a].isna()
             haslen = nodes[a].astype(str).str.len() > 0
-            nodes.loc[notna & haslen, 'nodexml'] = nodes.loc[notna & haslen, 'nodexml'] + a + '="' + nodes.loc[
-                notna & haslen, a].astype(str) + '" '
+            if a in ('IsAbstract', 'Symmetric', 'Historizing'):
+                use_value = nodes.loc[notna & haslen, a].astype(str).str.lower()
+            else:
+                use_value = nodes.loc[notna & haslen, a].astype(str)
+            nodes.loc[notna & haslen, 'nodexml'] = nodes.loc[notna & haslen, 'nodexml'] + a + '="' + use_value + '" '
 
     nodes['nodexml'] = nodes['nodexml'] + '>'
     nodes['nodexml'] = nodes['nodexml'] + '<DisplayName>' + nodes['DisplayName'] + '</DisplayName>'
