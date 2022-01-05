@@ -14,6 +14,11 @@
 
 from .navigation import *
 from .nodeset_generator import create_nodeset2_file, validate_nodeset2_file
-from .nodeset_parser import parse_xml_dir, parse_xml_files, parse_xml, normalize_wrt_nodeid
+from .nodeset_parser import (
+    parse_xml_dir,
+    parse_xml_files,
+    parse_xml,
+    normalize_wrt_nodeid,
+)
 from .ua_data_types import *
 from .ua_graph import UAGraph

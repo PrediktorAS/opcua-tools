@@ -36,8 +36,11 @@ setup(
     packages=["opcua_tools"],
     include_package_data=True,
     install_requires=[
-        "lxml>=4.6.2", "lxml<5.0",
-        "pandas>=1.2.2", "pandas<2.0",
-        "scipy>=1.6.1", "scipy<2.0",
-    ]
+        "lxml>=4.6.2",
+        "lxml<5.0",
+        "pandas>=1.2.2",
+        "pandas<2.0",
+        "scipy>=1.6.1",
+        "scipy<2.0",
+    ],
 )
