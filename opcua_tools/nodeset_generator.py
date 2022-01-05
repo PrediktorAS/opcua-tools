@@ -210,7 +210,7 @@ def generate_nodes_xml(
         "MinimumSamplingInterval",
         "MethodDeclarationId",
         "EventNotifier",
-        "Historizing"
+        "Historizing",
     ]:
         if a in nodes.columns.values:
             notna = ~nodes[a].isna()
@@ -221,11 +221,7 @@ def generate_nodes_xml(
                 use_value = nodes.loc[notna & haslen, a].astype(str)
 
             nodes.loc[notna & haslen, "nodexml"] = (
-                nodes.loc[notna & haslen, "nodexml"]
-                + a
-                + '="'
-                + use_value
-                + '" '
+                nodes.loc[notna & haslen, "nodexml"] + a + '="' + use_value + '" '
             )
 
     nodes["nodexml"] = nodes["nodexml"] + ">"
