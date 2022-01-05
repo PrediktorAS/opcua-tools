@@ -1,118 +1,196 @@
 import pandas as pd
 from opcua_tools import UANodeId
 
-from .nodeset_parser import parse_xml_dir
+from .nodeset_parser import parse_xml_dir, parse_xml_files
 from .navigation import resolve_ids_from_browsenames
-from .nodeset_generator import create_nodeset2_file, create_lookup_df, denormalize_nodes_nodeids, \
-    denormalize_references_nodeids
-from typing import List, Optional, Union
+from .nodeset_generator import (
+    create_nodeset2_file,
+    create_lookup_df,
+    denormalize_nodes_nodeids,
+    denormalize_references_nodeids,
+)
+from typing import List, Optional, Union, Dict
 from io import StringIO
 from datetime import datetime
 
 
 class UAGraph:
-    def __init__(self, nodes: pd.DataFrame, references: pd.DataFrame, namespaces: List[str]):
+    def __init__(
+        self, nodes: pd.DataFrame, references: pd.DataFrame, namespaces: List[str]
+    ):
         self.nodes = nodes
-        self.nodes['id'] = self.nodes['id'].astype(pd.Int32Dtype())
+        self.nodes["id"] = self.nodes["id"].astype(pd.Int32Dtype())
         self.references = references
-        self.references['Src'] = self.references['Src'].astype(pd.Int32Dtype())
-        self.references['Trg'] = self.references['Trg'].astype(pd.Int32Dtype())
-        self.references['ReferenceType'] = self.references['ReferenceType'].astype(pd.Int32Dtype())
+        self.references["Src"] = self.references["Src"].astype(pd.Int32Dtype())
+        self.references["Trg"] = self.references["Trg"].astype(pd.Int32Dtype())
+        self.references["ReferenceType"] = self.references["ReferenceType"].astype(
+            pd.Int32Dtype()
+        )
         self.namespaces = namespaces
 
-    def from_path(path: str) -> 'UAGraph':
-        parse_dict = parse_xml_dir(path)
-        return UAGraph(nodes=parse_dict['nodes'],
-                       references=parse_dict['references'],
-                       namespaces=parse_dict['namespaces'])
+    def from_path(
+        path: str, namespace_dict: Optional[Dict[int, str]] = None
+    ) -> "UAGraph":
+        if namespace_dict:
+            namespace_list = []
+            max_namespace = max(namespace_dict.keys()) + 1
+            for namespace_index in range(0, max_namespace):
+                if namespace_index in namespace_dict.keys():
+                    namespace_list.append(namespace_dict[namespace_index])
+                else:
+                    namespace_list.append("None")
+            parse_dict = parse_xml_dir(path, namespace_list)
+        else:
+            parse_dict = parse_xml_dir(path)
+
+        return UAGraph(
+            nodes=parse_dict["nodes"],
+            references=parse_dict["references"],
+            namespaces=parse_dict["namespaces"],
+        )
+
+    def from_file_list(file_list: List[str]) -> "UAGraph":
+        parse_dict = parse_xml_files(file_list)
+        return UAGraph(
+            nodes=parse_dict["nodes"],
+            references=parse_dict["references"],
+            namespaces=parse_dict["namespaces"],
+        )
 
     def all_references_of_type(self, browsename: str):
-        return self.references[self.references['ReferenceType'] == self.reference_type_by_browsename(browsename)].copy()
+        return self.references[
+            self.references["ReferenceType"]
+            == self.reference_type_by_browsename(browsename)
+        ].copy()
 
     def reference_type_by_browsename(self, browsename: str) -> int:
-        if browsename is None or browsename == '':
-            raise ValueError('"browsename" must not be None or empty string, should be BrowseName of ReferenceType')
+        if browsename is None or browsename == "":
+            raise ValueError(
+                '"browsename" must not be None or empty string, should be BrowseName of ReferenceType'
+            )
 
-        reference_type_nodes = self.nodes[self.nodes['NodeClass'] == 'UAReferenceType']
-        reference_type_ids = resolve_ids_from_browsenames(nodes=reference_type_nodes, browsenames=[browsename])
+        reference_type_nodes = self.nodes[self.nodes["NodeClass"] == "UAReferenceType"]
+        reference_type_ids = resolve_ids_from_browsenames(
+            nodes=reference_type_nodes, browsenames=[browsename]
+        )
         if len(reference_type_ids) == 0:
-            raise ValueError('Could not find ReferenceType ' + browsename)
+            raise ValueError("Could not find ReferenceType " + browsename)
         elif len(reference_type_ids) > 1:
-            raise ValueError('Multiple hits for ReferenceType ' + browsename + ' please specify namespace')
+            raise ValueError(
+                "Multiple hits for ReferenceType "
+                + browsename
+                + " please specify namespace"
+            )
         else:
             reference_type_id = reference_type_ids.iloc[0]
 
         return int(reference_type_id)
 
     def object_type_by_browsename(self, browsename: str) -> int:
-        if browsename is None or browsename == '':
-            raise ValueError('"browsename" must not be None or empty string, should be BrowseName of ObjectType')
+        if browsename is None or browsename == "":
+            raise ValueError(
+                '"browsename" must not be None or empty string, should be BrowseName of ObjectType'
+            )
 
-        object_type_nodes = self.nodes[self.nodes['NodeClass'] == 'UAObjectType']
-        object_type_ids = resolve_ids_from_browsenames(nodes=object_type_nodes, browsenames=[browsename])
+        object_type_nodes = self.nodes[self.nodes["NodeClass"] == "UAObjectType"]
+        object_type_ids = resolve_ids_from_browsenames(
+            nodes=object_type_nodes, browsenames=[browsename]
+        )
         if len(object_type_ids) == 0:
-            raise ValueError('Could not find object type ' + browsename)
+            raise ValueError("Could not find object type " + browsename)
         elif len(object_type_ids) > 1:
-            raise ValueError('Multiple hits for object type ' + browsename + ' please specify namespace')
+            raise ValueError(
+                "Multiple hits for object type "
+                + browsename
+                + " please specify namespace"
+            )
         else:
             object_type_id = object_type_ids.iloc[0]
 
         return int(object_type_id)
 
     def variable_type_by_browsename(self, browsename: str) -> int:
-        if browsename is None or browsename == '':
-            raise ValueError('"browsename" must not be None or empty string, should be BrowseName of VariableType')
+        if browsename is None or browsename == "":
+            raise ValueError(
+                '"browsename" must not be None or empty string, should be BrowseName of VariableType'
+            )
 
-        variable_type_nodes = self.nodes[self.nodes['NodeClass'] == 'UAVariableType']
-        variable_type_ids = resolve_ids_from_browsenames(nodes=variable_type_nodes, browsenames=[browsename])
+        variable_type_nodes = self.nodes[self.nodes["NodeClass"] == "UAVariableType"]
+        variable_type_ids = resolve_ids_from_browsenames(
+            nodes=variable_type_nodes, browsenames=[browsename]
+        )
         if len(variable_type_ids) == 0:
-            raise ValueError('Could not find variable type ' + browsename)
+            raise ValueError("Could not find variable type " + browsename)
         elif len(variable_type_ids) > 1:
-            raise ValueError('Multiple hits for variable type ' + browsename + ' please specify namespace')
+            raise ValueError(
+                "Multiple hits for variable type "
+                + browsename
+                + " please specify namespace"
+            )
         else:
             variable_type_id = variable_type_ids.iloc[0]
 
         return int(variable_type_id)
 
     def data_type_by_browsename(self, browsename: str) -> int:
-        if browsename is None or browsename == '':
-            raise ValueError('"browsename" must not be None or empty string, should be BrowseName of DataType')
+        if browsename is None or browsename == "":
+            raise ValueError(
+                '"browsename" must not be None or empty string, should be BrowseName of DataType'
+            )
 
-        data_type_nodes = self.nodes[self.nodes['NodeClass'] == 'UADataType']
-        data_type_ids = resolve_ids_from_browsenames(nodes=data_type_nodes, browsenames=[browsename])
+        data_type_nodes = self.nodes[self.nodes["NodeClass"] == "UADataType"]
+        data_type_ids = resolve_ids_from_browsenames(
+            nodes=data_type_nodes, browsenames=[browsename]
+        )
         if len(data_type_ids) == 0:
-            raise ValueError('Could not find data type ' + browsename)
+            raise ValueError("Could not find data type " + browsename)
         elif len(data_type_ids) > 1:
-            raise ValueError('Multiple hits for data type ' + browsename + ' please specify namespace')
+            raise ValueError(
+                "Multiple hits for data type "
+                + browsename
+                + " please specify namespace"
+            )
         else:
             data_type_id = data_type_ids.iloc[0]
 
         return int(data_type_id)
 
     def object_by_browsename(self, browsename: str) -> int:
-        if browsename is None or browsename == '':
-            raise ValueError('"browsename" must not be None or empty string, should be BrowseName of Object')
+        if browsename is None or browsename == "":
+            raise ValueError(
+                '"browsename" must not be None or empty string, should be BrowseName of Object'
+            )
 
-        object_nodes = self.nodes[self.nodes['NodeClass'] == 'UAObject']
-        object_ids = resolve_ids_from_browsenames(nodes=object_nodes, browsenames=[browsename])
+        object_nodes = self.nodes[self.nodes["NodeClass"] == "UAObject"]
+        object_ids = resolve_ids_from_browsenames(
+            nodes=object_nodes, browsenames=[browsename]
+        )
         if len(object_ids) == 0:
-            raise ValueError('Could not find object ' + browsename)
+            raise ValueError("Could not find object " + browsename)
         elif len(object_ids) > 1:
-            raise ValueError('Multiple hits for object ' + browsename + ' please specify namespace')
+            raise ValueError(
+                "Multiple hits for object " + browsename + " please specify namespace"
+            )
         else:
             reference_type_id = object_ids.iloc[0]
 
         return int(reference_type_id)
 
-    def write_nodeset(self, filename_or_stringio: Union[str, StringIO], namespace_uri: str,
-                      include_outgoing_instance_level_references: Optional[bool] = True,
-                      last_modified: Optional[datetime] = None,
-                      publication_date: Optional[datetime] = None):
+    def write_nodeset(
+        self,
+        filename_or_stringio: Union[str, StringIO],
+        namespace_uri: str,
+        include_outgoing_instance_level_references: Optional[bool] = True,
+        last_modified: Optional[datetime] = None,
+        publication_date: Optional[datetime] = None,
+    ):
         if namespace_uri not in self.namespaces:
-            raise ValueError('Could not find namespace uri: ' + namespace_uri)
+            raise ValueError("Could not find namespace uri: " + namespace_uri)
         namespace_index = self.namespaces.index(namespace_uri)
         if not include_outgoing_instance_level_references:
-            use_references = self.remove_instance_level_outgoing_references(namespace_index=namespace_index)
+            use_references = self.remove_instance_level_outgoing_references(
+                namespace_index=namespace_index
+            )
         else:
             use_references = self.references
 
@@ -122,32 +200,43 @@ class UAGraph:
             if i != 0 and i != namespace_index:
                 new_namespaces_list.append(n)
 
-        remapper = {i: new_namespaces_list.index(n) for i, n in enumerate(self.namespaces)}
+        remapper = {
+            i: new_namespaces_list.index(n) for i, n in enumerate(self.namespaces)
+        }
         use_nodes = self.nodes.copy()
-        use_nodes['BrowseNameNamespace'] = use_nodes['BrowseNameNamespace'].astype(pd.Int32Dtype())
-        use_nodes['NodeId'] = use_nodes['NodeId'].map(
-            lambda x: UANodeId(namespace=remapper[x.namespace],
-                               value=x.value,
-                               nodeid_type=x.nodeid_type))
-        use_nodes['BrowseNameNamespace'] = use_nodes['BrowseNameNamespace'].map(remapper)
+        use_nodes["BrowseNameNamespace"] = use_nodes["BrowseNameNamespace"].astype(
+            pd.Int32Dtype()
+        )
+        use_nodes["NodeId"] = use_nodes["NodeId"].map(
+            lambda x: UANodeId(
+                namespace=remapper[x.namespace],
+                value=x.value,
+                nodeid_type=x.nodeid_type,
+            )
+        )
+        use_nodes["BrowseNameNamespace"] = use_nodes["BrowseNameNamespace"].map(
+            remapper
+        )
 
-        create_nodeset2_file(nodes=use_nodes,
-                             references=use_references,
-                             serialize_namespace=1,
-                             namespaces=new_namespaces_list,
-                             filename_or_stringio=filename_or_stringio,
-                             last_modified=last_modified,
-                             publication_date=publication_date)
+        create_nodeset2_file(
+            nodes=use_nodes,
+            references=use_references,
+            serialize_namespace=1,
+            namespaces=new_namespaces_list,
+            filename_or_stringio=filename_or_stringio,
+            last_modified=last_modified,
+            publication_date=publication_date,
+        )
 
     def get_normalized_nodes_df(self, namespace_uri: Optional[str] = None):
         lookup_df = create_lookup_df(self.nodes)
         if namespace_uri is not None:
             ns = self.namespaces.index(namespace_uri)
-            nodes = self.nodes[self.nodes['ns'] == ns].copy()
+            nodes = self.nodes[self.nodes["ns"] == ns].copy()
         else:
             nodes = self.nodes.copy()
         nodes = denormalize_nodes_nodeids(nodes, lookup_df)
-        nodes = nodes.drop(columns=['id'])
+        nodes = nodes.drop(columns=["id"])
         nodes = nodes.sort_values(by=nodes.columns.values.tolist(), ignore_index=True)
         return nodes
 
@@ -156,38 +245,53 @@ class UAGraph:
 
         if namespace_uri is not None:
             ns = self.namespaces.index(namespace_uri)
-            nodes_ns = self.nodes.loc[self.nodes['ns'] == ns, ['id']].set_index('id')
-            nodes_ns['in_ns'] = True
-            references = self.references.set_index('Src', drop=False).join(nodes_ns).rename(columns={'in_ns': 'src_in_ns'},
-                                                                                            errors='raise')
-            references = references.set_index('Trg', drop=False).join(nodes_ns).rename(columns={'in_ns': 'trg_in_ns'},
-                                                                                       errors='raise')
+            nodes_ns = self.nodes.loc[self.nodes["ns"] == ns, ["id"]].set_index("id")
+            nodes_ns["in_ns"] = True
+            references = (
+                self.references.set_index("Src", drop=False)
+                .join(nodes_ns)
+                .rename(columns={"in_ns": "src_in_ns"}, errors="raise")
+            )
+            references = (
+                references.set_index("Trg", drop=False)
+                .join(nodes_ns)
+                .rename(columns={"in_ns": "trg_in_ns"}, errors="raise")
+            )
             references = references.loc[
-                (references['src_in_ns'] == True) | (references['trg_in_ns'] == True), ['Src', 'Trg',
-                                                                                        'ReferenceType']].copy()
+                (references["src_in_ns"] == True) | (references["trg_in_ns"] == True),
+                ["Src", "Trg", "ReferenceType"],
+            ].copy()
         else:
             references = self.references.copy()
 
         references = denormalize_references_nodeids(references, lookup_df)
-        references = references.sort_values(by=references.columns.values.tolist(), ignore_index=True)
+        references = references.sort_values(
+            by=references.columns.values.tolist(), ignore_index=True
+        )
         return references
 
-    def remove_instance_level_outgoing_references(self, namespace_index: int) -> pd.DataFrame:
-        hmr = self.reference_type_by_browsename('HasModellingRule')
-        htd = self.reference_type_by_browsename('HasTypeDefinition')
-        self.nodes['ns'] = self.nodes['NodeId'].map(lambda x: x.namespace)
-        ids_in_ns = self.nodes.loc[self.nodes['ns'] == namespace_index, ['id']].copy()
-        ids_in_ns = ids_in_ns.set_index('id', drop=False)
+    def remove_instance_level_outgoing_references(
+        self, namespace_index: int
+    ) -> pd.DataFrame:
+        hmr = self.reference_type_by_browsename("HasModellingRule")
+        htd = self.reference_type_by_browsename("HasTypeDefinition")
+        self.nodes["ns"] = self.nodes["NodeId"].map(lambda x: x.namespace)
+        ids_in_ns = self.nodes.loc[self.nodes["ns"] == namespace_index, ["id"]].copy()
+        ids_in_ns = ids_in_ns.set_index("id", drop=False)
 
-        references = self.references.set_index('Trg', drop=False)
+        references = self.references.set_index("Trg", drop=False)
 
-        references = references[references.index.isin(ids_in_ns.index) |
-                                (references['ReferenceType'] == hmr) |
-                                (references['ReferenceType'] == htd)].copy()
+        references = references[
+            references.index.isin(ids_in_ns.index)
+            | (references["ReferenceType"] == hmr)
+            | (references["ReferenceType"] == htd)
+        ].copy()
 
         return references
 
-    def get_browsenames_for_nodeclass(self, node_class: str, namespace: Optional[int] = None) -> List[str]:
+    def get_browsenames_for_nodeclass(
+        self, node_class: str, namespace: Optional[int] = None
+    ) -> List[str]:
         """This function will provide the option of returning the list of references
         present in the graph. The number of the namespace in which the reference type
         is defined can be specified to further narrow the search. If none is provided
@@ -197,9 +301,7 @@ class UAGraph:
 
         if namespace is not None:
             object_type_nodes.reset_index(inplace=True)
-            mask = (
-                    object_type_nodes["NodeId"].map(lambda x: x.namespace) == namespace
-            )
+            mask = object_type_nodes["NodeId"].map(lambda x: x.namespace) == namespace
             object_type_nodes = object_type_nodes[mask]
 
         return object_type_nodes["BrowseName"].unique().tolist()
@@ -209,12 +311,22 @@ class UAGraph:
 
     def get_instances_with_type_info(self):
         """Returns the UAObjects and the browsename of their type"""
-        nodes = self.nodes[["NodeClass", "BrowseName", "NodeId", "id"]].set_index('id', drop=False)
+        nodes = self.nodes[["NodeClass", "BrowseName", "NodeId", "id"]].set_index(
+            "id", drop=False
+        )
         has_type_def_id = self.reference_type_by_browsename("HasTypeDefinition")
-        htd = self.references.loc[self.references['ReferenceType'] == has_type_def_id, [['Src', 'Trg']]]
-        typeinfo = nodes.rename(columns={'BrowseName': 'TypeBrowseName', 'NodeId': 'TypeNodeId',
-                                         'id': 'Typeid'}, errors='raise').drop(columns=['NodeClass'])
-        htd = htd.set_index('Src').join(nodes).set_index('Trg').join(typeinfo)
+        htd = self.references.loc[
+            self.references["ReferenceType"] == has_type_def_id, [["Src", "Trg"]]
+        ]
+        typeinfo = nodes.rename(
+            columns={
+                "BrowseName": "TypeBrowseName",
+                "NodeId": "TypeNodeId",
+                "id": "Typeid",
+            },
+            errors="raise",
+        ).drop(columns=["NodeClass"])
+        htd = htd.set_index("Src").join(nodes).set_index("Trg").join(typeinfo)
         return htd
 
     def get_enum_dict(self, enum_name: str):
@@ -224,7 +336,7 @@ class UAGraph:
         enum_node = self.nodes[
             (self.nodes.NodeClass == "UADataType")
             & (self.nodes.BrowseName == enum_name)
-            ]
+        ]
 
         if enum_node.shape[0] == 0:
             raise ValueError("The enum was not found in the graph")
@@ -237,7 +349,7 @@ class UAGraph:
         outgoing_reference_row = self.references[
             (self.references.ReferenceType == has_property_id)
             & (self.references.Src == node_id)
-            ]
+        ]
         outgoing_id = outgoing_reference_row["Trg"].values[0]
         has_property_node = self.nodes[self.nodes["id"] == outgoing_id]
         has_property_name = has_property_node["BrowseName"].values[0]
@@ -249,12 +361,12 @@ class UAGraph:
 
         enum_dict = dict()
 
-        if has_property_name == 'EnumStrings':
+        if has_property_name == "EnumStrings":
             ua_list_of = has_property_node["Value"].values[0]
             for localized_text_i, localized_text in enumerate(ua_list_of.value):
                 enum_dict[localized_text_i] = localized_text.text
         else:
-            raise NotImplementedError('EnumValues not implemented')
+            raise NotImplementedError("EnumValues not implemented")
 
         return enum_dict
 
@@ -292,7 +404,7 @@ class UAGraph:
         reference_ids = self.references[
             (self.references["ReferenceType"] == has_type_def)
             & (self.references["Trg"] == object_type_df)
-            ]
+        ]
         return self.nodes.loc[self.nodes["id"].isin(reference_ids["Src"])]
 
     def get_neighboring_nodes_by_browsename(self, browse_name: str, relation: str):
@@ -312,8 +424,8 @@ class UAGraph:
 
         if direction == None:
             raise ValueError(
-                'The relation of the neighbouring nodes must be' +
-                'indicated by setting "relation" to either "outgoing" or "incoming".'
+                "The relation of the neighbouring nodes must be"
+                + 'indicated by setting "relation" to either "outgoing" or "incoming".'
             )
 
         # Creating duplicate for safety's sake

@@ -20,7 +20,7 @@ README = (HERE / "README.md").read_text()
 
 setup(
     name="opcua-tools",
-    version="0.0.68",
+    version="0.0.71",
     description="OPCUA Tools for Python using Pandas DataFrames",
     long_description=README,
     long_description_content_type="text/markdown",
@@ -36,8 +36,11 @@ setup(
     packages=["opcua_tools"],
     include_package_data=True,
     install_requires=[
-        "lxml>=4.6.2", "lxml<5.0",
-        "pandas>=1.2.2", "pandas<2.0",
-        "scipy>=1.6.1", "scipy<2.0",
-    ]
+        "lxml>=4.6.2",
+        "lxml<5.0",
+        "pandas>=1.2.2",
+        "pandas<2.0",
+        "scipy>=1.6.1",
+        "scipy<2.0",
+    ],
 )
