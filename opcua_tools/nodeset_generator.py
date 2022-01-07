@@ -396,6 +396,8 @@ def denormalize_references_nodeids(references, lookup_df):
 
 
 def find_namespaces_in_use(nodes, references, namespace_index):
+    """Find the namespaces which are in use and the BrowseNameNamespaces
+    which are used but already in the list"""
     cs = ["DataType", "ParentNodeId", "MethodDeclarationId"]
     other_nodes = []
     for c in cs:
@@ -431,4 +433,10 @@ def find_namespaces_in_use(nodes, references, namespace_index):
     namespaces_in_use = list(
         nodes.loc[nodes.index.isin(output_nodes.index), "ns"].dropna().unique()
     )
+    # Adding the BrowseNameNamespaces which are not already in the namespace list
+    browsename_namespaces = list(
+        nodes.loc[nodes["ns"] == namespace_index, "BrowseNameNamespace"].unique()
+    )
+    namespaces_in_use = list(set(namespaces_in_use + browsename_namespaces))
+
     return namespaces_in_use

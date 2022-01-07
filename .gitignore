@@ -135,3 +135,6 @@ tests/expected/paper_example/nodes.csv
 
 # Folder for debugging and other
 /scratch
+
+# Ignoring the output from tests
+/tests/output

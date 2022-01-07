@@ -429,8 +429,8 @@ def parse_xml_files(
         df_references_list.append((parse_dict["references"]))
         logger.info("Finished parsing " + str(file))
 
-    nodes = pd.concat(df_nodes_list)
-    references = pd.concat(df_references_list)
+    nodes = pd.concat(df_nodes_list, ignore_index=True)
+    references = pd.concat(df_references_list, ignore_index=True)
     lookup_df = normalize_wrt_nodeid(nodes, references)
     return {
         "nodes": nodes,
