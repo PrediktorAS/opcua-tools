@@ -1,8 +1,10 @@
 import pandas as pd
-from opcua_tools import UANodeId
+from .ua_data_types import UANodeId
 
 from .nodeset_parser import parse_xml_dir, parse_xml_files
 from .navigation import resolve_ids_from_browsenames
+
+import opcua_tools.nodes_manipulation as nodes_manipulation
 from .nodeset_generator import (
     create_nodeset2_file,
     create_lookup_df,
@@ -43,11 +45,15 @@ class UAGraph:
         else:
             parse_dict = parse_xml_dir(path)
 
-        return UAGraph(
+        ua_graph = UAGraph(
             nodes=parse_dict["nodes"],
             references=parse_dict["references"],
             namespaces=parse_dict["namespaces"],
         )
+
+        nodes_manipulation.transform_ints_to_enums(ua_graph)
+
+        return ua_graph
 
     def from_file_list(file_list: List[str]) -> "UAGraph":
         parse_dict = parse_xml_files(file_list)
