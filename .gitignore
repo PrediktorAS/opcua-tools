@@ -132,3 +132,6 @@ dmypy.json
 # Ignore the files that are created/changed by pytest
 tests/expected/generator/nodeset2.xml
 tests/expected/paper_example/nodes.csv
+
+# Folder for debugging and other
+/scratch
