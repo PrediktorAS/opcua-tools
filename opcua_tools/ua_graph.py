@@ -306,6 +306,10 @@ class UAGraph:
 
         return object_type_nodes["BrowseName"].unique().tolist()
 
+    def _get_browsename_from_id(self, id: int) -> str:
+        row = self.nodes[self.nodes["id"] == id]
+        return row["BrowseName"].values[0]
+
     def get_nodes_classes(self):
         return self.nodes["NodeClass"].unique().tolist()
 
@@ -407,7 +411,9 @@ class UAGraph:
         ]
         return self.nodes.loc[self.nodes["id"].isin(reference_ids["Src"])]
 
-    def get_neighboring_nodes_by_browsename(self, browse_name: str, relation: str):
+    def get_neighboring_nodes_by_browsename(
+        self, browse_name: str, node_type: str, relation: str
+    ):
         """This function will returning the references either pointing to
         or from a node. The results contain the source and target contents of
         the `references` table with actual text 'BrowseNames' and the corresponding
@@ -415,6 +421,30 @@ class UAGraph:
         either be "outgoing" or "incoming". When inputting "child" it will return
         the outgoing references of the node, while "parent" will provide the
         references which point to the specific node."""
+
+        id = None
+        if node_type is "UAObject":
+            id = self.object_by_browsename(browse_name)
+        elif node_type is "UADataType":
+            id = self.data_type_by_browsename(browse_name)
+        elif node_type is "UAReferenceType":
+            id = self.reference_type_by_browsename(browse_name)
+        elif node_type is "UAObjectType":
+            id = self.object_type_by_browsename(browse_name)
+        elif node_type is "UAVariableType":
+            id = self.variable_type_by_browsename(browse_name)
+        else:
+            raise ValueError(
+                f"node_type, {node_type}, is not one of the proper types: "
+                f"UAObject, UADataType, UAReferenceType, UAObjectType, UAVariableType"
+            )
+
+        if not id:
+            raise ValueError(f"The id was not properly set and is {id}")
+
+        return self._get_neighboring_nodes_by_id(id, relation)
+
+    def _get_neighboring_nodes_by_id(self, id: int, relation: str):
 
         direction = None
         if relation == "outgoing":
@@ -432,8 +462,7 @@ class UAGraph:
         references = self.references.copy()
 
         # Getting getting the subset of references which only contain the desired node
-        object_id = self.object_by_browsename(browse_name)
-        references = references[references[direction] == object_id]
+        references = references[references[direction] == id]
 
         # Creating a dataframe with only names to conduct joins and get names
         names = self.nodes[["BrowseName", "NodeId", "id"]].set_index("id", drop=True)
@@ -445,14 +474,14 @@ class UAGraph:
         references.drop("NodeId", axis=1, inplace=True)
 
         # Getting names of the ids in the Src Column, joining in the same manner as before
-        references.set_index("Src", drop=True, inplace=True)
+        references.set_index("Src", drop=False, inplace=True)
         references = references.join(names, how="inner")
         references.rename(
             columns={"BrowseName": "Source", "NodeId": "SourceNodeId"}, inplace=True
         )
 
         # Getting names of the ids in the Trg Column, joining in the same manner as before
-        references.set_index("Trg", drop=True, inplace=True)
+        references.set_index("Trg", drop=False, inplace=True)
         references = references.join(names, how="inner")
         references.rename(
             columns={"BrowseName": "Target", "NodeId": "TargetNodeId"}, inplace=True
