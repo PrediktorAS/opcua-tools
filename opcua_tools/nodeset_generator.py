@@ -210,16 +210,18 @@ def generate_nodes_xml(
         "MinimumSamplingInterval",
         "MethodDeclarationId",
         "EventNotifier",
+        "Historizing",
     ]:
         if a in nodes.columns.values:
             notna = ~nodes[a].isna()
             haslen = nodes[a].astype(str).str.len() > 0
+            if a in ("IsAbstract", "Symmetric", "Historizing"):
+                use_value = nodes.loc[notna & haslen, a].astype(str).str.lower()
+            else:
+                use_value = nodes.loc[notna & haslen, a].astype(str)
+
             nodes.loc[notna & haslen, "nodexml"] = (
-                nodes.loc[notna & haslen, "nodexml"]
-                + a
-                + '="'
-                + nodes.loc[notna & haslen, a].astype(str)
-                + '" '
+                nodes.loc[notna & haslen, "nodexml"] + a + '="' + use_value + '" '
             )
 
     nodes["nodexml"] = nodes["nodexml"] + ">"
