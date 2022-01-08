@@ -39,6 +39,7 @@ setup(
         "lxml>=4.6.2",
         "lxml<5.0",
         "xmltodict>=0.12.0",
+        "pytest>=6.2.5",
         "pandas>=1.2.2",
         "pandas<2.0",
         "scipy>=1.6.1",
