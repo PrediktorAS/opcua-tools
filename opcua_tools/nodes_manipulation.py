@@ -14,7 +14,7 @@
 
 
 from .ua_graph import UAGraph
-from typing import Tuple
+from typing import Tuple, Dict
 from .ua_data_types import (
     UAEnumeration,
     UAInt32,
@@ -70,7 +70,7 @@ def get_enum_type_definition(ua_graph: UAGraph, data_type_id: int):
     return enum_ua_list_of
 
 
-def create_enum_dict_from_enum_tuples(enum_tuple: Tuple) -> dict[int, str]:
+def create_enum_dict_from_enum_tuples(enum_tuple: Tuple) -> Dict[int, str]:
     """Gets the tuple contents of enums and will attempt to parse the tuple
     to create and return a dictionary of the enumeration definition.
 
