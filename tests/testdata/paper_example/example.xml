@@ -16,6 +16,7 @@
         <Description>Lorem ipsum dolor sit amet</Description>
         <References>
             <Reference ReferenceType="ns=0;i=40">ns=2;s=SiteType</Reference>
+            <Reference ReferenceType="ns=0;i=47">ns=1;i=48</Reference>
         </References>
     </UAObject>
     <UAObject NodeId="ns=1;i=2" BrowseName="1:Site1.WaterInjectionSystem">
@@ -519,6 +520,17 @@
         </References>
         <Value>
             <String xmlns="http://opcfoundation.org/UA/2008/02/Types.xsd">KA1</String>
+        </Value>
+    </UAVariable>
+    <UAVariable NodeId="ns=1;i=48" BrowseName="2:NamingRuleEnumTest" DataType="i=120">
+        <DisplayName>EnumTest</DisplayName>
+        <Description>This is a node to test xml encoding</Description>
+        <References>
+            <Reference ReferenceType="ns=0;i=40">ns=0;i=68</Reference>
+            <Reference ReferenceType="ns=0;i=37">ns=0;i=78</Reference>
+        </References>
+        <Value>
+            <Int32 xmlns="http://opcfoundation.org/UA/2008/02/Types.xsd">1</Int32>
         </Value>
     </UAVariable>
 </UANodeSet>

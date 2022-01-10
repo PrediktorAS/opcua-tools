@@ -13,6 +13,7 @@
 # limitations under the License.
 
 from .navigation import *
+from .nodes_manipulation import transform_ints_to_enums
 from .nodeset_generator import create_nodeset2_file, validate_nodeset2_file
 from .nodeset_parser import (
     parse_xml_dir,

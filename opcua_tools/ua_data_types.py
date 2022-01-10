@@ -350,8 +350,9 @@ class UADecimal(UAData):
 
 
 @dataclass(eq=True, frozen=True)
-class UAEnumeration(UAData):
-    pass
+class UAEnumeration(UAInt32):
+    string: str
+    name: str
 
 
 @dataclass(eq=True, frozen=True)

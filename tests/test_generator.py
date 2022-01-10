@@ -17,6 +17,8 @@ from opcua_tools.nodeset_generator import (
     denormalize_nodes_nodeids,
     denormalize_references_nodeids,
 )
+from definitions import get_project_root
+from opcua_tools import UAGraph
 import os
 import pandas as pd
 
@@ -68,3 +70,17 @@ def test_idempotency():
     pd.testing.assert_frame_equal(references, references2)
 
     os.remove(PATH_HERE + "/expected/generator/nodeset2.xml")
+
+
+def test_ua_graph_write_nodeset_without_crash():
+    path_to_xmls = str(get_project_root() / "tests" / "testdata" / "paper_example")
+    ua_graph = UAGraph.from_path(path_to_xmls)
+
+    output_folder = get_project_root() / "tests" / "output"
+    output_file_path = str(output_folder / "paper_example_output.xml")
+
+    # Creating output folder if it does not exist
+    if not os.path.exists(str(output_folder)):
+        os.makedirs(str(output_folder))
+
+    ua_graph.write_nodeset(output_file_path, "http://prediktor.com/paper_example")
