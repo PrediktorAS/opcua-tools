@@ -148,7 +148,7 @@ def parse_singular_value(val, tagtype):
             if stripped == "":
                 return UABoolean(value=None)
 
-            return UABoolean(value=bool(stripped))
+            return parse_boolean(stripped)
 
         elif tagtype == "ByteString":
             if stripped is not None:
@@ -275,3 +275,11 @@ def parse_engineering_units(el):
                     unit_id=unit_id,
                     namespace_uri=namespace_uri,
                 )
+
+
+def parse_boolean(string):
+    if string is not None:
+        if string in ["true", "True"]:
+            return UABoolean(value=True)
+        else:
+            return UABoolean(value=False)
