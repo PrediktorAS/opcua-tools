@@ -20,10 +20,10 @@ import pandas as pd
 @pytest.fixture(scope="session")
 def test_data():
     list = [
-        ["Boolean", "false", 0],
-        ["Boolean", "False", 0],
-        ["Boolean", "true", 1],
-        ["Boolean", "True", 1],
+        ["Boolean", "false", False],
+        ["Boolean", "False", False],
+        ["Boolean", "true", True],
+        ["Boolean", "True", True],
     ]
     data = pd.DataFrame(list, columns=["tag_type", "input", "solution"])
     return data
@@ -35,7 +35,6 @@ def test_parse_boolean(test_data):
     strings in python."""
 
     data = test_data.copy()
-    data["solution"] = data["solution"].map(bool)
     data["dataclass"] = data["input"].apply(lambda value: parse_boolean(value))
     data["output"] = data["dataclass"].apply(lambda bool_class: bool_class.value)
     pd.testing.assert_series_equal(data["output"], data["solution"], check_names=False)
