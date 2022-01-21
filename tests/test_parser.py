@@ -12,10 +12,16 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+from opcua_tools.nodeset_parser import (
+    exclude_files_not_in_namespaces,
+    get_list_of_xml_files,
+    get_xml_namespaces,
+)
 import opcua_tools as ot
 import os
 import pandas as pd
 from pathlib import Path
+from definitions import get_project_root
 
 PATH_HERE = os.path.dirname(__file__)
 
@@ -128,3 +134,77 @@ def test_parse_scattered_namespace_list():
     assert i_scd_ca_row["ns"].values[0] == 3
     assert oil_and_gas_system_row["ns"].values[0] == 6
     assert site1_row["ns"].values[0] == 8
+
+
+def test_get_xml_namespaces():
+    test_parser_data = get_project_root() / "tests" / "testdata" / "parser"
+
+    files = [
+        str(test_parser_data / "Opc.ISA95.NodeSet2.xml"),
+        str(test_parser_data / "Opc.Ua.IEC61850-6.NodeSet2.xml"),
+        str(test_parser_data / "Opc.Ua.IEC61850-7-4.NodeSet2.xml"),
+    ]
+
+    expected_namespaces = {
+        "http://www.OPCFoundation.org/UA/2013/01/ISA95",
+        "http://opcfoundation.org/UA/IEC61850-7-3",
+        "http://opcfoundation.org/UA/IEC61850-6",
+        "http://opcfoundation.org/UA/IEC61850-7-3",
+        "http://opcfoundation.org/UA/IEC61850-7-4",
+    }
+
+    namespace_set = set()
+    for xml_file in files:
+        namespace_uri_list = get_xml_namespaces(xml_file)
+        namespace_set = namespace_set.union(set(namespace_uri_list))
+
+    assert expected_namespaces == namespace_set
+
+
+def test_get_list_of_xml_files():
+    xml_directory = str(get_project_root() / "tests" / "testdata" / "parser")
+    expected_xml_files = {
+        xml_directory + "/Opc.ISA95.NodeSet2.xml",
+        xml_directory + "/Opc.Ua.IEC61850-6.NodeSet2.xml",
+        xml_directory + "/Opc.Ua.IEC61850-7-3.NodeSet2.xml",
+        xml_directory + "/Opc.Ua.IEC61850-7-4.NodeSet2.xml",
+        xml_directory + "/Opc.Ua.NodeSet2.Part10.xml",
+        xml_directory + "/Opc.Ua.NodeSet2.Part11.xml",
+        xml_directory + "/Opc.Ua.NodeSet2.Part12.xml",
+        xml_directory + "/Opc.Ua.NodeSet2.Part13.xml",
+        xml_directory + "/Opc.Ua.NodeSet2.Part14.xml",
+        xml_directory + "/Opc.Ua.NodeSet2.Part17.xml",
+        xml_directory + "/Opc.Ua.NodeSet2.Part19.xml",
+        xml_directory + "/Opc.Ua.NodeSet2.Part3.xml",
+        xml_directory + "/Opc.Ua.NodeSet2.Part4.xml",
+        xml_directory + "/Opc.Ua.NodeSet2.Part5.xml",
+        xml_directory + "/Opc.Ua.NodeSet2.Part8.xml",
+        xml_directory + "/Opc.Ua.NodeSet2.Part9.xml",
+        xml_directory + "/Opc.Ua.NodeSet2.Services.xml",
+        xml_directory + "/Opc.Ua.NodeSet2.xml",
+    }
+
+    actual_xml_files = get_list_of_xml_files(xml_directory)
+
+    assert expected_xml_files == set(actual_xml_files)
+
+
+def test_namespace_dict_parse_xml_dict():
+    xml_directory = str(get_project_root() / "tests" / "testdata" / "parser")
+    input_namespaces = [
+        "http://www.OPCFoundation.org/UA/2013/01/ISA95",
+        "http://opcfoundation.org/UA/IEC61850-6",
+        "http://opcfoundation.org/UA/IEC61850-7-3",
+        "http://opcfoundation.org/UA/IRC61850-7-4",
+    ]
+    expected_files = {
+        xml_directory + "/Opc.ISA95.NodeSet2.xml",
+        xml_directory + "/Opc.Ua.IEC61850-6.NodeSet2.xml",
+        xml_directory + "/Opc.Ua.IEC61850-7-3.NodeSet2.xml",
+        xml_directory + "/Opc.Ua.IEC61850-7-4.NodeSet2.xml",
+    }
+
+    xml_files = get_list_of_xml_files(xml_directory)
+    xml_files = exclude_files_not_in_namespaces(xml_files, input_namespaces)
+
+    assert expected_files == set(xml_files)
