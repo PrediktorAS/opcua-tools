@@ -336,6 +336,10 @@ def get_xml_namespaces(xml_file: str) -> List[str]:
     uaxsd = "{http://opcfoundation.org/UA/2011/03/UANodeSet.xsd}"
 
     namespace_list = []
+    # In some NodeSet2 definition files the <Model> tag is not found
+    # therefore using the common files name as well.
+    if xml_file.endswith("Opc.Ua.NodeSet2.xml"):
+        namespace_list.append("http://opcfoundation.org/UA")
 
     # Adding tags which contain NamespaceUris
     tag_namespace = ET.iterparse(
