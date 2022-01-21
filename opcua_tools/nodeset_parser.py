@@ -473,7 +473,7 @@ def parse_xml_dir(
     xml_dir: str, namespaces: Optional[List[str]] = None
 ) -> Dict[str, Any]:
     """Parses xml directory and creates Pandas tables which contains
-    consolidated various nodes, references, namespaces, and lookup_df
+    a consolidated nodes, references, namespaces, and lookup_df
     for the files found in the nodes. It will create a list of xml files
     contained in the xml directory. If the 'namespaces' parameter is
     provided, it will not include files with namespaces which are not
@@ -489,16 +489,31 @@ def parse_xml_dir(
     """
 
     files = get_list_of_xml_files(xml_dir)
-
-    if namespaces:
-        files = exclude_files_not_in_namespaces(files, namespaces)
-
     return parse_xml_files(files, namespaces)
 
 
 def parse_xml_files(
     files: List[str], namespaces: Optional[List[str]] = None
 ) -> Dict[str, Any]:
+    """Parses xml list of files and creates Pandas tables which contains
+    a consolidated nodes, references, namespaces, and lookup_df
+    for the files found in the nodes. It will create a list of xml files
+    contained in the xml directory. If the 'namespaces' parameter is
+    provided, it will not include files with namespaces which are not
+    found in the namespace list.
+
+    Args:
+        files (str): Full path of xml files
+        namespaces (Optional[List[str]] = None): Dictionary of namespaces
+
+    Return:
+        Dict[str, Any] of parsed pandas tables from the xml directories.
+
+    """
+
+    if namespaces:
+        files = exclude_files_not_in_namespaces(files, namespaces)
+
     if namespaces is None:
         namespaces = []
     df_nodes_list = []
