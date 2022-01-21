@@ -340,6 +340,7 @@ def get_xml_namespaces(xml_file: str) -> List[str]:
     # therefore using the common files name as well.
     if xml_file.endswith("Opc.Ua.NodeSet2.xml"):
         namespace_list.append("http://opcfoundation.org/UA")
+        namespace_list.append("http://opcfoundation.org/UA/")
 
     # Adding tags which contain NamespaceUris
     tag_namespace = ET.iterparse(
