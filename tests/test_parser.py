@@ -192,16 +192,27 @@ def test_get_list_of_xml_files():
 def test_namespace_dict_parse_xml_dict():
     xml_directory = str(get_project_root() / "tests" / "testdata" / "parser")
     input_namespaces = [
+        "http://opcfoundation.org/UA/",
         "http://www.OPCFoundation.org/UA/2013/01/ISA95",
-        "http://opcfoundation.org/UA/IEC61850-6",
-        "http://opcfoundation.org/UA/IEC61850-7-3",
-        "http://opcfoundation.org/UA/IRC61850-7-4",
+        "http://opcfoundation.org/UA/IEC61850-7-4",
     ]
     expected_files = {
         xml_directory + "/Opc.ISA95.NodeSet2.xml",
-        xml_directory + "/Opc.Ua.IEC61850-6.NodeSet2.xml",
-        xml_directory + "/Opc.Ua.IEC61850-7-3.NodeSet2.xml",
         xml_directory + "/Opc.Ua.IEC61850-7-4.NodeSet2.xml",
+        xml_directory + "/Opc.Ua.NodeSet2.Part10.xml",
+        xml_directory + "/Opc.Ua.NodeSet2.Part11.xml",
+        xml_directory + "/Opc.Ua.NodeSet2.Part12.xml",
+        xml_directory + "/Opc.Ua.NodeSet2.Part13.xml",
+        xml_directory + "/Opc.Ua.NodeSet2.Part14.xml",
+        xml_directory + "/Opc.Ua.NodeSet2.Part17.xml",
+        xml_directory + "/Opc.Ua.NodeSet2.Part19.xml",
+        xml_directory + "/Opc.Ua.NodeSet2.Part3.xml",
+        xml_directory + "/Opc.Ua.NodeSet2.Part4.xml",
+        xml_directory + "/Opc.Ua.NodeSet2.Part5.xml",
+        xml_directory + "/Opc.Ua.NodeSet2.Part8.xml",
+        xml_directory + "/Opc.Ua.NodeSet2.Part9.xml",
+        xml_directory + "/Opc.Ua.NodeSet2.Services.xml",
+        xml_directory + "/Opc.Ua.NodeSet2.xml",
     }
 
     xml_files = get_list_of_xml_files(xml_directory)
