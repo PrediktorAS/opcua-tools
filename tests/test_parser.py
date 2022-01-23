@@ -147,9 +147,7 @@ def test_get_xml_namespaces():
 
     expected_namespaces = {
         "http://www.OPCFoundation.org/UA/2013/01/ISA95",
-        "http://opcfoundation.org/UA/IEC61850-7-3",
         "http://opcfoundation.org/UA/IEC61850-6",
-        "http://opcfoundation.org/UA/IEC61850-7-3",
         "http://opcfoundation.org/UA/IEC61850-7-4",
     }
 
