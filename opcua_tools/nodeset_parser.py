@@ -341,6 +341,21 @@ def get_xml_namespaces(xml_file: str) -> List[str]:
     if xml_file.endswith("Opc.Ua.NodeSet2.xml"):
         namespace_list.append("http://opcfoundation.org/UA")
         namespace_list.append("http://opcfoundation.org/UA/")
+        return namespace_list
+
+    # Adding tags which contain Models and ModelUri.
+    tree = ET.parse(xml_file)
+    root = tree.getroot()
+
+    found_nses = False
+    root_iter_models = root.iter(uaxsd + "Models")
+    if root_iter_models:
+        for models_tag in root_iter_models:
+            for model in models_tag.iter(uaxsd + "Model"):
+                model_uri = model.get("ModelUri")
+                if not found_nses and model_uri:
+                    namespace_list.append(model_uri)
+        return namespace_list
 
     # Adding tags which contain NamespaceUris
     tag_namespace = ET.iterparse(
@@ -355,21 +370,6 @@ def get_xml_namespaces(xml_file: str) -> List[str]:
         elif not found_nses and event == "end" and elem.tag == uaxsd + "NamespaceUris":
             # All uris in "NamespaceUris" are parsed
             break
-
-    # Adding tags which contain Models and ModelUri
-    tree = ET.parse(xml_file)
-    root = tree.getroot()
-
-    found_nses = False
-
-    for models_tag in root.iter(uaxsd + "Models"):
-        for model in models_tag.iter(uaxsd + "Model"):
-            model_uri = model.get("ModelUri")
-            if not found_nses and model_uri:
-                namespace_list.append(model_uri)
-            elif not found_nses and model_uri:
-                # All uris in "NamespaceUris" are parsed
-                break
 
     return namespace_list
 
