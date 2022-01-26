@@ -14,7 +14,7 @@
 
 
 from .ua_graph import UAGraph
-from typing import Tuple, Dict
+from typing import Dict
 from .ua_data_types import (
     UAEnumeration,
     UAInt32,
@@ -36,46 +36,12 @@ cl.setFormatter(formatter)
 logger.addHandler(cl)
 
 
-def get_enum_type_definition(ua_graph: UAGraph, data_type_id: int):
-    """Given a UAGraph object and a internal id of an enum type,
-    the definition of the enumeration will be produced. The form
-    of the definition may vary based on the enumeration.
+def create_enum_dict_from_enum_tuples(row: pd.DataFrame) -> Dict[int, str]:
+    """Gets the row for the enum node and will attempt to parse the tuple in the
+    'Value' column to create and return a dictionary of the enumeration definition.
 
     Args:
-       ua_graph (UAGraph): UAGraph where the enum defintion is found
-       data_type_id (int): The internal id for data type enum
-
-    Return:
-       The content of the 'Values' column in the node definition
-
-    """
-
-    enum_type_row = ua_graph.nodes[ua_graph.nodes["id"] == data_type_id]
-    enum_type_id = enum_type_row["id"].values[0]
-
-    # The enum type points to the enum definition via HasProperty ReferenceType.
-    # The enum type does not contain the enum definition itself, it points to
-    # an EnumStrings or EnumValues
-    enum_neighbors = ua_graph._get_neighboring_nodes_by_id(enum_type_id, "outgoing")
-    # Ensuring we are getting the HasProperty reference
-    enum_neighbors_has_property = enum_neighbors[
-        enum_neighbors["ReferenceType"] == "HasProperty"
-    ]
-
-    # Getting the node which actually defines the enum
-    enum_definition_id = enum_neighbors_has_property["Trg"].values[0]
-    enum_definition_node = ua_graph.nodes[ua_graph.nodes["id"] == enum_definition_id]
-    enum_ua_list_of = enum_definition_node["Value"].values[0]
-
-    return enum_ua_list_of
-
-
-def create_enum_dict_from_enum_tuples(enum_tuple: Tuple) -> Dict[int, str]:
-    """Gets the tuple contents of enums and will attempt to parse the tuple
-    to create and return a dictionary of the enumeration definition.
-
-    Args:
-       enum_tuple (Tuple): Tuple containing enumeration definition
+       row (pd.DataFrame): A row of the enumeration which contains a definition with a tuple to parse
 
     Return:
        A dictionary which defines the enumeration
@@ -84,6 +50,7 @@ def create_enum_dict_from_enum_tuples(enum_tuple: Tuple) -> Dict[int, str]:
 
     # The enum definition can be stored in different ways. The two versions observed
     # is as an unparsed UAExtentionObject in xml or as UALocalizedText.
+    enum_tuple = row["Value"]
     enum_dict = dict()
     for index, content in enumerate(enum_tuple):
         if isinstance(content, UnparsedUAExtensionObject):
@@ -107,17 +74,17 @@ def create_enum_dict_from_enum_tuples(enum_tuple: Tuple) -> Dict[int, str]:
     return enum_dict
 
 
-def instantiate_enum_class(row: pd.DataFrame, ua_graph: UAGraph):
-    """For a single row in the nodes dataframe, which represents an enum value,
+def instantiate_enum_class(row: pd.DataFrame) -> UAEnumeration:
+    """For a single row from a modified nodes dataframe, which represents an enum value,
     it will produce an UAEnumeration class based on; the Int provided in the
     row, the name of the enumeration which is references by the datatype, and
     the corresponding string value found in the enums definition.
 
     Args:
-       ua_graph (UAGraph): UAGraph object to transform
+       row (pd.DataFrame): The row from nodes with additional 'EnumDict' and 'EnumName' cols.
 
     Return:
-       The modified UAGraph with Enumeration classes
+       UAEnumeration class created from the row.
 
     """
 
@@ -135,18 +102,63 @@ def instantiate_enum_class(row: pd.DataFrame, ua_graph: UAGraph):
         raise ValueError(f"row['Value']: {row['Value']} has not been handled properly")
 
     # Find the enumeration type name for the variable
-    data_type_id = row["DataType"]
-    data_type_name = ua_graph._get_browsename_from_id(data_type_id)
-
-    # Getting the enum type row value
-    enum_ua_list_of = get_enum_type_definition(ua_graph, data_type_id)
-    enum_tuple = enum_ua_list_of.value
-    enum_dict = create_enum_dict_from_enum_tuples(enum_tuple)
-    string = enum_dict[ua_int]
+    string = row["EnumDict"][ua_int]
+    data_type_name = row["EnumName"]
 
     enum_class = UAEnumeration(value=ua_int, string=string, name=data_type_name)
 
     return enum_class
+
+
+def create_enum_definition_table(
+    ua_graph: UAGraph, enum_data_types: pd.Series
+) -> pd.DataFrame:
+    """This function will create an pd.DataFrame containing the id of the DataType which
+    the UAVariable for an enumeration class has, the BrowseName of the enumeration class,
+    and the actual enumeration definition for that class.
+
+    Args:
+       ua_graph (UAGraph): The complete UAGraph with necessary definitions.
+       enum_data_types (pd.Series): The column of DataTypes which are Enumeration definitions
+
+    Return:
+       pd.DataFrame containing the enumeration definition tables.
+
+    """
+    # Subsetting the 'nodes' table to the subset of datatypes
+    enum_table = ua_graph.nodes[ua_graph.nodes["id"].isin(enum_data_types)]
+    enum_table = enum_table[["id", "BrowseName"]]
+
+    # Getting the references table pointing from the nodes in enum_table
+    # via a HasProperty definition to the actual defintion in the node
+    enum_references = ua_graph.references[
+        ua_graph.references["Src"].isin(enum_data_types)
+    ]
+    has_property_id = ua_graph.reference_type_by_browsename("HasProperty")
+    enum_references = enum_references[
+        enum_references["ReferenceType"] == has_property_id
+    ]
+    enum_references = enum_references.drop(["ReferenceType"], axis=1)
+
+    # Joining the enum_references and enum_table
+    enum_table = enum_table.set_index("id", drop=False)
+    enum_references = enum_references.set_index("Src", drop=True)
+    enum_table = enum_table.join(enum_references, how="left")
+
+    # Joining the enum_table's 'Trg' column to nodes to get the definition
+    nodes_subset = ua_graph.nodes[["id", "Value"]].set_index("id")
+    enum_table = enum_table.set_index("Trg", drop=True)
+    enum_table = enum_table.join(nodes_subset, how="left")
+
+    enum_table["Value"] = enum_table["Value"].apply(lambda row: row.value)
+    enum_table["EnumDict"] = enum_table.apply(
+        lambda row: create_enum_dict_from_enum_tuples(row), axis=1
+    )
+    enum_table = enum_table.drop(["Value"], axis=1)
+
+    enum_table = enum_table.rename(columns={"BrowseName": "EnumName"})
+
+    return enum_table
 
 
 def transform_ints_to_enums(ua_graph: UAGraph):
@@ -177,11 +189,25 @@ def transform_ints_to_enums(ua_graph: UAGraph):
     enum_nodes = nodes.loc[nodes["DataType"].isin(enum_data_type_ids)]
     enum_nodes = enum_nodes[enum_nodes["NodeClass"] == "UAVariable"]
 
-    enum_nodes["Value"] = enum_nodes.apply(
-        lambda x: instantiate_enum_class(x, ua_graph), axis=1
-    )
+    logger.info(f"The size of enum_nodes is {enum_nodes.shape}")
+    enum_data_types = enum_nodes["DataType"]
+    enum_def_table = create_enum_definition_table(ua_graph, enum_data_types)
 
+    # Have to join the enum_definition_table to enum_nodes table
+    enum_def_table = enum_def_table.set_index("id", drop=True)
+    enum_nodes = enum_nodes.set_index("DataType", drop=False)
+    enum_nodes = enum_nodes.join(enum_def_table, how="left")
+
+    # Apply function to create UAEnumeration in Values column
+    enum_nodes["Value"] = enum_nodes.apply(
+        lambda row: instantiate_enum_class(row), axis=1
+    )
+    enum_nodes = enum_nodes.set_index("id", drop=False)
+    enum_nodes = enum_nodes.drop(["EnumName", "EnumDict"], axis=1)
+
+    logger.info("Finished working through the enum_nodes")
     # Putting the modified nodes back into the nodes dataframe by index
     nodes.loc[enum_nodes.index, :] = enum_nodes[:]
 
     ua_graph.nodes = nodes
+    logger.info("Finished transforming the integers to enums")
