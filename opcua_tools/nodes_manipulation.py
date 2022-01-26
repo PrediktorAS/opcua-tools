@@ -174,6 +174,10 @@ def transform_ints_to_enums(ua_graph: UAGraph):
     # Extracting nodes for readability
     nodes = ua_graph.nodes.copy()
 
+    # Have to first if the are any Enumeration browsenames in nodes dataframe
+    if not (nodes["BrowseName"]=='Enumeration').any():
+        return
+
     # Have to find all children of the Enumeration class
     enumeration_id = ua_graph.data_type_by_browsename("Enumeration")
     enumeration_children = ua_graph._get_neighboring_nodes_by_id(

@@ -322,6 +322,103 @@ def normalize_wrt_nodeid(nodes: pd.DataFrame, references: pd.DataFrame) -> pd.Da
     return lookup_df
 
 
+def get_xml_namespaces(xml_file: str) -> List[str]:
+    """Opens the xml file provided and peeks inside the file to look for any tags which
+    indicate the namespace uri of the xml file.
+
+    Args:
+        xml_file (str): The full filepath to the xml file to check
+
+    Returns:
+        List[str] containing the different namespace uris which are found in the file.
+
+    """
+    uaxsd = "{http://opcfoundation.org/UA/2011/03/UANodeSet.xsd}"
+
+    namespace_list = []
+    # In some NodeSet2 definition files the <Model> tag is not found
+    # therefore using the common files name as well.
+    if xml_file.endswith("Opc.Ua.NodeSet2.xml"):
+        namespace_list.append("http://opcfoundation.org/UA")
+        namespace_list.append("http://opcfoundation.org/UA/")
+        return namespace_list
+
+    # Adding tags which contain Models and ModelUri.
+    tree = ET.parse(xml_file)
+    root = tree.getroot()
+
+    found_nses = False
+    root_iter_models = root.iter(uaxsd + "Models")
+    if root_iter_models:
+        for models_tag in root_iter_models:
+            for model in models_tag.iter(uaxsd + "Model"):
+                model_uri = model.get("ModelUri")
+                if not found_nses and model_uri:
+                    namespace_list.append(model_uri)
+        return namespace_list
+
+    # Adding tags which contain NamespaceUris
+    tag_namespace = ET.iterparse(
+        xml_file, events=("start", "end"), tag=[uaxsd + "Uri", uaxsd + "NamespaceUris"]
+    )
+
+    found_nses = False
+    for event, elem in tag_namespace:
+        if not found_nses and event == "end" and elem.tag == uaxsd + "Uri":
+            namespace_list.append(elem.text)
+            elem.clear()
+        elif not found_nses and event == "end" and elem.tag == uaxsd + "NamespaceUris":
+            # All uris in "NamespaceUris" are parsed
+            break
+
+    return namespace_list
+
+
+def get_list_of_xml_files(xml_directory_path: str) -> List[str]:
+    """Returns a list of xml_files in a provided directory
+
+    Args:
+        xml_directory_path (str): Full path to the directory
+
+    Return:
+        List[str] of xmls which are found in the directory
+
+    """
+
+    files = []
+    for file in os.listdir(xml_directory_path):
+        full_path = os.path.join(xml_directory_path, file)
+        if os.path.isfile(full_path) and full_path.endswith(".xml"):
+            files.append(full_path)
+
+    return files
+
+
+def exclude_files_not_in_namespaces(
+    input_files: List[str], namespaces: List[str]
+) -> List[str]:
+    """Removes the files which do not have any NamespaceUris in the namespaces list.
+
+    Args:
+        input_files (List[str]): List of files to filter through.
+        namespaces (List[str]): List of desired namespaces to keep.
+
+    Return:
+        List[str] of xmls which are found in the directory
+
+    """
+    # Removes None for the list if found in the namespaces
+    namespaces_set_list = list(set(filter(None, namespaces)))
+    output_files = input_files.copy()
+    for file in input_files:
+        file_ns_uris = get_xml_namespaces(file)
+        # Removes file if none of the file_ns_uris are in namespaces_set_list
+        if not any(file in file_ns_uris for file in namespaces_set_list):
+            output_files.remove(file)
+
+    return output_files
+
+
 def parse_xml(
     xmlfile: Union[str, BytesIO], namespaces: Optional[List[str]] = None
 ) -> Dict[str, Any]:
@@ -395,19 +492,50 @@ def parse_xml_without_normalization(
 
 
 def parse_xml_dir(
-    xmldir: str, namespaces: Optional[List[str]] = None
+    xml_dir: str, namespaces: Optional[List[str]] = None
 ) -> Dict[str, Any]:
-    files = []
-    for file in os.listdir(xmldir):
-        full_path = os.path.join(xmldir, file)
-        if os.path.isfile(full_path):
-            files.append(full_path)
+    """Parses xml directory and creates Pandas tables which contains
+    a consolidated nodes, references, namespaces, and lookup_df
+    for the files found in the nodes. It will create a list of xml files
+    contained in the xml directory. If the 'namespaces' parameter is
+    provided, it will not include files with namespaces which are not
+    found in the namespace list.
+
+    Args:
+        xml_dir (str): Full path to the directory of xmls
+        namespaces (Optional[List[str]] = None): Dictionary of namespaces
+
+    Return:
+        Dict[str, Any] of parsed pandas tables from the xml directories.
+
+    """
+
+    files = get_list_of_xml_files(xml_dir)
     return parse_xml_files(files, namespaces)
 
 
 def parse_xml_files(
     files: List[str], namespaces: Optional[List[str]] = None
 ) -> Dict[str, Any]:
+    """Parses xml list of files and creates Pandas tables which contains
+    a consolidated nodes, references, namespaces, and lookup_df
+    for the files found in the nodes. It will create a list of xml files
+    contained in the xml directory. If the 'namespaces' parameter is
+    provided, it will not include files with namespaces which are not
+    found in the namespace list.
+
+    Args:
+        files (str): Full path of xml files
+        namespaces (Optional[List[str]] = None): Dictionary of namespaces
+
+    Return:
+        Dict[str, Any] of parsed pandas tables from the xml directories.
+
+    """
+
+    if namespaces:
+        files = exclude_files_not_in_namespaces(files, namespaces)
+
     if namespaces is None:
         namespaces = []
     df_nodes_list = []
