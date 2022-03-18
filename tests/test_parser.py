@@ -162,55 +162,56 @@ def test_get_xml_namespaces():
 def test_get_list_of_xml_files():
     xml_directory = str(get_project_root() / "tests" / "testdata" / "parser")
     expected_xml_files = {
-        xml_directory + "/Opc.ISA95.NodeSet2.xml",
-        xml_directory + "/Opc.Ua.IEC61850-6.NodeSet2.xml",
-        xml_directory + "/Opc.Ua.IEC61850-7-3.NodeSet2.xml",
-        xml_directory + "/Opc.Ua.IEC61850-7-4.NodeSet2.xml",
-        xml_directory + "/Opc.Ua.NodeSet2.Part10.xml",
-        xml_directory + "/Opc.Ua.NodeSet2.Part11.xml",
-        xml_directory + "/Opc.Ua.NodeSet2.Part12.xml",
-        xml_directory + "/Opc.Ua.NodeSet2.Part13.xml",
-        xml_directory + "/Opc.Ua.NodeSet2.Part14.xml",
-        xml_directory + "/Opc.Ua.NodeSet2.Part17.xml",
-        xml_directory + "/Opc.Ua.NodeSet2.Part19.xml",
-        xml_directory + "/Opc.Ua.NodeSet2.Part3.xml",
-        xml_directory + "/Opc.Ua.NodeSet2.Part4.xml",
-        xml_directory + "/Opc.Ua.NodeSet2.Part5.xml",
-        xml_directory + "/Opc.Ua.NodeSet2.Part8.xml",
-        xml_directory + "/Opc.Ua.NodeSet2.Part9.xml",
-        xml_directory + "/Opc.Ua.NodeSet2.Services.xml",
-        xml_directory + "/Opc.Ua.NodeSet2.xml",
+        os.path.join(xml_directory , "Opc.ISA95.NodeSet2.xml"),
+        os.path.join(xml_directory , "Opc.Ua.IEC61850-6.NodeSet2.xml"),
+        os.path.join(xml_directory , "Opc.Ua.IEC61850-7-3.NodeSet2.xml"),
+        os.path.join(xml_directory , "Opc.Ua.IEC61850-7-4.NodeSet2.xml"),
+        os.path.join(xml_directory , "Opc.Ua.NodeSet2.Part10.xml"),
+        os.path.join(xml_directory , "Opc.Ua.NodeSet2.Part11.xml"),
+        os.path.join(xml_directory , "Opc.Ua.NodeSet2.Part12.xml"),
+        os.path.join(xml_directory , "Opc.Ua.NodeSet2.Part13.xml"),
+        os.path.join(xml_directory , "Opc.Ua.NodeSet2.Part14.xml"),
+        os.path.join(xml_directory , "Opc.Ua.NodeSet2.Part17.xml"),
+        os.path.join(xml_directory , "Opc.Ua.NodeSet2.Part19.xml"),
+        os.path.join(xml_directory , "Opc.Ua.NodeSet2.Part3.xml"),
+        os.path.join(xml_directory , "Opc.Ua.NodeSet2.Part4.xml"),
+        os.path.join(xml_directory , "Opc.Ua.NodeSet2.Part5.xml"),
+        os.path.join(xml_directory , "Opc.Ua.NodeSet2.Part8.xml"),
+        os.path.join(xml_directory , "Opc.Ua.NodeSet2.Part9.xml"),
+        os.path.join(xml_directory , "Opc.Ua.NodeSet2.Services.xml"),
+        os.path.join(xml_directory , "Opc.Ua.NodeSet2.xml"),
     }
 
-    actual_xml_files = get_list_of_xml_files(xml_directory)
-
-    assert expected_xml_files == set(actual_xml_files)
+    actual_xml_files = set(get_list_of_xml_files(xml_directory))
+    d = expected_xml_files.difference(actual_xml_files)
+    print(d) 
+    assert expected_xml_files == actual_xml_files
 
 
 def test_namespace_dict_parse_xml_dict():
-    xml_directory = str(get_project_root() / "tests" / "testdata" / "parser")
+    xml_directory = str(get_project_root() / "tests" / "testdata" / "parser" )
     input_namespaces = [
         "http://opcfoundation.org/UA/",
         "http://www.OPCFoundation.org/UA/2013/01/ISA95",
         "http://opcfoundation.org/UA/IEC61850-7-4",
     ]
     expected_files = {
-        xml_directory + "/Opc.ISA95.NodeSet2.xml",
-        xml_directory + "/Opc.Ua.IEC61850-7-4.NodeSet2.xml",
-        xml_directory + "/Opc.Ua.NodeSet2.Part10.xml",
-        xml_directory + "/Opc.Ua.NodeSet2.Part11.xml",
-        xml_directory + "/Opc.Ua.NodeSet2.Part12.xml",
-        xml_directory + "/Opc.Ua.NodeSet2.Part13.xml",
-        xml_directory + "/Opc.Ua.NodeSet2.Part14.xml",
-        xml_directory + "/Opc.Ua.NodeSet2.Part17.xml",
-        xml_directory + "/Opc.Ua.NodeSet2.Part19.xml",
-        xml_directory + "/Opc.Ua.NodeSet2.Part3.xml",
-        xml_directory + "/Opc.Ua.NodeSet2.Part4.xml",
-        xml_directory + "/Opc.Ua.NodeSet2.Part5.xml",
-        xml_directory + "/Opc.Ua.NodeSet2.Part8.xml",
-        xml_directory + "/Opc.Ua.NodeSet2.Part9.xml",
-        xml_directory + "/Opc.Ua.NodeSet2.Services.xml",
-        xml_directory + "/Opc.Ua.NodeSet2.xml",
+        os.path.join(xml_directory , "Opc.ISA95.NodeSet2.xml"),
+        os.path.join(xml_directory , "Opc.Ua.IEC61850-7-4.NodeSet2.xml"),
+        os.path.join(xml_directory , "Opc.Ua.NodeSet2.Part10.xml"),
+        os.path.join(xml_directory , "Opc.Ua.NodeSet2.Part11.xml"),
+        os.path.join(xml_directory , "Opc.Ua.NodeSet2.Part12.xml"),
+        os.path.join(xml_directory , "Opc.Ua.NodeSet2.Part13.xml"),
+        os.path.join(xml_directory , "Opc.Ua.NodeSet2.Part14.xml"),
+        os.path.join(xml_directory , "Opc.Ua.NodeSet2.Part17.xml"),
+        os.path.join(xml_directory , "Opc.Ua.NodeSet2.Part19.xml"),
+        os.path.join(xml_directory , "Opc.Ua.NodeSet2.Part3.xml"),
+        os.path.join(xml_directory , "Opc.Ua.NodeSet2.Part4.xml"),
+        os.path.join(xml_directory , "Opc.Ua.NodeSet2.Part5.xml"),
+        os.path.join(xml_directory , "Opc.Ua.NodeSet2.Part8.xml"),
+        os.path.join(xml_directory , "Opc.Ua.NodeSet2.Part9.xml"),
+        os.path.join(xml_directory , "Opc.Ua.NodeSet2.Services.xml"),
+        os.path.join(xml_directory , "Opc.Ua.NodeSet2.xml"),
     }
 
     xml_files = get_list_of_xml_files(xml_directory)
