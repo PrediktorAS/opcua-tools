@@ -2,7 +2,11 @@ import pandas as pd
 from .ua_data_types import UANodeId
 
 from .nodeset_parser import parse_xml_dir, parse_xml_files
-from .navigation import resolve_ids_from_browsenames
+from .navigation import (
+    hierarchical_references, 
+    resolve_ids_from_browsenames,
+    fast_transitive_closure
+)
 
 import opcua_tools.nodes_manipulation as nodes_manipulation
 from .nodeset_generator import (
@@ -246,27 +250,30 @@ class UAGraph:
         nodes = nodes.sort_values(by=nodes.columns.values.tolist(), ignore_index=True)
         return nodes
 
+    def _get_references_df(self, namespace_uri: str):
+        ns = self.namespaces.index(namespace_uri)
+        nodes_ns = self.nodes.loc[self.nodes["ns"] == ns, ["id"]].set_index("id")
+        nodes_ns["in_ns"] = True
+        references = (
+            self.references.set_index("Src", drop=False)
+            .join(nodes_ns)
+            .rename(columns={"in_ns": "src_in_ns"}, errors="raise")
+        )
+        references = (
+            references.set_index("Trg", drop=False)
+            .join(nodes_ns)
+            .rename(columns={"in_ns": "trg_in_ns"}, errors="raise")
+        )
+        references = references.loc[
+            (references["src_in_ns"] == True) | (references["trg_in_ns"] == True),
+            ["Src", "Trg", "ReferenceType"],
+        ].copy()
+        return references
+
     def get_normalized_references_df(self, namespace_uri: Optional[str] = None):
         lookup_df = create_lookup_df(self.nodes)
-
         if namespace_uri is not None:
-            ns = self.namespaces.index(namespace_uri)
-            nodes_ns = self.nodes.loc[self.nodes["ns"] == ns, ["id"]].set_index("id")
-            nodes_ns["in_ns"] = True
-            references = (
-                self.references.set_index("Src", drop=False)
-                .join(nodes_ns)
-                .rename(columns={"in_ns": "src_in_ns"}, errors="raise")
-            )
-            references = (
-                references.set_index("Trg", drop=False)
-                .join(nodes_ns)
-                .rename(columns={"in_ns": "trg_in_ns"}, errors="raise")
-            )
-            references = references.loc[
-                (references["src_in_ns"] == True) | (references["trg_in_ns"] == True),
-                ["Src", "Trg", "ReferenceType"],
-            ].copy()
+            references = self.__get_references_df(namespace_uri)
         else:
             references = self.references.copy()
 
@@ -494,3 +501,27 @@ class UAGraph:
         )
 
         return references
+
+
+    def find_circular_reference_nodes( self, namespace_uri: str) -> pd.DataFrame:
+        lookup_df = create_lookup_df(self.nodes)
+        refs_ns = self._get_references_df(namespace_uri)
+        nodes_ns = self.get_nodes_from_ns(namespace_uri)
+        type_references=self.references
+        type_nodes = self.nodes
+        hr = hierarchical_references(refs_ns,type_references,type_nodes)
+        tc = fast_transitive_closure(refs_ns)
+        cr = pd.merge(tc, tc, how='inner', left_on=['Src','Trg'], right_on=['Trg','Src'])
+        cr = pd.DataFrame(cr['Src_x'].unique(),columns= ['Src'])
+        refcols = ["Src"]
+        for c in refcols:
+            uniques = lookup_df.rename(columns={"uniques": c}, errors="raise")
+            cr = cr.set_index(c).join(uniques).reset_index(drop=True)
+        cr = cr.rename(columns={'Src': 'NodeId'})
+        return cr
+
+    def get_nodes_from_ns(self, namespace_uri: str):
+        ns = self.namespaces.index(namespace_uri)
+        nodes_ns = self.nodes.loc[self.nodes["ns"] == ns, ["id"]].set_index("id")
+        return nodes_ns
+

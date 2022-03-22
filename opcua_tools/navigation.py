@@ -485,3 +485,4 @@ def constrain_to_reference_type(
     ]
     inst_references = inst_references.reset_index()
     return inst_references
+
