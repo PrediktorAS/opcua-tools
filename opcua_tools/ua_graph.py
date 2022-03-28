@@ -3,9 +3,9 @@ from .ua_data_types import UANodeId
 
 from .nodeset_parser import parse_xml_dir, parse_xml_files
 from .navigation import (
-    hierarchical_references, 
+    hierarchical_references,
     resolve_ids_from_browsenames,
-    fast_transitive_closure
+    fast_transitive_closure,
 )
 
 import opcua_tools.nodes_manipulation as nodes_manipulation
@@ -34,6 +34,7 @@ class UAGraph:
         )
         self.namespaces = namespaces
 
+    @staticmethod
     def from_path(
         path: str, namespace_dict: Optional[Dict[int, str]] = None
     ) -> "UAGraph":
@@ -59,6 +60,7 @@ class UAGraph:
 
         return ua_graph
 
+    @staticmethod
     def from_file_list(file_list: List[str]) -> "UAGraph":
         parse_dict = parse_xml_files(file_list)
         return UAGraph(
@@ -273,7 +275,7 @@ class UAGraph:
     def get_normalized_references_df(self, namespace_uri: Optional[str] = None):
         lookup_df = create_lookup_df(self.nodes)
         if namespace_uri is not None:
-            references = self.__get_references_df(namespace_uri)
+            references = self._get_references_df(namespace_uri)
         else:
             references = self.references.copy()
 
@@ -408,12 +410,12 @@ class UAGraph:
         try:
             position = val_list.index(string)
             return key_list[position]
-        except:
+        except Exception as get_enum_int_error:
             raise ValueError(
                 "Could not find the string: {}, for the enum_name: {}".format(
                     string, enum_name
                 )
-            )
+            ) from get_enum_int_error
 
     def get_objects_of_type(self, type_name: str):
         has_type_def = self.reference_type_by_browsename("HasTypeDefinition")
@@ -502,26 +504,32 @@ class UAGraph:
 
         return references
 
-
-    def find_circular_reference_nodes( self, namespace_uri: str) -> pd.DataFrame:
+    def find_circular_reference_nodes(self, namespace_uri: str) -> pd.DataFrame:
+        """This function finds circular references in the given namespace. Returns a dataframe with the Node IDs involved in the circular references"""
         lookup_df = create_lookup_df(self.nodes)
         refs_ns = self._get_references_df(namespace_uri)
-        nodes_ns = self.get_nodes_from_ns(namespace_uri)
-        type_references=self.references
+        type_references = self.references
         type_nodes = self.nodes
-        hr = hierarchical_references(refs_ns,type_references,type_nodes)
-        tc = fast_transitive_closure(refs_ns)
-        cr = pd.merge(tc, tc, how='inner', left_on=['Src','Trg'], right_on=['Trg','Src'])
-        cr = pd.DataFrame(cr['Src_x'].unique(),columns= ['Src'])
+        hierarchy_refs = hierarchical_references(refs_ns, type_references, type_nodes)
+        transitive_closures = fast_transitive_closure(hierarchy_refs)
+        cyclic_refs = pd.merge(
+            transitive_closures,
+            transitive_closures,
+            how="inner",
+            left_on=["Src", "Trg"],
+            right_on=["Trg", "Src"],
+        )
+        cyclic_refs = pd.DataFrame(cyclic_refs["Src_x"].unique(), columns=["Src"])
         refcols = ["Src"]
-        for c in refcols:
-            uniques = lookup_df.rename(columns={"uniques": c}, errors="raise")
-            cr = cr.set_index(c).join(uniques).reset_index(drop=True)
-        cr = cr.rename(columns={'Src': 'NodeId'})
-        return cr
+        for col in refcols:
+            uniques = lookup_df.rename(columns={"uniques": col}, errors="raise")
+            cyclic_refs = (
+                cyclic_refs.set_index(col).join(uniques).reset_index(drop=True)
+            )
+        cyclic_refs = cyclic_refs.rename(columns={"Src": "NodeId"})
+        return cyclic_refs
 
     def get_nodes_from_ns(self, namespace_uri: str):
         ns = self.namespaces.index(namespace_uri)
         nodes_ns = self.nodes.loc[self.nodes["ns"] == ns, ["id"]].set_index("id")
         return nodes_ns
-
