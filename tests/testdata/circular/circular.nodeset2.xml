@@ -1,0 +1,70 @@
+<?xml version="1.0" encoding="utf-8"?>
+<UANodeSet xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:uax="http://opcfoundation.org/UA/2008/02/Types.xsd" xmlns="http://opcfoundation.org/UA/2011/03/UANodeSet.xsd" xmlns:s1="http://test.org/Circular/Types.xsd" xmlns:ua="http://unifiedautomation.com/Configuration/NodeSet.xsd" xmlns:xsd="http://www.w3.org/2001/XMLSchema">
+    <NamespaceUris>
+        <Uri>http://test.org/Circular/</Uri>
+    </NamespaceUris>
+    <Models>
+        <Model ModelUri="http://test.org/Circular/" PublicationDate="2022-03-21T14:21:49Z" Version="1.0.0">
+            <RequiredModel ModelUri="http://opcfoundation.org/UA/" PublicationDate="2020-07-15T00:00:00Z" Version="1.04.7"/>
+        </Model>
+    </Models>
+    <Aliases>
+        <Alias Alias="Boolean">i=1</Alias>
+        <Alias Alias="String">i=12</Alias>
+        <Alias Alias="DateTime">i=13</Alias>
+        <Alias Alias="Organizes">i=35</Alias>
+        <Alias Alias="HasTypeDefinition">i=40</Alias>
+        <Alias Alias="HasProperty">i=46</Alias>
+        <Alias Alias="HasComponent">i=47</Alias>
+        <Alias Alias="IdType">i=256</Alias>
+        <Alias Alias="NumericRange">i=291</Alias>
+    </Aliases>
+    <Extensions>
+        <Extension>
+            <ua:ModelInfo Tool="UaModeler" Hash="GEyDYgGuessZSnXc9DHzag==" Version="1.6.5"/>
+        </Extension>
+    </Extensions>
+    <UAObject NodeId="ns=1;i=5002" BrowseName="1:Main">
+        <DisplayName>Main</DisplayName>
+        <References>
+            <Reference ReferenceType="Organizes">ns=1;i=5003</Reference>
+            <Reference ReferenceType="Organizes">ns=1;i=5004</Reference>
+            <Reference ReferenceType="HasTypeDefinition">i=58</Reference>
+            <Reference ReferenceType="Organizes" IsForward="false">i=85</Reference>
+        </References>
+    </UAObject>
+    <UAObject NodeId="ns=1;i=5003" BrowseName="1:A1">
+        <DisplayName>A1</DisplayName>
+        <References>
+            <Reference ReferenceType="Organizes" IsForward="false">ns=1;i=5002</Reference>
+            <Reference ReferenceType="Organizes">ns=1;i=5005</Reference>
+            <Reference ReferenceType="HasTypeDefinition">i=58</Reference>
+            <Reference ReferenceType="Organizes" IsForward="false">ns=1;i=5006</Reference>
+        </References>
+    </UAObject>
+    <UAObject NodeId="ns=1;i=5005" BrowseName="1:A2">
+        <DisplayName>A2</DisplayName>
+        <References>
+            <Reference ReferenceType="Organizes" IsForward="false">ns=1;i=5003</Reference>
+            <Reference ReferenceType="Organizes">ns=1;i=5004</Reference>
+            <Reference ReferenceType="HasTypeDefinition">i=58</Reference>
+        </References>
+    </UAObject>
+    <UAObject NodeId="ns=1;i=5004" BrowseName="1:B1">
+        <DisplayName>B1</DisplayName>
+        <References>
+            <Reference ReferenceType="Organizes" IsForward="false">ns=1;i=5002</Reference>
+            <Reference ReferenceType="Organizes">ns=1;i=5006</Reference>
+            <Reference ReferenceType="HasTypeDefinition">i=58</Reference>
+            <Reference ReferenceType="Organizes" IsForward="false">ns=1;i=5005</Reference>
+        </References>
+    </UAObject>
+    <UAObject NodeId="ns=1;i=5006" BrowseName="1:B2">
+        <DisplayName>B2</DisplayName>
+        <References>
+            <Reference ReferenceType="Organizes">ns=1;i=5003</Reference>
+            <Reference ReferenceType="Organizes" IsForward="false">ns=1;i=5004</Reference>
+            <Reference ReferenceType="HasTypeDefinition">i=58</Reference>
+        </References>
+    </UAObject>
+</UANodeSet>

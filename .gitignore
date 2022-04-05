@@ -138,3 +138,5 @@ tests/expected/paper_example/nodes.csv
 
 # Ignoring the output from tests
 /tests/output
+
+.vscode
