@@ -252,7 +252,7 @@ class UAGraph:
         nodes = nodes.sort_values(by=nodes.columns.values.tolist(), ignore_index=True)
         return nodes
 
-    def _get_references_df(self, namespace_uri: str):
+    def __get_references_df(self, namespace_uri: str):
         ns = self.namespaces.index(namespace_uri)
         nodes_ns = self.nodes.loc[self.nodes["ns"] == ns, ["id"]].set_index("id")
         nodes_ns["in_ns"] = True
@@ -275,7 +275,7 @@ class UAGraph:
     def get_normalized_references_df(self, namespace_uri: Optional[str] = None):
         lookup_df = create_lookup_df(self.nodes)
         if namespace_uri is not None:
-            references = self._get_references_df(namespace_uri)
+            references = self.__get_references_df(namespace_uri)
         else:
             references = self.references.copy()
 
@@ -457,9 +457,9 @@ class UAGraph:
         if not id:
             raise ValueError(f"The id was not properly set and is {id}")
 
-        return self._get_neighboring_nodes_by_id(id, relation)
+        return self.get_neighboring_nodes_by_id(id, relation)
 
-    def _get_neighboring_nodes_by_id(self, id: int, relation: str):
+    def get_neighboring_nodes_by_id(self, id: int, relation: str):
 
         direction = None
         if relation == "outgoing":
@@ -507,7 +507,7 @@ class UAGraph:
     def find_circular_reference_nodes(self, namespace_uri: str) -> pd.DataFrame:
         """This function finds circular references in the given namespace. Returns a dataframe with the Node IDs involved in the circular references"""
         lookup_df = create_lookup_df(self.nodes)
-        refs_ns = self._get_references_df(namespace_uri)
+        refs_ns = self.__get_references_df(namespace_uri)
         type_references = self.references
         type_nodes = self.nodes
         hierarchy_refs = hierarchical_references(refs_ns, type_references, type_nodes)
@@ -529,7 +529,7 @@ class UAGraph:
         cyclic_refs = cyclic_refs.rename(columns={"Src": "NodeId"})
         return cyclic_refs
 
-    def get_nodes_from_ns(self, namespace_uri: str):
+    def __get_nodes_from_ns(self, namespace_uri: str):
         ns = self.namespaces.index(namespace_uri)
         nodes_ns = self.nodes.loc[self.nodes["ns"] == ns, ["id"]].set_index("id")
         return nodes_ns
