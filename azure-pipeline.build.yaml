@@ -16,7 +16,12 @@ strategy:
       python.version: '3.7'
 
 steps:
-- checkout: tags/v0.0.71 # checks out the commit referenced by MyTag.
+- checkout: self
+
+- script: |
+    git checkout tags/v0.0.71
+  displayName: 'Git Checkout specific version'
+
 - task: UsePythonVersion@0
   inputs:
     versionSpec: '$(python.version)'
