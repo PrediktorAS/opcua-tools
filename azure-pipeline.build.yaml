@@ -16,6 +16,12 @@ strategy:
       python.version: '3.7'
 
 steps:
+- checkout: self
+
+- script: |
+    git checkout tags/v0.0.71
+  displayName: 'Git Checkout specific version'
+
 - task: UsePythonVersion@0
   inputs:
     versionSpec: '$(python.version)'
@@ -23,7 +29,7 @@ steps:
 
 - script: |
     python -m pip install --upgrade pip
-    pip install -r requirements.txt
+    python setup.py install
     pip install wheel
   displayName: 'Install dependencies'
 
