@@ -16,9 +16,9 @@ strategy:
 steps:
 - checkout: self
 
-- script: |
-    git checkout tags/v0.0.71
-  displayName: 'Git Checkout specific version'
+#- script: |
+#    git checkout tags/v0.0.71
+#  displayName: 'Git Checkout specific version'
 
 - task: UsePythonVersion@0
   inputs:
