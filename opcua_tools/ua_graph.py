@@ -383,7 +383,11 @@ class UAGraph:
         if has_property_name == "EnumStrings":
             ua_list_of = has_property_node["Value"].values[0]
             for localized_text_i, localized_text in enumerate(ua_list_of.value):
-                enum_dict[localized_text_i] = localized_text.text
+                # For case insensitivity captializing first word if string
+                if isinstance(localized_text.text, str):
+                    enum_dict[localized_text_i] = localized_text.text.title()
+                else:
+                    enum_dict[localized_text_i] = localized_text.text
         else:
             raise NotImplementedError("EnumValues not implemented")
 
@@ -402,6 +406,8 @@ class UAGraph:
         # Ad Hoc solution to ensure text in files does not include newlines and line breaks
         string = string.replace("\r", "")
         string = string.replace("\n", "")
+        string = string.title()
+        string = string.strip()
         enum_dict = self.get_enum_dict(enum_name)
         # TODO: Cache enumdict for performance
         # Getting the dict key based on the value
