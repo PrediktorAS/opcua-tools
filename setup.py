@@ -29,7 +29,7 @@ setup(
     author_email="olav.pedersen@prediktor.com",
     license="Apache License 2.0",
     classifiers=[
-        "License :: OSI Approved :: Apache License",
+        "License :: OSI Approved :: Apache Software License",
         "Programming Language :: Python :: 3",
         "Programming Language :: Python :: 3.7",
     ],
