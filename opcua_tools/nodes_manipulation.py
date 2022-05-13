@@ -58,8 +58,14 @@ def create_enum_dict_from_enum_tuples(row: pd.DataFrame) -> Dict[int, str]:
             xml_string = ua_structure.xmlstring
             xml_dict = xmltodict.parse(xml_string)
 
-            value = int(xml_dict["EnumValueType"]["Value"])
-            text = xml_dict["EnumValueType"]["DisplayName"]["Text"]
+            # This notation and searching is to ignore xmlns handling
+            enum_value_dict = [val for key, val in xml_dict.items() if "EnumValueType" in key]
+            value = [val for key, val in enum_value_dict[0].items() if "Value" in key][0]
+            if value.isdigit():
+                value = int(value)
+            enum_value_dict = [val for key, val in xml_dict.items() if "EnumValueType" in key][0]
+            display_name_dict = [val for key, val in enum_value_dict.items() if "DisplayName" in key][0]
+            text = [val for key, val in display_name_dict.items() if "Text" in key][0]
             enum_dict[value] = text
         elif isinstance(content, UALocalizedText):
             value = index
