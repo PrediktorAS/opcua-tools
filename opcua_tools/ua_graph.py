@@ -444,15 +444,15 @@ class UAGraph:
         references which point to the specific node."""
 
         id = None
-        if node_type is "UAObject":
+        if node_type == "UAObject":
             id = self.object_by_browsename(browse_name)
-        elif node_type is "UADataType":
+        elif node_type == "UADataType":
             id = self.data_type_by_browsename(browse_name)
-        elif node_type is "UAReferenceType":
+        elif node_type == "UAReferenceType":
             id = self.reference_type_by_browsename(browse_name)
-        elif node_type is "UAObjectType":
+        elif node_type == "UAObjectType":
             id = self.object_type_by_browsename(browse_name)
-        elif node_type is "UAVariableType":
+        elif node_type == "UAVariableType":
             id = self.variable_type_by_browsename(browse_name)
         else:
             raise ValueError(
