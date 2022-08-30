@@ -231,12 +231,7 @@ def iterparse_xml(
         elif event == "end":
             elems.append(elem)
         if i % batchsize == 0:
-            logger.info(
-                "Processing "
-                + str(int(batchsize / 2))
-                + " nodes from "
-                + str(int(i * batchsize / 2))
-            )
+            logger.info(f"Processing XML node batch {i}")
             df = process_elem_batch(
                 elems=elems,
                 uaxsd=uaxsd,
