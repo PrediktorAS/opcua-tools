@@ -448,7 +448,25 @@ class UAEngineeringUnits(UAData):
 
         # Todo fix hacky implementation
         return UnparsedUAExtensionObject(
-            UANodeId(0, NodeIdType.NUMERIC, "888"), UAStructure(xmlstring=body_contents)
+            type_nodeid=UANodeId(0, NodeIdType.NUMERIC, "888"),
+            body=UAStructure(xmlstring=body_contents),
+        ).xml_encode(include_xmlns)
+
+
+@dataclass(eq=True, frozen=True)
+class UAEURange(UAData):
+    low: float
+    high: float
+
+    def xml_encode(self, include_xmlns: bool) -> str:
+        body_contents = "<Range>"
+        body_contents += f"<Low>{self.low}</Low>"
+        body_contents += f"<High>{self.high}</High>"
+        body_contents += "</Range>"
+
+        return UnparsedUAExtensionObject(
+            type_nodeid=UANodeId(0, NodeIdType.NUMERIC, "885"),
+            body=UAStructure(xmlstring=body_contents),
         ).xml_encode(include_xmlns)
 
 

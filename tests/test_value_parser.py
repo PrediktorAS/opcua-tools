@@ -12,13 +12,17 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+from opcua_tools.ua_data_types import UAEURange
 from opcua_tools.value_parser import parse_boolean
+from opcua_tools.ua_graph import UAGraph
+from definitions import get_project_root
 import pytest
+import os
 import pandas as pd
 
 
 @pytest.fixture(scope="session")
-def test_data():
+def boolean_test_data():
     list = [
         ["Boolean", "false", False],
         ["Boolean", "False", False],
@@ -29,12 +33,63 @@ def test_data():
     return data
 
 
-def test_parse_boolean(test_data):
+@pytest.fixture(scope="session")
+def ua_graph():
+    path_to_xmls = str(get_project_root() / "tests" / "testdata" / "paper_example")
+    ua_graph = UAGraph.from_path(path_to_xmls)
+    return ua_graph
+
+
+def test_parse_boolean(boolean_test_data):
     """Ensuring that the parse_boolean function in value_parser.py
     will properly deal with upper and lower case representations of
     strings in python."""
 
-    data = test_data.copy()
+    data = boolean_test_data.copy()
     data["dataclass"] = data["input"].apply(lambda value: parse_boolean(value))
     data["output"] = data["dataclass"].apply(lambda bool_class: bool_class.value)
     pd.testing.assert_series_equal(data["output"], data["solution"], check_names=False)
+
+
+def test_proper_initiation_of_eurange_class_when_reading_xml(ua_graph):
+    """Ensuring that the parse EURange parsing in value_parser.py
+    will properly read the EURange in the XML."""
+
+    eurange_nodes = ua_graph.nodes[ua_graph.nodes["DisplayName"] == "EURange"]
+    non_none_eurange_nodes = eurange_nodes[~(eurange_nodes["Value"].isnull())]
+    non_none_eurange_values = non_none_eurange_nodes["Value"]
+    assert non_none_eurange_values.apply(
+        lambda value: isinstance(value, UAEURange)
+    ).all()
+
+
+def test_ua_graph_xml_encode_for_eurange(ua_graph):
+    """Test checks that the UAEURange is correctly encoded when
+    'xml_encode()' is run."""
+    output_folder = get_project_root() / "tests" / "output"
+    output_file_path = str(output_folder / "nodeset_eurange_output.xml")
+
+    # Creating output folder if it does not exist
+    if not os.path.exists(str(output_folder)):
+        os.makedirs(str(output_folder))
+
+    ua_graph.write_nodeset(
+        output_file_path,
+        "http://prediktor.com/paper_example",
+    )
+
+    path_to_tests = get_project_root() / "tests"
+    expected_eurange = str(
+        path_to_tests / "expected" / "value_parser" / "eurange_lines.xml"
+    )
+
+    with open(expected_eurange) as expected_file:
+        expected_eurange_xml_lines = [lines for lines in expected_file]
+
+    output_eurange_xml_lines = []
+    with open(output_file_path) as output_file:
+        for line in output_file:
+            if "ns=1;i=40" in line or "ns=1;i=31" in line:
+                output_eurange_xml_lines.append(line)
+
+    assert set(output_eurange_xml_lines) == set(expected_eurange_xml_lines)

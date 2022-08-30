@@ -191,6 +191,12 @@ def parse_singular_value(val, tagtype):
                 and parsed_typeid.value == "888"
             ):
                 return parse_engineering_units(body)
+            if (
+                parsed_typeid.namespace == 0
+                and parsed_typeid.nodeid_type == NodeIdType.NUMERIC
+                and parsed_typeid.value == "885"
+            ):
+                return parse_eu_range(body)
 
         if body is not None:
             nextbody = next(n for n in body)
@@ -275,6 +281,20 @@ def parse_engineering_units(el):
                     unit_id=unit_id,
                     namespace_uri=namespace_uri,
                 )
+
+
+def parse_eu_range(el):
+    if el is not None:
+        range_tag = el.find(uaxsd + "Range")
+        if range_tag is not None:
+            low_tag = range_tag.find(uaxsd + "Low")
+            low = float(low_tag.text.strip())
+            high_tag = range_tag.find(uaxsd + "High")
+            high = float(high_tag.text.strip())
+            return UAEURange(
+                low=low,
+                high=high,
+            )
 
 
 def parse_boolean(string):
