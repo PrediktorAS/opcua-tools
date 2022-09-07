@@ -31,9 +31,12 @@ import logging
 logger = logging.getLogger(__name__)
 cl = logging.StreamHandler()
 logger.setLevel(logging.INFO)
-formatter = logging.Formatter("%(asctime)s - %(name)s - %(levelname)s - %(message)s")
+formatter = logging.Formatter(
+    "%(asctime)s - %(levelname)s - %(name)s.%(funcName)s().%(lineno)d: %(message)s"
+)
 cl.setFormatter(formatter)
 logger.addHandler(cl)
+pd.set_option("display.max_rows", None, "display.max_columns", None)
 
 
 def create_enum_dict_from_enum_tuples(row: pd.DataFrame) -> Dict[int, str]:
