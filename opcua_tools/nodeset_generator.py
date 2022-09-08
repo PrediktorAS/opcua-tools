@@ -19,12 +19,25 @@ from xml.sax.saxutils import escape
 import lxml.etree as ET
 from datetime import datetime
 import pytz
+import logging
 import pandas as pd
 import numpy as np
 from io import StringIO
 from .ua_data_types import UANodeId, NodeIdType
 
 PATH_HERE = os.path.dirname(__file__)
+
+
+logger = logging.getLogger(__name__)
+cl = logging.StreamHandler()
+logger.setLevel(logging.INFO)
+formatter = logging.Formatter(
+    "%(asctime)s - %(levelname)s - %(name)s.%(funcName)s().%(lineno)d: %(message)s"
+)
+cl.setFormatter(formatter)
+logger.addHandler(cl)
+pd.set_option("display.max_rows", None, "display.max_columns", None)
+
 
 simplevariants = {
     "Boolean",
@@ -309,15 +322,15 @@ def create_nodeset2_file(
         publication_date=publication_date,
     )
     start_time = time.time()
-    print("Creating nodeset2xml-node-string")
+    logger.info("Creating nodeset2xml-node-string")
 
     nodes = nodes[nodes["ns"] == serialize_namespace].copy()
     # References restrict themselves
 
     nodes_df = generate_nodes_xml(nodes, references, lookup_df)
     end_time = time.time()
-    print("Creating nodeset2xml-string took " + str(end_time - start_time))
-    print("Writing nodeset2xml")
+    logger.info(f"Creating nodeset2xml-string took {str(end_time - start_time)}")
+    logger.info("Writing nodeset2xml")
     start_time = time.time()
 
     outstr = header + "\n".join(nodes_df.values) + "\n" + "</UANodeSet>"
@@ -328,7 +341,7 @@ def create_nodeset2_file(
     else:
         filename_or_stringio.write(outstr)
     end_time = time.time()
-    print("Writing nodeset2xml-file took: " + str(end_time - start_time))
+    logger.info(f"Writing nodeset2xml-file took: {str(end_time - start_time)}")
 
 
 def reindex_nodeids_browsenames(
@@ -362,13 +375,13 @@ def validate_nodeset2_file(filename: str):
     parser = ET.XMLParser(schema=schema)
     try:
         ET.parse(filename, parser)
-        print("XML validated by nodeset2 xsd")
+        logger.info("XML validated by nodeset2 xsd")
     except Exception as e:
-        print("XML is invalid according to nodeset2 xsd")
-        print("Error occured:")
-        print(e)
+        logger.info("XML is invalid according to nodeset2 xsd")
+        logger.info("Error occured:")
+        logger.info(e)
     end_time = time.time()
-    print("Validating nodeset2xml-file took: " + str(end_time - start_time))
+    logger.info(f"Validating nodeset2xml-file took: {str(end_time - start_time)}")
 
 
 def create_lookup_df(nodes):

@@ -80,6 +80,19 @@
             <Reference ReferenceType="i=40">i=68</Reference>
             <Reference ReferenceType="i=46" IsForward="false">ns=1;i=39</Reference>
         </References>
+        <Value>
+            <ExtensionObject xmlns="http://opcfoundation.org/UA/2008/02/Types.xsd">
+                <TypeId>
+                    <Identifier>i=885</Identifier>
+                </TypeId>
+                <Body>
+                    <Range>
+                        <Low>2.2</Low>
+                        <High>1984.20</High>
+                    </Range>
+                </Body>
+            </ExtensionObject>
+        </Value>
     </UAVariable>
     <UAVariable NodeId="ns=1;i=41" BrowseName="EngineeringUnits" DataType="i=887" AccessLevel="3">
         <DisplayName>EngineeringUnits</DisplayName>
@@ -379,6 +392,19 @@
             <Reference ReferenceType="i=40">i=68</Reference>
             <Reference ReferenceType="i=46" IsForward="false">ns=1;i=30</Reference>
         </References>
+        <Value>
+            <ExtensionObject xmlns="http://opcfoundation.org/UA/2008/02/Types.xsd">
+                <TypeId>
+                    <Identifier>i=885</Identifier>
+                </TypeId>
+                <Body>
+                    <Range>
+                        <Low>0</Low>
+                        <High>666</High>
+                    </Range>
+                </Body>
+            </ExtensionObject>
+        </Value>
     </UAVariable>
     <UAVariable NodeId="ns=1;i=32" BrowseName="EngineeringUnits" DataType="i=887" AccessLevel="3">
         <DisplayName>EngineeringUnits</DisplayName>

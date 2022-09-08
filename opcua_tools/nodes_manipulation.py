@@ -31,9 +31,12 @@ import logging
 logger = logging.getLogger(__name__)
 cl = logging.StreamHandler()
 logger.setLevel(logging.INFO)
-formatter = logging.Formatter("%(asctime)s - %(name)s - %(levelname)s - %(message)s")
+formatter = logging.Formatter(
+    "%(asctime)s - %(levelname)s - %(name)s.%(funcName)s().%(lineno)d: %(message)s"
+)
 cl.setFormatter(formatter)
 logger.addHandler(cl)
+pd.set_option("display.max_rows", None, "display.max_columns", None)
 
 
 def create_enum_dict_from_enum_tuples(row: pd.DataFrame) -> Dict[int, str]:
@@ -59,12 +62,20 @@ def create_enum_dict_from_enum_tuples(row: pd.DataFrame) -> Dict[int, str]:
             xml_dict = xmltodict.parse(xml_string)
 
             # This notation and searching is to ignore xmlns handling
-            enum_value_dict = [val for key, val in xml_dict.items() if "EnumValueType" in key]
-            value = [val for key, val in enum_value_dict[0].items() if "Value" in key][0]
+            enum_value_dict = [
+                val for key, val in xml_dict.items() if "EnumValueType" in key
+            ]
+            value = [val for key, val in enum_value_dict[0].items() if "Value" in key][
+                0
+            ]
             if value.isdigit():
                 value = int(value)
-            enum_value_dict = [val for key, val in xml_dict.items() if "EnumValueType" in key][0]
-            display_name_dict = [val for key, val in enum_value_dict.items() if "DisplayName" in key][0]
+            enum_value_dict = [
+                val for key, val in xml_dict.items() if "EnumValueType" in key
+            ][0]
+            display_name_dict = [
+                val for key, val in enum_value_dict.items() if "DisplayName" in key
+            ][0]
             text = [val for key, val in display_name_dict.items() if "Text" in key][0]
             enum_dict[value] = text
         elif isinstance(content, UALocalizedText):
