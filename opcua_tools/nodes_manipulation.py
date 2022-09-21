@@ -212,6 +212,7 @@ def transform_ints_to_enums(ua_graph: UAGraph):
 
     # Have to join the enum_definition_table to enum_nodes table
     enum_def_table = enum_def_table.set_index("id", drop=True)
+    enum_nodes["DataType"] = enum_nodes["DataType"].astype(str).astype(int)
     enum_nodes = enum_nodes.set_index("DataType", drop=False)
     enum_nodes = enum_nodes.join(enum_def_table, how="left")
 
