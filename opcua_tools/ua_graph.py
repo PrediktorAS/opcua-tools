@@ -1,15 +1,15 @@
 import pandas as pd
-from .ua_data_types import UANodeId
+from opcua_tools.ua_data_types import UANodeId
 
-from .nodeset_parser import parse_xml_dir, parse_xml_files
-from .navigation import (
+from opcua_tools.nodeset_parser import parse_xml_dir, parse_xml_files
+from opcua_tools.navigation import (
     hierarchical_references,
     resolve_ids_from_browsenames,
     fast_transitive_closure,
 )
 
 import opcua_tools.nodes_manipulation as nodes_manipulation
-from .nodeset_generator import (
+from opcua_tools.nodeset_generator import (
     create_nodeset2_file,
     create_lookup_df,
     denormalize_nodes_nodeids,

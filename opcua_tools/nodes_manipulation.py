@@ -13,9 +13,9 @@
 # limitations under the License.
 
 
-from .ua_graph import UAGraph
+from opcua_tools.ua_graph import UAGraph
 from typing import Dict
-from .ua_data_types import (
+from opcua_tools.ua_data_types import (
     UAEnumeration,
     UAInt32,
     UAListOf,

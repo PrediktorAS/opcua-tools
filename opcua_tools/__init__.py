@@ -12,14 +12,14 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from .navigation import *
-from .nodes_manipulation import transform_ints_to_enums
-from .nodeset_generator import create_nodeset2_file, validate_nodeset2_file
-from .nodeset_parser import (
+from opcua_tools.navigation import *
+from opcua_tools.nodes_manipulation import transform_ints_to_enums
+from opcua_tools.nodeset_generator import create_nodeset2_file, validate_nodeset2_file
+from opcua_tools.nodeset_parser import (
     parse_xml_dir,
     parse_xml_files,
     parse_xml,
     normalize_wrt_nodeid,
 )
-from .ua_data_types import *
-from .ua_graph import UAGraph
+from opcua_tools.ua_data_types import *
+from opcua_tools.ua_graph import UAGraph

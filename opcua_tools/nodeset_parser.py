@@ -16,8 +16,8 @@ import os
 import re
 import logging
 from typing import List, Dict, Any, Optional, Union
-from .value_parser import parse_value, parse_nodeid
-from .ua_data_types import UANodeId
+from opcua_tools.value_parser import parse_value, parse_nodeid
+from opcua_tools.ua_data_types import UANodeId
 
 import lxml.etree as ET
 import pandas as pd

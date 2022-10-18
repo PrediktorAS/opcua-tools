@@ -16,7 +16,7 @@ from typing import List, Union
 import numpy as np
 import pandas as pd
 from scipy.sparse import coo_matrix, eye
-from .value_parser import parse_nodeid
+from opcua_tools.value_parser import parse_nodeid
 
 
 def supertypes_of_nodes(

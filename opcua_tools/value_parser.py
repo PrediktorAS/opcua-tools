@@ -21,7 +21,7 @@ from dateutil import parser
 import copy
 
 from typing import Dict
-from .ua_data_types import *
+from opcua_tools.ua_data_types import *
 
 simple = {
     "Boolean",

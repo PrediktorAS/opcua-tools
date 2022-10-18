@@ -23,7 +23,7 @@ import logging
 import pandas as pd
 import numpy as np
 from io import StringIO
-from .ua_data_types import UANodeId, NodeIdType
+from opcua_tools.ua_data_types import UANodeId, NodeIdType
 
 PATH_HERE = os.path.dirname(__file__)
 
