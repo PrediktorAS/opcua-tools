@@ -7,8 +7,8 @@ from definitions import get_project_root
 
 
 @pytest.fixture(scope="session")
-def ua_graph():
-    path_to_xmls = str(get_project_root() / "tests" / "testdata" / "paper_example")
+def ua_graph(paper_example_path):
+    path_to_xmls = str(paper_example_path)
     ua_graph = UAGraph.from_path(path_to_xmls)
     transform_ints_to_enums(ua_graph)
     return ua_graph

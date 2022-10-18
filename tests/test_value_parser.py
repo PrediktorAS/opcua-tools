@@ -34,9 +34,8 @@ def boolean_test_data():
 
 
 @pytest.fixture(scope="session")
-def ua_graph():
-    path_to_xmls = str(get_project_root() / "tests" / "testdata" / "paper_example")
-    ua_graph = UAGraph.from_path(path_to_xmls)
+def ua_graph(paper_example_path):
+    ua_graph = UAGraph.from_path(str(paper_example_path))
     return ua_graph
 
 
