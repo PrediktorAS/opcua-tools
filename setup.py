@@ -41,7 +41,7 @@ setup(
         "xmltodict>=0.12.0",
         "pytest>=6.2.5",
         "pandas>=1.2.2",
-        "pandas<1.5.0",
+        "pandas<1.6.0",
         "scipy>=1.6.1",
         "scipy<2.0",
     ],
