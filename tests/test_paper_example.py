@@ -12,18 +12,16 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+from definitions import get_project_root
 import opcua_tools as ot
 from opcua_tools.nodeset_generator import (
     denormalize_nodes_nodeids,
     denormalize_references_nodeids,
 )
-import os
-
-PATH_HERE = os.path.dirname(__file__)
 
 
-def test_values_correct():
-    parse_dict = ot.parse_xml_dir(PATH_HERE + "/testdata/paper_example")
+def test_values_correct(paper_example_path):
+    parse_dict = ot.parse_xml_dir(str(paper_example_path))
 
     nodes = parse_dict["nodes"]
     references = parse_dict["references"]
@@ -35,4 +33,7 @@ def test_values_correct():
 
     nodes = nodes[nodes["ns"] == 1]  # Select only example namespace.
 
-    nodes.to_csv(PATH_HERE + "/expected/paper_example/nodes.csv", index=False)
+    output_path = (
+        get_project_root() / "tests" / "expected" / "paper_example" / "nodes.csv"
+    )
+    nodes.to_csv(str(output_path), index=False)

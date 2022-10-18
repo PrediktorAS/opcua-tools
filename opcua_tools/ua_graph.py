@@ -1,3 +1,4 @@
+import logging
 import pandas as pd
 from opcua_tools.ua_data_types import UANodeId
 
@@ -6,6 +7,7 @@ from opcua_tools.navigation import (
     hierarchical_references,
     resolve_ids_from_browsenames,
     fast_transitive_closure,
+    find_relatives,
 )
 
 import opcua_tools.nodes_manipulation as nodes_manipulation
@@ -18,6 +20,10 @@ from opcua_tools.nodeset_generator import (
 from typing import List, Optional, Union, Dict
 from io import StringIO
 from datetime import datetime
+
+
+logger = logging.getLogger(__name__)
+logger.addHandler(logging.NullHandler())
 
 
 class UAGraph:
@@ -509,6 +515,70 @@ class UAGraph:
         )
 
         return references
+
+    def create_node_paths_by_reference_types(
+        self,
+        root_node_browsename: str,
+        hierarchical_reference_types: List[str],
+    ) -> pd.DataFrame:
+        root_node_id = self.object_by_browsename(root_node_browsename)
+
+        reference_type_ids = []
+        for ref in hierarchical_reference_types:
+            try:
+                reference_type_ids.append(self.reference_type_by_browsename(ref))
+            except IndexError as e:
+                logger.error(
+                    f"The ReferenceType: {ref}, was not found in the nodes and references"
+                )
+                raise
+
+        hierarchical_references = self.references[
+            self.references["ReferenceType"].isin(reference_type_ids)
+        ]
+        root_node_id_df = self.nodes.loc[
+            self.nodes["id"] == root_node_id, ["id"]
+        ].copy()
+        relatives = find_relatives(
+            nodes=root_node_id_df,
+            nodes_key_col="id",
+            edges=hierarchical_references,
+            relative_type="d",
+            keep_paths=True,
+        )
+
+        path_columns = [c for c in relatives.columns if type(c) == int and c > 0]
+
+        relatives = relatives.melt(
+            id_vars=[0, "end"], value_vars=path_columns, value_name="id"
+        ).dropna()
+        nodes_browsename = self.nodes[["id", "BrowseName"]].set_index("id")
+
+        relatives = (
+            relatives.set_index("id").join(nodes_browsename).reset_index(drop=True)
+        )
+        relatives = relatives.sort_values(by=[0, "end", "variable"], ignore_index=True)
+        relatives = relatives.rename(columns={0: "start"})
+        relatives = (
+            relatives.groupby(by=["start", "end"])
+            .agg({"BrowseName": lambda x: "/".join(x.to_list())})
+            .reset_index()
+        )
+
+        node_paths = relatives[["end", "BrowseName"]].rename(
+            columns={"end": "id", "BrowseName": "NodePath"}
+        )
+        node_paths = node_paths.append(
+            pd.DataFrame({"id": [root_node_id], "NodePath": [""]})
+        )
+
+        # Adding the root_node to the start of the path
+        node_paths["NodePath"] = node_paths["NodePath"].apply(
+            lambda name: "/".join([root_node_browsename, name])
+        )
+        node_paths = node_paths.sort_values("NodePath").reset_index(drop=True)
+
+        return node_paths
 
     def find_circular_reference_nodes(self, namespace_uri: str) -> pd.DataFrame:
         """This function finds circular references in the given namespace. Returns a dataframe with the Node IDs involved in the circular references"""

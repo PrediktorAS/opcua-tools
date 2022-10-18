@@ -72,8 +72,8 @@ def test_idempotency():
     os.remove(PATH_HERE + "/expected/generator/nodeset2.xml")
 
 
-def test_ua_graph_write_nodeset_without_crash():
-    path_to_xmls = str(get_project_root() / "tests" / "testdata" / "paper_example")
+def test_ua_graph_write_nodeset_without_crash(paper_example_path):
+    path_to_xmls = str(paper_example_path)
     ua_graph = UAGraph.from_path(path_to_xmls)
 
     output_folder = get_project_root() / "tests" / "output"

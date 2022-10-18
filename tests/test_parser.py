@@ -74,8 +74,8 @@ def test_parse_file_list():
     ot.parse_xml_files(xml_list)
 
 
-def test_parse_no_namespace_list():
-    path_to_xmls = str(Path(PATH_HERE) / "testdata" / "paper_example")
+def test_parse_no_namespace_list(paper_example_path):
+    path_to_xmls = str(paper_example_path)
     ua_graph = ot.UAGraph.from_path(path_to_xmls)
 
     # Checking that content is in correct namespace
@@ -90,7 +90,7 @@ def test_parse_no_namespace_list():
     assert site1_row["ns"].values[0] == 1
 
 
-def test_parse_regular_namespace_list():
+def test_parse_regular_namespace_list(paper_example_path):
     namespace_dict = {
         0: "http://opcfoundation.org/UA/",
         1: "http://prediktor.no/apis/ua/",
@@ -98,7 +98,7 @@ def test_parse_regular_namespace_list():
         3: "http://prediktor.com/iec63131_fragment",
         4: "http://prediktor.com/RDS-OG-Fragment",
     }
-    path_to_xmls = str(Path(PATH_HERE) / "testdata" / "paper_example")
+    path_to_xmls = str(paper_example_path)
     ua_graph = ot.UAGraph.from_path(path_to_xmls, namespace_dict)
 
     # Checking that content is in correct namespace
@@ -113,7 +113,7 @@ def test_parse_regular_namespace_list():
     assert site1_row["ns"].values[0] == 2
 
 
-def test_parse_scattered_namespace_list():
+def test_parse_scattered_namespace_list(paper_example_path):
     namespace_dict = {
         0: "http://opcfoundation.org/UA/",
         7: "http://prediktor.no/apis/ua/",
@@ -121,7 +121,7 @@ def test_parse_scattered_namespace_list():
         3: "http://prediktor.com/iec63131_fragment",
         6: "http://prediktor.com/RDS-OG-Fragment",
     }
-    path_to_xmls = str(Path(PATH_HERE) / "testdata" / "paper_example")
+    path_to_xmls = str(paper_example_path)
     ua_graph = ot.UAGraph.from_path(path_to_xmls, namespace_dict)
 
     # Checking that content is in correct namespace
