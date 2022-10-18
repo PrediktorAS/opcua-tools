@@ -23,20 +23,13 @@ import logging
 import pandas as pd
 import numpy as np
 from io import StringIO
-from .ua_data_types import UANodeId, NodeIdType
+from opcua_tools.ua_data_types import UANodeId, NodeIdType
 
 PATH_HERE = os.path.dirname(__file__)
 
 
 logger = logging.getLogger(__name__)
-cl = logging.StreamHandler()
-logger.setLevel(logging.INFO)
-formatter = logging.Formatter(
-    "%(asctime)s - %(levelname)s - %(name)s.%(funcName)s().%(lineno)d: %(message)s"
-)
-cl.setFormatter(formatter)
-logger.addHandler(cl)
-pd.set_option("display.max_rows", None, "display.max_columns", None)
+logger.addHandler(logging.NullHandler())
 
 
 simplevariants = {

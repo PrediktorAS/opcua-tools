@@ -13,9 +13,9 @@
 # limitations under the License.
 
 
-from .ua_graph import UAGraph
+from opcua_tools.ua_graph import UAGraph
 from typing import Dict
-from .ua_data_types import (
+from opcua_tools.ua_data_types import (
     UAEnumeration,
     UAInt32,
     UAListOf,
@@ -29,14 +29,7 @@ import logging
 
 
 logger = logging.getLogger(__name__)
-cl = logging.StreamHandler()
-logger.setLevel(logging.INFO)
-formatter = logging.Formatter(
-    "%(asctime)s - %(levelname)s - %(name)s.%(funcName)s().%(lineno)d: %(message)s"
-)
-cl.setFormatter(formatter)
-logger.addHandler(cl)
-pd.set_option("display.max_rows", None, "display.max_columns", None)
+logger.addHandler(logging.NullHandler())
 
 
 def create_enum_dict_from_enum_tuples(row: pd.DataFrame) -> Dict[int, str]:
