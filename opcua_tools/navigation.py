@@ -87,6 +87,54 @@ def hierarchical_references_trg_has_no_modelling_rule(
     ].copy()
 
 
+def non_hierarchical_references_trg_has_no_modelling_rule(
+    references: pd.DataFrame, type_references: pd.DataFrame, type_nodes: pd.DataFrame
+) -> pd.DataFrame:
+    """This function expects a table of references on which to find the subset
+    of references containing only references of the subtype "NonHierarchicalReferences" in
+    OPC UA standard, which point to nodes which do no not have a reference to a ModellingRule Node.
+    In order to do this the function also requires tables of the nodes and references which describe
+    the types in the references table.
+
+    Instance Declarations require having a HasModellingRule reference to a Modelling Rule.
+    If this function is used in a type namespace, it will produce non-hierarchical reference
+    types which do not point to InstanceDeclarations.
+
+    Args:
+        references (pd.DataFrame): A table of references on which to perform the sub-setting on.
+        type_references (pd.DataFrame): A table of references describing the type namespace.
+        type_nodes (pd.DataFrame): A table of nodes describing the type namespace.
+
+    Returns:
+        pd.DataFrame: Dataframe containing the list of all non-hierarchical references where the
+            target is a node which does not have a reference to a Modelling Rule node.
+
+    """
+
+    non_hierarchical_refs = non_hierarchical_references(
+        inst_references=references,
+        type_references=type_references,
+        type_nodes=type_nodes,
+    )
+    has_modelling_rule = has_modelling_rule_references(
+        inst_references=references,
+        type_references=type_references,
+        type_nodes=type_nodes,
+    )[["Src"]].rename(columns={"Src": "id"})
+    has_modelling_rule = has_modelling_rule.set_index("id")
+    non_hierarchical_refs_has_no_modelling_rule = non_hierarchical_refs.set_index(
+        "Trg", drop=False
+    )
+    trg_no_modelling_rule = ~non_hierarchical_refs_has_no_modelling_rule.index.isin(
+        has_modelling_rule.index
+    )
+    non_hierarchical_refs_has_no_modelling_rule = non_hierarchical_refs_has_no_modelling_rule[
+        trg_no_modelling_rule
+    ].copy()
+    return non_hierarchical_refs_has_no_modelling_rule[
+        ["Src", "Trg", "ReferenceType"]
+    ].copy()
+
 def find_relatives(
     nodes: pd.DataFrame,
     nodes_key_col: str,
@@ -235,6 +283,37 @@ def hierarchical_references(
     ].iloc[0]
     prop_ref = constrain_to_reference_type(
         inst_references, type_nodes, type_references, [hierref_id]
+    )
+    return prop_ref
+
+
+def non_hierarchical_references(
+    inst_references: pd.DataFrame,
+    type_references: pd.DataFrame,
+    type_nodes: pd.DataFrame,
+) -> pd.DataFrame:
+    """This function expects a table of references on which to find the subset
+    of references containing only references of the subtype "NonHierarchicalReferences"
+    in OPC UA standard. In order to do this the function also requires tables of the
+    nodes and references which describe the types in the references table.
+
+    Args:
+        inst_references (pd.DataFrame): A table of references on which to perform the sub-setting on.
+        type_references (pd.DataFrame): A table of references describing the type namespace.
+        type_nodes (pd.DataFrame): A table of nodes describing the type namespace.
+
+    Returns:
+        pd.DataFrame: Dataframe containing the list of all non-hierarchical references.
+
+    """
+
+    non_hierref_id = type_nodes.loc[
+        (type_nodes["NodeClass"] == "UAReferenceType")
+        & (type_nodes["BrowseName"] == "NonHierarchicalReferences"),
+        "id",
+    ].iloc[0]
+    prop_ref = constrain_to_reference_type(
+        inst_references, type_nodes, type_references, [non_hierref_id]
     )
     return prop_ref
 
