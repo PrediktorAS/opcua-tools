@@ -96,8 +96,9 @@ def non_hierarchical_references_trg_has_no_modelling_rule(
     In order to do this the function also requires tables of the nodes and references which describe
     the types in the references table.
 
-    This means these are non-hierarchical reference types which do no point
-    InstanceDeclarations, if in the type namespace, as they require a Modelling Rule.
+    Instance Declarations require having a HasModellingRule reference to a Modelling Rule.
+    If this function is used in a type namespace, it will produce non-hierarchical reference
+    types which do not point to InstanceDeclarations.
 
     Args:
         references (pd.DataFrame): A table of references on which to perform the sub-setting on.
