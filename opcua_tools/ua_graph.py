@@ -81,118 +81,140 @@ class UAGraph:
             == self.reference_type_by_browsename(browsename)
         ].copy()
 
-    def reference_type_by_browsename(self, browsename: str) -> int:
+    def __ua_nodeclass_by_browsename(
+        self, browsename: str, nodeclass: Optional[str] = None
+    ) -> int:
+        """Retrieves the internal id from the OPC UA graph which has a NodeClass `nodeclass`
+        (UAVariableType in the UAGraph), for the given `browsename` input. If multiple nodes
+        are found, an error is raised.
+
+        Args:
+            browsename (str): BrowseName of the node to find.
+            nodeclass (Optional[str], optional): NodeClass of the node to find. Defaults to None.
+
+        Raises:
+            ValueError: If browsename is None or empty string.
+            ValueError: If no node is found.
+            ValueError: If multiple nodes are found.
+
+        Returns:
+            int: The internal id of the node.
+        """
         if browsename is None or browsename == "":
             raise ValueError(
-                '"browsename" must not be None or empty string, should be BrowseName of ReferenceType'
+                f'"browsename" must not be None or empty string, should be BrowseName of {nodeclass}'
             )
 
-        reference_type_nodes = self.nodes[self.nodes["NodeClass"] == "UAReferenceType"]
-        reference_type_ids = resolve_ids_from_browsenames(
-            nodes=reference_type_nodes, browsenames=[browsename]
-        )
-        if len(reference_type_ids) == 0:
-            raise ValueError("Could not find ReferenceType " + browsename)
-        elif len(reference_type_ids) > 1:
-            raise ValueError(
-                "Multiple hits for ReferenceType "
-                + browsename
-                + " please specify namespace"
-            )
+        if nodeclass:
+            nodeclass_nodes = self.nodes[self.nodes["NodeClass"] == f"UA{nodeclass}"]
         else:
-            reference_type_id = reference_type_ids.iloc[0]
+            nodeclass_nodes = self.nodes
 
-        return int(reference_type_id)
+        nodeclass_ids = resolve_ids_from_browsenames(
+            nodes=nodeclass_nodes, browsenames=[browsename]
+        )
+        if len(nodeclass_ids) == 0:
+            raise ValueError(f"Could not find {nodeclass} " + browsename)
+        elif len(nodeclass_ids) > 1:
+            raise ValueError(f"Multiple hits for {nodeclass} " + browsename + " found.")
+        else:
+            nodeclass_id = nodeclass_ids.iloc[0]
+        return int(nodeclass_id)
+
+    def reference_type_by_browsename(self, browsename: str) -> int:
+        """Retrieves the internal id from the OPC UA graph which has a NodeClass "ReferenceType"
+        (UAReferenceType in the UAGraph), for the given `browsename` input. If multiple nodes
+        are found, an error is raised.
+
+        Args:
+            browsename (str): BrowseName of the node to find.
+
+        Returns:
+            int: The internal id of the node.
+        """
+        return self.__ua_nodeclass_by_browsename(browsename, "ReferenceType")
 
     def object_type_by_browsename(self, browsename: str) -> int:
-        if browsename is None or browsename == "":
-            raise ValueError(
-                '"browsename" must not be None or empty string, should be BrowseName of ObjectType'
-            )
+        """Retrieves the internal id from the OPC UA graph which has a NodeClass "ObjectType"
+        (UAObjectType in the UAGraph), for the given `browsename` input. If multiple nodes
+        are found, an error is raised.
 
-        object_type_nodes = self.nodes[self.nodes["NodeClass"] == "UAObjectType"]
-        object_type_ids = resolve_ids_from_browsenames(
-            nodes=object_type_nodes, browsenames=[browsename]
-        )
-        if len(object_type_ids) == 0:
-            raise ValueError("Could not find object type " + browsename)
-        elif len(object_type_ids) > 1:
-            raise ValueError(
-                "Multiple hits for object type "
-                + browsename
-                + " please specify namespace"
-            )
-        else:
-            object_type_id = object_type_ids.iloc[0]
+        Args:
+            browsename (str): BrowseName of the node to find.
 
-        return int(object_type_id)
+        Returns:
+            int: The internal id of the node.
+        """
+        return self.__ua_nodeclass_by_browsename(browsename, "ObjectType")
 
     def variable_type_by_browsename(self, browsename: str) -> int:
-        if browsename is None or browsename == "":
-            raise ValueError(
-                '"browsename" must not be None or empty string, should be BrowseName of VariableType'
-            )
+        """Retrieves the internal id from the OPC UA graph which has a NodeClass "VariableType"
+        (UAVariableType in the UAGraph), for the given `browsename` input. If multiple nodes
+        are found, an error is raised.
 
-        variable_type_nodes = self.nodes[self.nodes["NodeClass"] == "UAVariableType"]
-        variable_type_ids = resolve_ids_from_browsenames(
-            nodes=variable_type_nodes, browsenames=[browsename]
-        )
-        if len(variable_type_ids) == 0:
-            raise ValueError("Could not find variable type " + browsename)
-        elif len(variable_type_ids) > 1:
-            raise ValueError(
-                "Multiple hits for variable type "
-                + browsename
-                + " please specify namespace"
-            )
-        else:
-            variable_type_id = variable_type_ids.iloc[0]
+        Args:
+            browsename (str): BrowseName of the node to find.
 
-        return int(variable_type_id)
+        Returns:
+            int: The internal id of the node.
+        """
+        return self.__ua_nodeclass_by_browsename(browsename, "VariableType")
 
     def data_type_by_browsename(self, browsename: str) -> int:
-        if browsename is None or browsename == "":
-            raise ValueError(
-                '"browsename" must not be None or empty string, should be BrowseName of DataType'
-            )
+        """Retrieves the internal id from the OPC UA graph which has a NodeClass "DataType"
+        (UADataType in the UAGraph), for the given `browsename` input. If multiple nodes
+        are found, an error is raised.
 
-        data_type_nodes = self.nodes[self.nodes["NodeClass"] == "UADataType"]
-        data_type_ids = resolve_ids_from_browsenames(
-            nodes=data_type_nodes, browsenames=[browsename]
-        )
-        if len(data_type_ids) == 0:
-            raise ValueError("Could not find data type " + browsename)
-        elif len(data_type_ids) > 1:
-            raise ValueError(
-                "Multiple hits for data type "
-                + browsename
-                + " please specify namespace"
-            )
-        else:
-            data_type_id = data_type_ids.iloc[0]
+        Args:
+            browsename (str): BrowseName of the node to find.
 
-        return int(data_type_id)
+        Returns:
+            int: The internal id of the node.
+        """
+        return self.__ua_nodeclass_by_browsename(browsename, "DataType")
 
     def object_by_browsename(self, browsename: str) -> int:
-        if browsename is None or browsename == "":
-            raise ValueError(
-                '"browsename" must not be None or empty string, should be BrowseName of Object'
-            )
+        """Retrieves the internal id from the OPC UA graph which has a NodeClass "Object"
+        (UAObject in the UAGraph), for the given `browsename` input. If multiple nodes
+        are found, an error is raised.
 
-        object_nodes = self.nodes[self.nodes["NodeClass"] == "UAObject"]
-        object_ids = resolve_ids_from_browsenames(
-            nodes=object_nodes, browsenames=[browsename]
-        )
-        if len(object_ids) == 0:
-            raise ValueError("Could not find object " + browsename)
-        elif len(object_ids) > 1:
-            raise ValueError(
-                "Multiple hits for object " + browsename + " please specify namespace"
-            )
+        Args:
+            browsename (str): BrowseName of the node to find.
+
+        Returns:
+            int: The internal id of the node.
+        """
+        return self.__ua_nodeclass_by_browsename(browsename, "Object")
+
+    def nodeid_by_browsename(
+        self, browsename: str, nodeclass: Optional[str] = None
+    ) -> int:
+        """Retrieves the NodeId from the OPC UA graph which has a NodeClass `nodeclass`
+        (UAVariableType in the UAGraph), for the given `browsename` input. If multiple nodes
+        are found, an error is raised. Please note that the 'nodeclass' variable has to be
+        a string, e.g. "VariableType", "DataType", etc. in the form of CamelCase.
+
+        Args:
+            browsename (str): BrowseName of the node to find.
+            nodeclass (Optional[str], optional): NodeClass of the node to find. Defaults to None.
+
+        Raises:
+            ValueError: If browsename is None or empty string.
+            ValueError: If no node is found.
+            ValueError: If multiple nodes are found.
+
+        Returns:
+            int: The NodeId of the node.
+        """
+        if nodeclass:
+            id = self.__ua_nodeclass_by_browsename(browsename, nodeclass)
         else:
-            reference_type_id = object_ids.iloc[0]
+            id = self.__ua_nodeclass_by_browsename(browsename)
 
-        return int(reference_type_id)
+        if id is None:
+            raise ValueError(f"Could not find node with browsename {browsename}")
+        node_id = self.nodes.loc[self.nodes["id"] == id, "NodeId"].values[0]
+        return node_id
 
     def write_nodeset(
         self,
