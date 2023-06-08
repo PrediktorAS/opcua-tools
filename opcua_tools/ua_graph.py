@@ -185,10 +185,36 @@ class UAGraph:
             int: The internal id of the node.
         """
         return self.__ua_nodeclass_by_browsename(browsename, "Object")
-        else:
-            reference_type_id = object_ids.iloc[0]
 
-        return int(reference_type_id)
+    def nodeid_by_browsename(
+        self, browsename: str, nodeclass: Optional[str] = None
+    ) -> int:
+        """Retrieves the NodeId from the OPC UA graph which has a NodeClass `nodeclass`
+        (UAVariableType in the UAGraph), for the given `browsename` input. If multiple nodes
+        are found, an error is raised. Please note that the 'nodeclass' variable has to be
+        a string, e.g. "VariableType", "DataType", etc. in the form of CamelCase.
+
+        Args:
+            browsename (str): BrowseName of the node to find.
+            nodeclass (Optional[str], optional): NodeClass of the node to find. Defaults to None.
+
+        Raises:
+            ValueError: If browsename is None or empty string.
+            ValueError: If no node is found.
+            ValueError: If multiple nodes are found.
+
+        Returns:
+            int: The NodeId of the node.
+        """
+        if nodeclass:
+            id = self.__ua_nodeclass_by_browsename(browsename, nodeclass)
+        else:
+            id = self.__ua_nodeclass_by_browsename(browsename)
+
+        if id is None:
+            raise ValueError(f"Could not find node with browsename {browsename}")
+        node_id = self.nodes.loc[self.nodes["id"] == id, "NodeId"].values[0]
+        return node_id
 
     def write_nodeset(
         self,
