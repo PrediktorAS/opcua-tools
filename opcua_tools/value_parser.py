@@ -14,14 +14,36 @@
 
 import base64
 import re
-
-import lxml.etree as ET
-from lxml import objectify
-from dateutil import parser
 import copy
+import lxml.etree as ET
 
-from typing import Dict
-from opcua_tools.ua_data_types import *
+from dateutil import parser
+from typing import Dict, Optional
+from opcua_tools.ua_data_types import (
+    UASByte,
+    UAByte,
+    UAInt16,
+    UAUInt16,
+    UAInt32,
+    UAUInt32,
+    UAInt64,
+    UAUInt64,
+    UAFloat,
+    UADouble,
+    UAGuid,
+    UAByteString,
+    UAXMLElement,
+    UADateTime,
+    UAEngineeringUnits,
+    UAExtensionObject,
+    UANodeId,
+    UABoolean,
+    UAString,
+    UAEURange,
+    UALocalizedText,
+    UAListOf,
+    NodeIdType,
+)
 
 simple = {
     "Boolean",
@@ -184,7 +206,7 @@ def parse_singular_value(val, tagtype):
 
         body = val.find(uaxsd + "Body")
 
-        if parsed_typeid is not None and type(parsed_typeid) == UANodeId:
+        if parsed_typeid is not None:
             if (
                 parsed_typeid.namespace == 0
                 and parsed_typeid.nodeid_type == NodeIdType.NUMERIC
@@ -198,7 +220,7 @@ def parse_singular_value(val, tagtype):
             ):
                 return parse_eu_range(body)
 
-        if body is not None:
+        if body is not None and len(body) > 0:
             nextbody = next(n for n in body)
             if nextbody is None:
                 parsednextbody = None
@@ -207,7 +229,10 @@ def parse_singular_value(val, tagtype):
         else:
             parsednextbody = None
 
-        return UnparsedUAExtensionObject(type_nodeid=parsed_typeid, body=parsednextbody)
+        if parsednextbody is not None and parsed_typeid is not None:
+            return UAExtensionObject(type_nodeid=parsed_typeid, body=parsednextbody)
+        else:
+            return None
 
     else:
         # Need to copy element, cleanup_namespaces only works if a copy is made
@@ -215,7 +240,7 @@ def parse_singular_value(val, tagtype):
         # Remove unused xml namespaces
         ET.cleanup_namespaces(val_copy)
 
-        return UAStructure(xmlstring=ET.tostring(val_copy).decode("utf-8"))
+        return UAXMLElement(value=ET.tostring(val_copy).decode("utf-8"))
 
     raise NotImplementedError(tagtype)
 
@@ -256,8 +281,17 @@ def parse_localized_text(el):
     loc = el.find(uaxsd + "Locale")
     if loc is None:
         locale = None
+    elif loc.text is None:
+        locale = None
+    elif type(loc.text) == str:
+        loc_text_str = loc.text.strip()
+        if loc_text_str == "":
+            locale = None
+        else:
+            locale = loc.text
     else:
-        locale = loc.text
+        raise ValueError("Unexpected type for localized text locale")
+
     return UALocalizedText(text=text, locale=locale)
 
 

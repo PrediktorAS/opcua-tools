@@ -19,7 +19,7 @@ from opcua_tools.ua_data_types import (
     UAEnumeration,
     UAInt32,
     UAListOf,
-    UnparsedUAExtensionObject,
+    UAExtensionObject,
     UALocalizedText,
 )
 
@@ -49,9 +49,9 @@ def create_enum_dict_from_enum_tuples(row: pd.DataFrame) -> Dict[int, str]:
     enum_tuple = row["Value"]
     enum_dict = dict()
     for index, content in enumerate(enum_tuple):
-        if isinstance(content, UnparsedUAExtensionObject):
+        if isinstance(content, UAExtensionObject):
             ua_structure = content.body
-            xml_string = ua_structure.xmlstring
+            xml_string = ua_structure.value
             xml_dict = xmltodict.parse(xml_string)
 
             # This notation and searching is to ignore xmlns handling
