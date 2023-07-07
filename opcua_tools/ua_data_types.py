@@ -12,13 +12,19 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from typing import ByteString, Optional, Tuple, Union
+import json
+import re
+import math
+
+from decimal import Decimal
+from typing import ByteString, Optional, Tuple, Union, Any
 from dataclasses import dataclass, astuple
 from datetime import datetime
 from abc import ABC, abstractmethod
 from base64 import b64encode
 from enum import Enum
 from xml.sax.saxutils import escape
+from numpy import uint16
 
 
 class NodeIdType(Enum):
@@ -29,6 +35,37 @@ class NodeIdType(Enum):
 
     def __repr__(self):
         return "NodeIdType" + "." + self.name
+
+
+class VariantType(Enum):
+    """The possible types of a variant."""
+
+    Null = 0
+    Boolean = 1
+    SByte = 2
+    Byte = 3
+    Int16 = 4
+    UInt16 = 5
+    Int32 = 6
+    UInt32 = 7
+    Int64 = 8
+    UInt64 = 9
+    Float = 10
+    Double = 11
+    String = 12
+    DateTime = 13
+    Guid = 14
+    ByteString = 15
+    XmlElement = 16
+    NodeId = 17
+    ExpandedNodeId = 18
+    StatusCode = 19
+    QualifiedName = 20
+    LocalizedText = 21
+    ExtensionObject = 22
+    DataValue = 23
+    Variant = 24
+    DiagnosticInfo = 25
 
 
 UAXMLNS_ATTRIB = 'xmlns="http://opcfoundation.org/UA/2008/02/Types.xsd"'
@@ -87,16 +124,43 @@ class DataTypeDefinition(UAData):
 
 @dataclass(eq=True, frozen=True)
 class UABuiltIn(UAData):
-    pass
+    def resolve_builtin_type_number(self) -> int:
+        class_name = self.__class__.__name__
+        if class_name.startswith("UA"):
+            class_name = class_name[2:]
+        if class_name in VariantType.__members__:
+            return VariantType[class_name].value
+        else:
+            raise ValueError(f"Unknown built-in type: {class_name}")
 
 
 @dataclass(eq=True, frozen=True)
-class UAInteger(UABuiltIn):  # TODO make unsigned / signed integers type
+class UAInteger(UABuiltIn):
+    value: Optional[int]
+
+    def __post_init__(self):
+        if self.value is not None and not isinstance(self.value, int):
+            raise TypeError("Integer value must be an int")
+
+
+@dataclass(eq=True, frozen=True)
+class UASignedInteger(UAInteger):
     value: Optional[int]
 
 
 @dataclass(eq=True, frozen=True)
-class UASByte(UAInteger):
+class UAUnsignedInteger(UAInteger):
+    value: Optional[int]
+
+    def __post_init__(self):
+        if self.value is not None and not isinstance(self.value, int):
+            raise TypeError("Integer value must be an int")
+        if self.value is not None and self.value < 0:
+            raise ValueError("UnsignedInteger value cannot be negative")
+
+
+@dataclass(eq=True, frozen=True)
+class UASByte(UASignedInteger):
     def xml_encode(self, include_xmlns: bool) -> str:
         x = "<SByte"
         if include_xmlns:
@@ -104,9 +168,15 @@ class UASByte(UAInteger):
         x += ">" + (str(self.value) if self.value is not None else "") + "</SByte>"
         return x
 
+    def json_encode(self) -> Union[str, None]:
+        if self.value is None:
+            return None
+        else:
+            return str(self.value)
+
 
 @dataclass(eq=True, frozen=True)
-class UAByte(UAInteger):
+class UAByte(UAUnsignedInteger):
     def xml_encode(self, include_xmlns: bool) -> str:
         x = "<UAByte"
         if include_xmlns:
@@ -114,9 +184,15 @@ class UAByte(UAInteger):
         x += ">" + (str(self.value) if self.value is not None else "") + "</UAByte>"
         return x
 
+    def json_encode(self) -> Union[str, None]:
+        if self.value is None:
+            return None
+        else:
+            return str(self.value)
+
 
 @dataclass(eq=True, frozen=True)
-class UAInt16(UAInteger):
+class UAInt16(UASignedInteger):
     def xml_encode(self, include_xmlns: bool) -> str:
         x = "<Int16"
         if include_xmlns:
@@ -124,9 +200,15 @@ class UAInt16(UAInteger):
         x += ">" + (str(self.value) if self.value is not None else "") + "</Int16>"
         return x
 
+    def json_encode(self) -> Union[str, None]:
+        if self.value is None:
+            return None
+        else:
+            return str(self.value)
+
 
 @dataclass(eq=True, frozen=True)
-class UAUInt16(UAInteger):
+class UAUInt16(UAUnsignedInteger):
     def xml_encode(self, include_xmlns: bool) -> str:
         x = "<UInt16"
         if include_xmlns:
@@ -134,9 +216,15 @@ class UAUInt16(UAInteger):
         x += ">" + (str(self.value) if self.value is not None else "") + "</UInt16>"
         return x
 
+    def json_encode(self) -> Union[str, None]:
+        if self.value is None:
+            return None
+        else:
+            return str(self.value)
+
 
 @dataclass(eq=True, frozen=True)
-class UAInt32(UAInteger):
+class UAInt32(UASignedInteger):
     def xml_encode(self, include_xmlns: bool) -> str:
         x = "<Int32"
         if include_xmlns:
@@ -144,9 +232,15 @@ class UAInt32(UAInteger):
         x += ">" + (str(self.value) if self.value is not None else "") + "</Int32>"
         return x
 
+    def json_encode(self) -> Union[str, None]:
+        if self.value is None:
+            return None
+        else:
+            return str(self.value)
+
 
 @dataclass(eq=True, frozen=True)
-class UAUInt32(UAInteger):
+class UAUInt32(UAUnsignedInteger):
     def xml_encode(self, include_xmlns: bool) -> str:
         x = "<UInt32"
         if include_xmlns:
@@ -154,9 +248,15 @@ class UAUInt32(UAInteger):
         x += ">" + (str(self.value) if self.value is not None else "") + "</UInt32>"
         return x
 
+    def json_encode(self) -> Union[str, None]:
+        if self.value is None:
+            return None
+        else:
+            return str(self.value)
+
 
 @dataclass(eq=True, frozen=True)
-class UAInt64(UAInteger):
+class UAInt64(UASignedInteger):
     def xml_encode(self, include_xmlns: bool) -> str:
         x = "<Int64"
         if include_xmlns:
@@ -164,9 +264,17 @@ class UAInt64(UAInteger):
         x += ">" + (str(self.value) if self.value is not None else "") + "</Int64>"
         return x
 
+    def json_encode(self) -> Union[str, None]:
+        # Int64 and UInt64 are to be formatted as number encoded
+        # as a JSON string according to spec
+        if self.value is None:
+            return None
+        else:
+            return '"' + str(float(self.value)) + '"'
+
 
 @dataclass(eq=True, frozen=True)
-class UAUInt64(UAInteger):
+class UAUInt64(UAUnsignedInteger):
     def xml_encode(self, include_xmlns: bool) -> str:
         x = "<UInt64"
         if include_xmlns:
@@ -174,10 +282,43 @@ class UAUInt64(UAInteger):
         x += ">" + (str(self.value) if self.value is not None else "") + "</UInt64>"
         return x
 
+    def json_encode(self) -> Union[str, None]:
+        # Int64 and UInt64 are to be formatted as number encoded
+        # as a JSON string according to spec
+        if self.value is None:
+            return None
+        else:
+            return '"' + str(float(self.value)) + '"'
+
 
 @dataclass(eq=True, frozen=True)
 class UAFloatingPoint(UABuiltIn):
     value: Optional[float]
+
+    def __post_init__(self):
+        if self.value is not None and not isinstance(self.value, (float, int, Decimal)):
+            raise TypeError(
+                "Floating Point Numbers value must be either be a float, int, or Decimal"
+            )
+        object.__setattr__(
+            self, "value", float(self.value) if self.value is not None else None
+        )
+
+    def json_encode(self) -> str:
+        # According to the spec, special values are to be encoded as JSON
+        # strings in the following manner
+        special_floats_or_decimals = {
+            None: None,
+            float("inf"): '"Infinity"',
+            float("-inf"): '"-Infinity"',
+            float("nan"): "NaN",
+        }
+        if self.value in special_floats_or_decimals:
+            return special_floats_or_decimals[self.value]
+        elif math.isnan(self.value):
+            return '"NaN"'
+        else:
+            return str(self.value)
 
 
 @dataclass(eq=True, frozen=True)
@@ -204,6 +345,11 @@ class UADouble(UAFloatingPoint):
 class UAString(UABuiltIn):
     value: Optional[str]
 
+    def __post_init__(self):
+        if self.value is not None and not isinstance(self.value, str):
+            raise TypeError("String value must be a string")
+        object.__setattr__(self, "value", str(self.value) if self.value else None)
+
     def xml_encode(self, include_xmlns: bool) -> str:
         x = "<String"
         if include_xmlns:
@@ -215,10 +361,20 @@ class UAString(UABuiltIn):
         )
         return x
 
+    def json_encode(self) -> Union[str, None]:
+        if self.value is None:
+            return None
+        else:
+            return json.dumps(self.value, ensure_ascii=False)
+
 
 @dataclass(eq=True, frozen=True)
 class UADateTime(UABuiltIn):
     value: datetime
+
+    def __post_init__(self):
+        if not isinstance(self.value, datetime):
+            raise TypeError("DateTime value must be a datetime object")
 
     def xml_encode(self, include_xmlns: bool) -> str:
         x = "<DateTime"
@@ -226,10 +382,23 @@ class UADateTime(UABuiltIn):
             x += " " + UAXMLNS_ATTRIB
         x += (
             ">"
-            + (self.value.isoformat() if self.value is not None else "")
+            + (
+                self.value.strftime("%Y-%m-%dT%H:%M:%S.%fZ")
+                if self.value is not None
+                else ""
+            )
             + "</DateTime>"
         )
         return x
+
+    def json_encode(self) -> Union[str, None]:
+        """
+        The time format used here is the recommended for RDF graphs
+        is the format W3C is recommended. The format is:
+        YYYY-MM-DDThh:mm:ss.sssTZD ex. 2023-05-08T14:30:00.000Z
+        Is the same recommended format used by the OPC UA JSON encoding.
+        """
+        return '"' + self.value.strftime("%Y-%m-%dT%H:%M:%S.%fZ") + '"'
 
 
 @dataclass(eq=True, frozen=True)
@@ -241,8 +410,13 @@ class UAGuid(UAString):
 class UAByteString(UABuiltIn):
     value: Optional[ByteString]
 
+    def __post_init__(self):
+        if self.value is not None and not isinstance(self.value, ByteString):
+            raise TypeError("ByteString value must be a ByteString object")
+        object.__setattr__(self, "value", self.value if self.value else None)
+
     def xml_encode(self, include_xmlns: bool) -> str:
-        x = "<ByteString "
+        x = "<ByteString"
         if include_xmlns:
             x += " " + UAXMLNS_ATTRIB
         x += (
@@ -252,13 +426,27 @@ class UAByteString(UABuiltIn):
         )
         return x
 
+    def json_encode(self):
+        """ByteStryings are encoded as base64 strings in JSON, are enclosed
+        in double quotes, and cannot contain illegal JSON characters.
+        """
+        if self.value is None and not isinstance(self.value, ByteString):
+            return None
+        else:
+            base64_string = b64encode(self.value).decode("utf-8")
+            return json.dumps(base64_string, ensure_ascii=False)
+
 
 @dataclass(eq=True, frozen=True)
 class UABoolean(UABuiltIn):
     value: Optional[bool]
 
+    def __post_init__(self):
+        if self.value is not None and not isinstance(self.value, bool):
+            raise TypeError("Boolean value must be a bool")
+
     def xml_encode(self, include_xmlns: bool) -> str:
-        x = "<Boolean "
+        x = "<Boolean"
         if include_xmlns:
             x += " " + UAXMLNS_ATTRIB
         x += (
@@ -272,17 +460,72 @@ class UABoolean(UABuiltIn):
         )
         return x
 
+    def json_encode(self) -> Union[str, None]:
+        if self.value is None:
+            return None
+        else:
+            return str(self.value).lower()
+
 
 @dataclass(eq=True, frozen=True)
 class UAXMLElement(UABuiltIn):
-    pass
+    value: str
+
+    def __post_init__(self):
+        if not isinstance(self.value, str):
+            raise TypeError("XMLElement value must be a string")
+
+    def xml_encode(self, include_xmlns: bool) -> str:
+        return self.value
+
+    def json_encode(self) -> Union[str, None]:
+        return json.dumps(self.value, ensure_ascii=False)
 
 
 @dataclass(eq=True, frozen=True)
-class UANodeId(UAData):
+class UANodeId(UABuiltIn):
     namespace: int
     nodeid_type: NodeIdType
-    value: str
+    value: Union[str, int]
+
+    def __post_init__(self):
+        if not isinstance(self.namespace, int):
+            raise TypeError("Namespace must be an integer")
+        if not isinstance(self.nodeid_type, (NodeIdType, int, str)):
+            raise TypeError("NodeIdType must be a NodeIdType, int, or valid string")
+        if not isinstance(self.value, (str, int)):
+            raise TypeError("Value must be a string")
+
+        # Casting into to Enum if int is passed
+        if isinstance(self.nodeid_type, int):
+            nodeid_type_symbol = self.nodeid_type_int_to_symbol(self.nodeid_type)
+            object.__setattr__(self, "nodeid_type", NodeIdType(nodeid_type_symbol))
+
+        # Casting into to Enum if string is passed
+        if isinstance(self.nodeid_type, str):
+            object.__setattr__(self, "nodeid_type", NodeIdType(self.nodeid_type))
+
+        # Adding validation that the value is a valid NodeIdType based on the
+        # value
+        if self.nodeid_type == NodeIdType.NUMERIC:
+            # Check if the value is a valid unsigned integer
+            if not isinstance(self.value, (int, str)):
+                raise TypeError(
+                    f"Value must be an unsigned integer or string for NodeIdType {self.nodeid_type.value}"
+                )
+            if isinstance(self.value, str):
+                if not self.value.isdigit():
+                    raise TypeError(
+                        f"Value must be an unsigned integer for NodeIdType {self.nodeid_type.value}"
+                    )
+                if self.value.startswith("-"):
+                    raise TypeError(
+                        f"Value must not start with 0 for NodeIdType {self.nodeid_type.value}"
+                    )
+                if self.value.startswith("0") and len(self.value) > 1:
+                    raise TypeError(
+                        f"Value must not start with 0 for NodeIdType {self.nodeid_type.value}"
+                    )
 
     def __str__(self):
         if self.namespace == 0:
@@ -290,12 +533,43 @@ class UANodeId(UAData):
         else:
             return f"ns={self.namespace};{self.nodeid_type.value}={self.value}"
 
+    @staticmethod
+    def nodeid_type_int_to_symbol(nodeid_type_int: int) -> str:
+        nodeid_type_int_to_string = {0: "i", 1: "s", 2: "g", 3: "b"}
+        if nodeid_type_int in nodeid_type_int_to_string:
+            return nodeid_type_int_to_string[nodeid_type_int]
+        raise TypeError(f"NodeIdType {self.nodeid_type.value} is not supported")
+
+    def nodeid_type_value_to_int(self):
+        nodeid_type_symbol_to_int = {"i": 0, "s": 1, "g": 2, "b": 3}
+        if self.nodeid_type.value in nodeid_type_symbol_to_int:
+            return nodeid_type_symbol_to_int[self.nodeid_type.value]
+        raise TypeError(f"NodeIdType {self.nodeid_type.value} is not supported")
+
     def xml_encode(self, include_xmlns: bool) -> str:
         x = "<Identifier"
         if include_xmlns:
             x += " " + UAXMLNS_ATTRIB
         x += ">" + self.__str__() + "</Identifier>"
         return x
+
+    def json_encode(self) -> str:
+        nodeid_type_int = self.nodeid_type_value_to_int()
+        json_content = ""
+        # OPC UA Specification indicates Namespace field is omitted if it is 0
+        if not self.namespace == 0:
+            json_content = '"Namespace":' + str(self.namespace) + ","
+        # OPC UA Specification indicates IdentifierType field is omitted if it is 0 (UInt32)
+        if not nodeid_type_int == 0:
+            json_content += '"IdType":' + str(nodeid_type_int) + ","
+        # Properly encoding the identifier value based on datatype
+        if self.nodeid_type is NodeIdType.NUMERIC:
+            json_content += '"Id":' + str(self.value)
+        else:  # "s", "g", "b"
+            # If string, Guid identifier or byte string (Opaque) should treat value as string
+            json_content += '"Id":' + '"' + str(self.value) + '"'
+
+        return "{" + json_content + "}"
 
 
 @dataclass(eq=True, frozen=True)
@@ -315,13 +589,76 @@ class UADiagnosticInfo(UABuiltIn):
 
 @dataclass(eq=True, frozen=True)
 class UAQualifiedName(UABuiltIn):
-    pass
+    namespace_index: uint16
+    name: str
+
+    def __post_init__(self):
+        if not isinstance(self.namespace_index, int):
+            raise TypeError("Namespace index must be an integer")
+        if isinstance(self.namespace_index, int):
+            if self.namespace_index < 0:
+                raise ValueError("Namespace index must be a positive integer")
+            object.__setattr__(self, "namespace_index", uint16(self.namespace_index))
+        if not isinstance(self.name, str):
+            raise TypeError("Name must be a string")
+
+    def xml_encode(self, include_xmlns: bool) -> str:
+        x = "<QualifiedName"
+        if include_xmlns:
+            x += " " + UAXMLNS_ATTRIB
+        x += ">"
+        x += "<NamespaceIndex>" + str(self.namespace_index) + "</NamespaceIndex>"
+        x += "<Name>" + self.name + "</Name></QualifiedName>"
+        return x
+
+    def json_encode(self) -> str:
+        json = ""
+        json += '"Name":"' + self.name + '"'
+        if not self.namespace_index == 0:
+            json += ',"Uri":' + str(self.namespace_index)
+        return "{" + json + "}"
 
 
 @dataclass(eq=True, frozen=True)
 class UALocalizedText(UABuiltIn):
     text: Optional[str]
-    locale: Optional[str]
+    locale: Optional[str] = None
+
+    def __post_init__(self):
+        if (not isinstance(self.text, str)) and (self.text is not None):
+            raise TypeError("text must be a string or None")
+        if (not isinstance(self.locale, str)) and (self.locale is not None):
+            raise TypeError("locale must be a string or None")
+        if self.locale is not None:
+            if not self.is_valid_locale(self.locale):
+                raise ValueError(
+                    "locale must be a valid locale string following the IETF RFC 5646 standard"
+                )
+
+    @staticmethod
+    def is_valid_locale(locale_str: str):
+        """Validates the format of the locale string using the IETF RFC 5646 standard
+        The following regex is based on the regex provided by the IETF RFC 5646 standard
+        and allows for the following formats:
+        ^[a-zA-Z]{2,3}: 2-3 letter language code
+        (?:[_-][a-zA-Z]{2,3}: optional 2-3 letter script code
+        (?:[_-](?:\w{2,8}|\d{3}))?)?: optional 2-8 letter region code or 3 digit country code
+        (?:\.[a-zA-Z0-9]{2,8})?$: optional variant code and optional extension code
+
+        Args:
+            locale_str (str): locale string to be validated
+
+        Returns:
+            bool: True if locale string is valid, False otherwise
+        """
+
+        if re.match(
+            r"^[a-zA-Z]{2,3}(?:[_-][a-zA-Z]{2,3}(?:[_-](?:\w{2,8}|\d{3}))?)?(?:\.[a-zA-Z0-9]{2,8})?$",
+            locale_str,
+        ):
+            return True
+        else:
+            return False
 
     def xml_encode(self, include_xmlns: bool) -> str:
         x = "<LocalizedText"
@@ -333,10 +670,114 @@ class UALocalizedText(UABuiltIn):
         x += "</LocalizedText>"
         return x
 
+    def json_encode(self, input_locale: Optional[str] = None) -> Union[str, None]:
+        if self.text is None and not isinstance(self.text, str):
+            return None
+
+        json_content = ""
+        json_content += '"Text":' + json.dumps(self.text, ensure_ascii=False)
+
+        if input_locale is not None:
+            json_content += ',"Locale":' + json.dumps(input_locale, ensure_ascii=False)
+        elif self.locale is not None:
+            json_content += ',"Locale":' + json.dumps(self.locale, ensure_ascii=False)
+
+        json_content = "{" + json_content + "}"
+        return json_content
+
 
 @dataclass(eq=True, frozen=True)
 class UAVariant(UABuiltIn):
-    pass
+    value: Any = None
+    type: VariantType = VariantType.Null
+
+    def __post_init__(self):
+        ua_class_type_to_variant_type = {
+            UABoolean: VariantType.Boolean,
+            UASByte: VariantType.SByte,
+            UAByte: VariantType.Byte,
+            UAInt16: VariantType.Int16,
+            UAUInt16: VariantType.UInt16,
+            UAInt32: VariantType.Int32,
+            UAEnumeration: VariantType.Int32,
+            UAUInt32: VariantType.UInt32,
+            UAInt64: VariantType.Int64,
+            UAUInt64: VariantType.UInt64,
+            UAFloat: VariantType.Float,
+            UADouble: VariantType.Double,
+            UAString: VariantType.String,
+            UADateTime: VariantType.DateTime,
+            UAGuid: VariantType.Guid,
+            UAByteString: VariantType.ByteString,
+            UAXMLElement: VariantType.XmlElement,
+            UANodeId: VariantType.NodeId,
+            UAExpandedNodeId: VariantType.ExpandedNodeId,
+            UAStatusCode: VariantType.StatusCode,
+            UAQualifiedName: VariantType.QualifiedName,
+            UALocalizedText: VariantType.LocalizedText,
+            UAExtensionObject: VariantType.ExtensionObject,
+            UADataValue: VariantType.DataValue,
+            UAVariant: VariantType.Variant,
+            UADiagnosticInfo: VariantType.DiagnosticInfo,
+        }
+        # Checking that the value is of the correct type
+        if self.value is not None:
+            if not isinstance(self.value, tuple(ua_class_type_to_variant_type.keys())):
+                raise TypeError(
+                    "Value must be one of the valid Built-In types in OPC UA"
+                )
+        # Checking that the type is of the correct type
+        if not isinstance(self.type, VariantType):
+            raise TypeError("Type must be of type VariantType")
+
+        if self.type is VariantType.Null and self.value is not None:
+            if ua_class_type_to_variant_type.get(type(self.value)) is not None:
+                object.__setattr__(
+                    self, "type", ua_class_type_to_variant_type.get(type(self.value))
+                )
+            else:
+                raise ValueError(
+                    "Variant type was not provided and could not be inferred from the value type"
+                )
+
+    def xml_encode(self, include_xmlns: bool) -> str:
+        x = "<Variant"
+        if include_xmlns:
+            x += " " + UAXMLNS_ATTRIB
+        x += ">"
+        if self.value is not None:
+            x += "<Value>"
+            if isinstance(self.value, UABuiltIn) and hasattr(self.value, "xml_encode"):
+                x += self.value.xml_encode(include_xmlns=include_xmlns)
+            else:
+                x += escape(str(self.value))
+            x += "</Value>"
+        x += "</Variant>"
+        return x
+
+    def json_encode(self, **kwargs) -> str:
+        if self.value is None:
+            return "null"
+        if self.type is VariantType.Null:
+            return "null"
+
+        if isinstance(self.value, UABuiltIn) and hasattr(self.value, "json_encode"):
+            body_json = self.value.json_encode(**kwargs)
+        elif isinstance(self.value, str):
+            body_json = '"' + str(self.value) + '"'
+        elif isinstance(self.value, (int, float)):
+            body_json = str(self.value)
+        elif isinstance(self.value, bool):
+            body_json = '"' + str(self.value).lower() + '"'
+        else:
+            raise TypeError(f"Variant value type {type(self.value)} is not supported")
+
+        if body_json is None:
+            return "null"
+
+        json_content = "{" + '"Type":' + str(self.type.value) + ","
+        json_content += '"Body":' + body_json + "}"
+        return json_content
 
 
 @dataclass(eq=True, frozen=True)
@@ -362,10 +803,23 @@ class UAArray(UAData):
 
 @dataclass(eq=True, frozen=True)
 class UAStructure(UAData):
-    xmlstring: str
+    value: Any
 
     def xml_encode(self, include_xmlns: bool) -> str:
-        return self.xmlstring
+        if self.value is None:
+            return ""
+        if self.value is not None and hasattr(self.value, "xml_encode"):
+            return self.value.xml_encode(include_xmlns)
+        else:
+            return ""
+
+    def json_encode(self, **kwargs) -> str:
+        if self.value is None:
+            return "null"
+        if self.value is not None and hasattr(self.value, "json_encode"):
+            return self.value.json_encode(**kwargs)
+        else:
+            return "null"
 
 
 @dataclass(eq=True, frozen=True)
@@ -374,9 +828,28 @@ class UAStructureOptionalField(UAData):
 
 
 @dataclass(eq=True, frozen=True)
-class UnparsedUAExtensionObject(UABuiltIn):
-    type_nodeid: Optional[UANodeId]
-    body: Optional[Union[UAByteString, UAStructure]]
+class UAExtensionObject(UABuiltIn):
+    type_nodeid: UANodeId
+    body: Union[UAByteString, UAStructure, UAXMLElement]
+    encoding_json: Optional[int] = None
+
+    def __post_init__(self):
+        if not isinstance(self.type_nodeid, UANodeId):
+            raise TypeError("ExtensionObject must have a type_nodeid")
+        if not isinstance(self.body, (UAByteString, UAStructure, UAXMLElement)):
+            raise TypeError(
+                "ExtensionObject must have a body of type UAByteString, UAStructure or UAXMLElement"
+            )
+
+        instance_map = {
+            UAStructure: 0,
+            UAByteString: 1,
+            UAXMLElement: 2,
+            0: None,
+        }
+        object.__setattr__(
+            self, "encoding_json", instance_map.get(self.body.__class__, None)
+        )
 
     def xml_encode(self, include_xmlns: bool) -> str:
         x = "<ExtensionObject"
@@ -404,16 +877,78 @@ class UnparsedUAExtensionObject(UABuiltIn):
         x += "</ExtensionObject>"
         return x
 
+    def json_encode(self, **kwargs) -> str:
+        if self.body is None or not hasattr(self.body, "json_encode"):
+            return "null"
+        if self.body.json_encode(**kwargs) is None:
+            return "null"
+
+        json = ""
+        json += '"TypeId":' + self.type_nodeid.json_encode() + ","
+
+        # The body can be a ByteString, Structure or an XML Element and
+        # has to have a json_encode method.
+        if self.body.json_encode(**kwargs) is None:
+            return "null"
+        elif self.body.json_encode(**kwargs) is not None:
+            json += '"Body":' + self.body.json_encode(**kwargs)
+        else:
+            raise TypeError(
+                f"ExtensionObject body type {type(self.body)} is not supported"
+            )
+
+        # OPC UA Spec: If the Body is None, NULL, or 0 (Structure), the Encoding field shall be omitted.
+        if (self.encoding_json is not None) and (self.encoding_json != 0):
+            json += ","
+            json += '"Encoding":' + str(self.encoding_json)
+        return "{" + json + "}"
+
 
 @dataclass(eq=True, frozen=True)
-class UAEngineeringUnits(UAData):
+class UAEUInformation(UAData):
     display_name: UALocalizedText
     description: UALocalizedText
     unit_id: int
     namespace_uri: str
 
+    def __init__(
+        self,
+        display_name: UALocalizedText,
+        description: UALocalizedText,
+        unit_id: int,
+        namespace_uri: str,
+    ):
+        if not isinstance(display_name, UALocalizedText) and isinstance(
+            display_name, str
+        ):
+            object.__setattr__(self, "display_name", UALocalizedText(text=display_name))
+        elif isinstance(display_name, UALocalizedText) or display_name is None:
+            object.__setattr__(self, "display_name", display_name)
+        else:
+            raise TypeError("display_name must be of type UALocalizedText")
+
+        if not isinstance(description, UALocalizedText) and isinstance(
+            description, str
+        ):
+            object.__setattr__(self, "description", UALocalizedText(text=description))
+        elif isinstance(description, UALocalizedText) or display_name is None:
+            object.__setattr__(self, "description", description)
+        else:
+            raise TypeError("description must be of type UALocalizedText")
+
+        if not isinstance(unit_id, int):
+            raise TypeError("unit_id must be of type int")
+        object.__setattr__(self, "unit_id", unit_id)
+
+        if not isinstance(namespace_uri, str):
+            raise TypeError("namespace_uri must be of type str")
+        object.__setattr__(self, "namespace_uri", namespace_uri)
+
     def xml_encode(self, include_xmlns: bool) -> str:
-        body_contents = "<EUInformation>"
+        body_contents = "<EUInformation"
+        if include_xmlns:
+            body_contents += ' xmlns="http://opcfoundation.org/UA/2008/02/Types.xsd"'
+        body_contents += ">"
         body_contents += "<NamespaceUri>" + self.namespace_uri + "</NamespaceUri>"
         body_contents += "<UnitId>" + str(self.unit_id) + "</UnitId>"
         body_contents += "<DisplayName>"
@@ -446,28 +981,137 @@ class UAEngineeringUnits(UAData):
         body_contents += "</Description>"
         body_contents += "</EUInformation>"
 
-        # Todo fix hacky implementation
-        return UnparsedUAExtensionObject(
-            type_nodeid=UANodeId(0, NodeIdType.NUMERIC, "888"),
-            body=UAStructure(xmlstring=body_contents),
-        ).xml_encode(include_xmlns)
+        return body_contents
+
+    def json_encode(self, **kwargs) -> Union[str, None]:
+        if (
+            self.display_name.json_encode(input_locale=kwargs.get("input_locale", None))
+            is None
+            or self.description.json_encode(
+                input_locale=kwargs.get("input_locale", None)
+            )
+            is None
+        ):
+            return None
+
+        json_content = ""
+        json_content += (
+            '{"DisplayName":'
+            + self.display_name.json_encode(
+                input_locale=kwargs.get("input_locale", None)
+            )
+            + ","
+        )
+        json_content += (
+            '"Description":'
+            + self.description.json_encode(
+                input_locale=kwargs.get("input_locale", None)
+            )
+            + ","
+        )
+        json_content += '"UnitId":' + str(self.unit_id) + ","
+        json_content += '"NamespaceUri":' + json.dumps(
+            self.namespace_uri, ensure_ascii=False
+        )
+        json_content += "}"
+        return json_content
+
+
+@dataclass(eq=True, frozen=True)
+class UAEngineeringUnits(UAData):
+    ua_eu_information: UAEUInformation
+
+    def __init__(
+        self,
+        display_name: UALocalizedText,
+        description: UALocalizedText,
+        unit_id: int,
+        namespace_uri: str,
+    ):
+        object.__setattr__(
+            self,
+            "ua_eu_information",
+            UAEUInformation(
+                display_name=display_name,
+                description=description,
+                unit_id=unit_id,
+                namespace_uri=namespace_uri,
+            ),
+        )
+
+    def xml_encode(self, include_xmlns: bool) -> str:
+        ua_type_nodeid = UANodeId(0, NodeIdType.NUMERIC, "888")
+        ua_extension_object = UAExtensionObject(
+            type_nodeid=ua_type_nodeid,
+            body=UAStructure(value=self.ua_eu_information),
+        )
+        return ua_extension_object.xml_encode(include_xmlns)
+
+    def json_encode(self, **kwargs) -> str:
+        ua_type_nodeid = UANodeId(0, NodeIdType.NUMERIC, "888")
+        ua_extension_object = UAExtensionObject(
+            type_nodeid=ua_type_nodeid,
+            body=UAStructure(value=self.ua_eu_information),
+        )
+        return ua_extension_object.json_encode(**kwargs)
+
+
+@dataclass(eq=True, frozen=True)
+class UARange(UAData):
+    low: float
+    high: float
+
+    def __post_init__(self):
+        if self.low > self.high:
+            raise ValueError("low must be less than or equal to high")
+        if isinstance(self.low, int):
+            object.__setattr__(self, "low", float(self.low))
+        if isinstance(self.high, int):
+            object.__setattr__(self, "high", float(self.high))
+
+    def xml_encode(self, include_xmlns: bool) -> str:
+        body_contents = "<Range"
+        if include_xmlns:
+            body_contents += ' xmlns="http://opcfoundation.org/UA/2008/02/Types.xsd"'
+        body_contents += ">"
+        body_contents += f"<Low>{self.low}</Low>"
+        body_contents += f"<High>{self.high}</High>"
+        body_contents += "</Range>"
+        return body_contents
+
+    def json_encode(self) -> str:
+        json = ""
+        json += '"Low":' + UADouble(self.low).json_encode() + ","
+        json += '"High":' + UADouble(self.high).json_encode()
+        return "{" + json + "}"
 
 
 @dataclass(eq=True, frozen=True)
 class UAEURange(UAData):
-    low: float
-    high: float
+    ua_range: UARange
+
+    def __init__(self, low: float, high: float):
+        if not isinstance(low, (float, int)):
+            raise TypeError("low must be of type float")
+        if not isinstance(high, (float, int)):
+            raise TypeError("high must be of type float")
+
+        object.__setattr__(self, "ua_range", UARange(low=float(low), high=float(high)))
 
     def xml_encode(self, include_xmlns: bool) -> str:
-        body_contents = "<Range>"
-        body_contents += f"<Low>{self.low}</Low>"
-        body_contents += f"<High>{self.high}</High>"
-        body_contents += "</Range>"
+        ua_type_nodeid = UANodeId(0, NodeIdType.NUMERIC, "885")
+        ua_extension_object = UAExtensionObject(
+            type_nodeid=ua_type_nodeid, body=UAStructure(value=self.ua_range)
+        )
 
-        return UnparsedUAExtensionObject(
-            type_nodeid=UANodeId(0, NodeIdType.NUMERIC, "885"),
-            body=UAStructure(xmlstring=body_contents),
-        ).xml_encode(include_xmlns)
+        return ua_extension_object.xml_encode(include_xmlns)
+
+    def json_encode(self) -> str:
+        ua_type_nodeid = UANodeId(0, NodeIdType.NUMERIC, "885")
+        ua_extension_object = UAExtensionObject(
+            type_nodeid=ua_type_nodeid, body=UAStructure(value=self.ua_range)
+        )
+        return ua_extension_object.json_encode()
 
 
 @dataclass(eq=True, frozen=True)
@@ -490,6 +1134,13 @@ class UAListOf(UAData):
     value: Tuple[UAData, ...]
     typename: str
 
+    def __post_init__(self):
+        first_element_type = type(self.value[0])
+        if any(not isinstance(element, first_element_type) for element in self.value):
+            raise TypeError(
+                f"UAListOf must contain only one type of UAData. {first_element_type} != {type(element)}"
+            )
+
     def xml_encode(self, include_xmlns: bool) -> str:
         encodedvalues = []
         if self.value is not None:
@@ -500,6 +1151,24 @@ class UAListOf(UAData):
             x += " " + UAXMLNS_ATTRIB
         x += ">" + "".join(encodedvalues) + "</ListOf" + self.typename + ">"
         return x
+
+    def json_encode(self) -> str:
+        """Extracts the values of a UAListOf object and hard codes the values within it
+        in order to be able to create the proper json_encoding as it aggregates all of the
+        values in a list.
+
+        Returns:
+            str: A string representing the json encoding of the UAListOf object.
+        """
+        try:
+            str_list = [str(element.value) for element in self.value]
+        except AttributeError:
+            print("UAListOf json_encode error")
+        ua_list_string = "[" + ",".join(str_list) + "]"
+
+        return (
+            f"""{{"Type":{VariantType[self.typename].value},"Body":{ua_list_string}}}"""
+        )
 
 
 def ge(u1: UAData, u2: UAData):
