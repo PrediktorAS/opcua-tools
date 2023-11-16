@@ -571,9 +571,11 @@ class UAGraph:
 
         path_columns = [c for c in relatives.columns if type(c) == int and c > 0]
 
-        relatives = relatives.melt(
-            id_vars=[0, "end"], value_vars=path_columns, value_name="id"
-        ).dropna()
+        relatives = (
+            relatives.drop("id", axis=1)
+            .melt(id_vars=[0, "end"], value_vars=path_columns, value_name="id")
+            .dropna()
+        )
         nodes_browsename = self.nodes[["id", "BrowseName"]].set_index("id")
 
         relatives = (
@@ -590,9 +592,8 @@ class UAGraph:
         node_paths = relatives[["end", "BrowseName"]].rename(
             columns={"end": "id", "BrowseName": "NodePath"}
         )
-        node_paths = node_paths.append(
-            pd.DataFrame({"id": [root_node_id], "NodePath": [""]})
-        )
+        root_node_id_df_to_add = pd.DataFrame({"id": [root_node_id], "NodePath": [""]})
+        node_paths = pd.concat([node_paths, root_node_id_df_to_add])
 
         # Adding the root_node to the start of the path
         node_paths["NodePath"] = node_paths["NodePath"].apply(
