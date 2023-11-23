@@ -98,10 +98,10 @@ def instantiate_enum_class(row: pd.DataFrame) -> UAEnumeration:
 
     """
 
-    # In some cases the Value is 'None' for some enums and should do
+    # In some cases the Value is empty for some enums and should do
     # nothing in this case
-    if row["Value"] == None:
-        return None
+    if pd.isna(row["Value"]) is True:
+        return pd.NA
 
     # Extracting the actual numeric value as UAInt32 class
     if isinstance(row["Value"], UAInt32):

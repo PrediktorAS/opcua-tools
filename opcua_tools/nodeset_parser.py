@@ -14,12 +14,12 @@
 
 import os
 import re
-import logging
 from typing import List, Dict, Any, Optional, Union
 from opcua_tools.value_parser import parse_value, parse_nodeid
 from opcua_tools.ua_data_types import UANodeId
 
 import lxml.etree as ET
+import numpy as np
 import pandas as pd
 import logging
 from io import BytesIO
@@ -47,10 +47,9 @@ def findrefs(
 def findval(elem, uaxsd):
     val = elem.find(uaxsd + "Value")
     if val is None:
-        return None
-
+        return pd.NA
     if len(val) < 1:
-        return None
+        return pd.NA
 
     return parse_value(val)
 
@@ -434,9 +433,10 @@ def parse_xml_without_normalization(
     parse_dict = iterparse_xml(xmlfile, namespaces)
     nodes = parse_dict["nodes"].reset_index()
     nodes = nodes.rename(columns={"Tag": "NodeClass"})
-    nodes = pd.concat(
-        [nodes, pd.DataFrame.from_records(nodes["Attrib"].values)], axis=1
-    ).drop(columns="Attrib")
+
+    attrib_df = pd.DataFrame.from_records(nodes["Attrib"].values)
+    attrib_df = attrib_df.fillna(pd.NA)
+    nodes = pd.concat([nodes, attrib_df], axis=1).drop(columns="Attrib")
 
     references = nodes.loc[:, ["NodeId", "References"]]
     references = (
@@ -479,7 +479,8 @@ def parse_xml_without_normalization(
     )
 
     if "Value" not in nodes.columns.values:
-        nodes["Value"] = None
+        nodes["Value"] = pd.NA
+
     nodes["ns"] = nodes["NodeId"].map(lambda x: x.namespace).astype(pd.Int8Dtype())
     return {"nodes": nodes, "references": references, "namespaces": namespaces}
 
@@ -551,6 +552,15 @@ def parse_xml_files(
         logger.info("Finished parsing " + str(file))
 
     nodes = pd.concat(df_nodes_list, ignore_index=True)
+    columns_to_fix_missing_values = [
+        "Symmetric",
+        "ReleaseStatus",
+        "MinimumSamplingInterval",
+    ]
+    for column in columns_to_fix_missing_values:
+        if column in nodes.columns:
+            nodes[column] = nodes[column].replace({np.nan: pd.NA})
+
     references = pd.concat(df_references_list, ignore_index=True)
     lookup_df = normalize_wrt_nodeid(nodes, references)
     return {

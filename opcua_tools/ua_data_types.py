@@ -1061,6 +1061,18 @@ class UAEngineeringUnits(UAData):
             ),
         )
 
+    def __repr__(self):
+        """
+        Fixed object representation, so it can be reinstantiated with performing
+        eval() on the object's representation string.
+        """
+        ua_eu_information_param_name = list(self.__dataclass_fields__.keys())[0]
+        ua_eu_information_repr = repr(getattr(self, ua_eu_information_param_name))
+        ua_eu_information = getattr(self, ua_eu_information_param_name)
+        return ua_eu_information_repr.replace(
+            ua_eu_information.__class__.__name__, self.__class__.__name__, 1
+        )
+
     def xml_encode(self, include_xmlns: bool) -> str:
         ua_type_nodeid = UANodeId(0, NodeIdType.NUMERIC, "888")
         ua_extension_object = UAExtensionObject(
@@ -1119,6 +1131,18 @@ class UAEURange(UAData):
             raise TypeError("high must be of type float")
 
         object.__setattr__(self, "ua_range", UARange(low=float(low), high=float(high)))
+
+    def __repr__(self):
+        """
+        Fixed object representation, so it can be reinstantiated with performing
+        eval() on the object's representation string.
+        """
+        ua_range_param_name = list(self.__dataclass_fields__.keys())[0]
+        ua_range_repr = repr(getattr(self, ua_range_param_name))
+        ua_range = getattr(self, ua_range_param_name)
+        return ua_range_repr.replace(
+            ua_range.__class__.__name__, self.__class__.__name__, 1
+        )
 
     def xml_encode(self, include_xmlns: bool) -> str:
         ua_type_nodeid = UANodeId(0, NodeIdType.NUMERIC, "885")
