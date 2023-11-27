@@ -225,8 +225,8 @@ def test_ua_floating_point_json_encode_with_value():
 
     ua_float = UAFloat(value=float("nan"))
     ua_double = UADouble(value=float("nan"))
-    assert ua_float.json_encode() == None
-    assert ua_double.json_encode() == None
+    assert ua_float.json_encode() == '"NaN"'
+    assert ua_double.json_encode() == '"NaN"'
 
 
 def test_ua_floating_point_json_encode_with_none_value():

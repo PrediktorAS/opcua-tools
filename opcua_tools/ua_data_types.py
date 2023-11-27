@@ -298,15 +298,17 @@ class UAFloatingPoint(UABuiltIn):
     value: float = pd.NA
 
     def __post_init__(self):
-        if not pd.isna(self.value) and not isinstance(
-            self.value, (float, int, Decimal)
-        ):
-            raise TypeError(
-                "Floating Point Numbers value must be either be a float, int, or Decimal"
-            )
-        object.__setattr__(
-            self, "value", float(self.value) if not pd.isna(self.value) else pd.NA
-        )
+        if self.value is not None:
+            if not pd.isna(self.value) and not isinstance(
+                self.value, (float, int, Decimal)
+            ):
+                raise TypeError(
+                    "Floating Point Numbers value must be either be a float, int, or Decimal"
+                )
+        if isinstance(self.value, pd._libs.missing.NAType) or self.value is None:
+            object.__setattr__(self, "value", pd.NA)
+        else:
+            object.__setattr__(self, "value", float(self.value))
 
     def json_encode(self) -> [str, None]:
         # According to the spec, special values are to be encoded as JSON
@@ -321,7 +323,7 @@ class UAFloatingPoint(UABuiltIn):
         if self.value in special_floats_or_decimals:
             return special_floats_or_decimals[self.value]
         elif math.isnan(self.value):
-            return None
+            return '"NaN"'
         else:
             return str(self.value)
 
@@ -948,7 +950,6 @@ class UAEUInformation(UAData):
             object.__setattr__(
                 self, "description", UALocalizedText(text=self.description)
             )
-        # elif isinstance(self.description, UALocalizedText) or self.display_name is None:
         elif isinstance(self.description, UALocalizedText) or pd.isna(self.description):
             object.__setattr__(self, "description", self.description)
         else:
