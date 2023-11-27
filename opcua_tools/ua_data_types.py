@@ -24,7 +24,9 @@ from abc import ABC, abstractmethod
 from base64 import b64encode
 from enum import Enum
 from xml.sax.saxutils import escape
-from numpy import uint16
+
+import numpy as np
+import pandas as pd
 
 
 class NodeIdType(Enum):
@@ -136,26 +138,26 @@ class UABuiltIn(UAData):
 
 @dataclass(eq=True, frozen=True)
 class UAInteger(UABuiltIn):
-    value: Optional[int]
+    value: int = pd.NA
 
     def __post_init__(self):
-        if self.value is not None and not isinstance(self.value, int):
+        if not pd.isna(self.value) and not isinstance(self.value, int):
             raise TypeError("Integer value must be an int")
 
 
 @dataclass(eq=True, frozen=True)
 class UASignedInteger(UAInteger):
-    value: Optional[int]
+    value: int = pd.NA
 
 
 @dataclass(eq=True, frozen=True)
 class UAUnsignedInteger(UAInteger):
-    value: Optional[int]
+    value: int = pd.NA
 
     def __post_init__(self):
-        if self.value is not None and not isinstance(self.value, int):
+        if not pd.isna(self.value) and not isinstance(self.value, int):
             raise TypeError("Integer value must be an int")
-        if self.value is not None and self.value < 0:
+        if not pd.isna(self.value) and self.value < 0:
             raise ValueError("UnsignedInteger value cannot be negative")
 
 
@@ -165,11 +167,11 @@ class UASByte(UASignedInteger):
         x = "<SByte"
         if include_xmlns:
             x += " " + UAXMLNS_ATTRIB
-        x += ">" + (str(self.value) if self.value is not None else "") + "</SByte>"
+        x += ">" + (str(self.value) if not pd.isna(self.value) else "") + "</SByte>"
         return x
 
     def json_encode(self) -> Union[str, None]:
-        if self.value is None:
+        if pd.isna(self.value):
             return None
         else:
             return str(self.value)
@@ -181,11 +183,11 @@ class UAByte(UAUnsignedInteger):
         x = "<UAByte"
         if include_xmlns:
             x += " " + UAXMLNS_ATTRIB
-        x += ">" + (str(self.value) if self.value is not None else "") + "</UAByte>"
+        x += ">" + (str(self.value) if not pd.isna(self.value) else "") + "</UAByte>"
         return x
 
     def json_encode(self) -> Union[str, None]:
-        if self.value is None:
+        if pd.isna(self.value):
             return None
         else:
             return str(self.value)
@@ -197,11 +199,11 @@ class UAInt16(UASignedInteger):
         x = "<Int16"
         if include_xmlns:
             x += " " + UAXMLNS_ATTRIB
-        x += ">" + (str(self.value) if self.value is not None else "") + "</Int16>"
+        x += ">" + (str(self.value) if not pd.isna(self.value) else "") + "</Int16>"
         return x
 
     def json_encode(self) -> Union[str, None]:
-        if self.value is None:
+        if pd.isna(self.value):
             return None
         else:
             return str(self.value)
@@ -213,11 +215,11 @@ class UAUInt16(UAUnsignedInteger):
         x = "<UInt16"
         if include_xmlns:
             x += " " + UAXMLNS_ATTRIB
-        x += ">" + (str(self.value) if self.value is not None else "") + "</UInt16>"
+        x += ">" + (str(self.value) if not pd.isna(self.value) else "") + "</UInt16>"
         return x
 
     def json_encode(self) -> Union[str, None]:
-        if self.value is None:
+        if pd.isna(self.value):
             return None
         else:
             return str(self.value)
@@ -229,11 +231,11 @@ class UAInt32(UASignedInteger):
         x = "<Int32"
         if include_xmlns:
             x += " " + UAXMLNS_ATTRIB
-        x += ">" + (str(self.value) if self.value is not None else "") + "</Int32>"
+        x += ">" + (str(self.value) if not pd.isna(self.value) else "") + "</Int32>"
         return x
 
     def json_encode(self) -> Union[str, None]:
-        if self.value is None:
+        if pd.isna(self.value):
             return None
         else:
             return str(self.value)
@@ -245,11 +247,11 @@ class UAUInt32(UAUnsignedInteger):
         x = "<UInt32"
         if include_xmlns:
             x += " " + UAXMLNS_ATTRIB
-        x += ">" + (str(self.value) if self.value is not None else "") + "</UInt32>"
+        x += ">" + (str(self.value) if not pd.isna(self.value) else "") + "</UInt32>"
         return x
 
     def json_encode(self) -> Union[str, None]:
-        if self.value is None:
+        if pd.isna(self.value):
             return None
         else:
             return str(self.value)
@@ -261,13 +263,13 @@ class UAInt64(UASignedInteger):
         x = "<Int64"
         if include_xmlns:
             x += " " + UAXMLNS_ATTRIB
-        x += ">" + (str(self.value) if self.value is not None else "") + "</Int64>"
+        x += ">" + (str(self.value) if not pd.isna(self.value) else "") + "</Int64>"
         return x
 
     def json_encode(self) -> Union[str, None]:
         # Int64 and UInt64 are to be formatted as number encoded
         # as a JSON string according to spec
-        if self.value is None:
+        if pd.isna(self.value):
             return None
         else:
             return '"' + str(float(self.value)) + '"'
@@ -279,13 +281,13 @@ class UAUInt64(UAUnsignedInteger):
         x = "<UInt64"
         if include_xmlns:
             x += " " + UAXMLNS_ATTRIB
-        x += ">" + (str(self.value) if self.value is not None else "") + "</UInt64>"
+        x += ">" + (str(self.value) if not pd.isna(self.value) else "") + "</UInt64>"
         return x
 
     def json_encode(self) -> Union[str, None]:
         # Int64 and UInt64 are to be formatted as number encoded
         # as a JSON string according to spec
-        if self.value is None:
+        if pd.isna(self.value):
             return None
         else:
             return '"' + str(float(self.value)) + '"'
@@ -293,22 +295,27 @@ class UAUInt64(UAUnsignedInteger):
 
 @dataclass(eq=True, frozen=True)
 class UAFloatingPoint(UABuiltIn):
-    value: Optional[float]
+    value: float = pd.NA
 
     def __post_init__(self):
-        if self.value is not None and not isinstance(self.value, (float, int, Decimal)):
-            raise TypeError(
-                "Floating Point Numbers value must be either be a float, int, or Decimal"
-            )
-        object.__setattr__(
-            self, "value", float(self.value) if self.value is not None else None
-        )
+        if self.value is not None:
+            if not pd.isna(self.value) and not isinstance(
+                self.value, (float, int, Decimal)
+            ):
+                raise TypeError(
+                    "Floating Point Numbers value must be either be a float, int, or Decimal"
+                )
+        if isinstance(self.value, pd._libs.missing.NAType) or self.value is None:
+            object.__setattr__(self, "value", pd.NA)
+        else:
+            object.__setattr__(self, "value", float(self.value))
 
-    def json_encode(self) -> str:
+    def json_encode(self) -> [str, None]:
         # According to the spec, special values are to be encoded as JSON
         # strings in the following manner
         special_floats_or_decimals = {
             None: None,
+            pd.NA: None,
             float("inf"): '"Infinity"',
             float("-inf"): '"-Infinity"',
             float("nan"): "NaN",
@@ -327,7 +334,7 @@ class UAFloat(UAFloatingPoint):
         x = "<Float"
         if include_xmlns:
             x += " " + UAXMLNS_ATTRIB
-        x += ">" + (str(self.value) if self.value is not None else "") + "</Float>"
+        x += ">" + (str(self.value) if not pd.isna(self.value) else "") + "</Float>"
         return x
 
 
@@ -337,18 +344,20 @@ class UADouble(UAFloatingPoint):
         x = "<Double"
         if include_xmlns:
             x += " " + UAXMLNS_ATTRIB
-        x += ">" + (str(self.value) if self.value is not None else "") + "</Double>"
+        x += ">" + (str(self.value) if not pd.isna(self.value) else "") + "</Double>"
         return x
 
 
 @dataclass(eq=True, frozen=True)
 class UAString(UABuiltIn):
-    value: Optional[str]
+    value: str = pd.NA
 
     def __post_init__(self):
-        if self.value is not None and not isinstance(self.value, str):
+        if not pd.isna(self.value) and not isinstance(self.value, str):
             raise TypeError("String value must be a string")
-        object.__setattr__(self, "value", str(self.value) if self.value else None)
+        object.__setattr__(
+            self, "value", str(self.value) if not pd.isna(self.value) else pd.NA
+        )
 
     def xml_encode(self, include_xmlns: bool) -> str:
         x = "<String"
@@ -356,13 +365,13 @@ class UAString(UABuiltIn):
             x += " " + UAXMLNS_ATTRIB
         x += (
             ">"
-            + (escape(str(self.value)) if self.value is not None else "")
+            + (escape(str(self.value)) if not pd.isna(self.value) else "")
             + "</String>"
         )
         return x
 
     def json_encode(self) -> Union[str, None]:
-        if self.value is None:
+        if pd.isna(self.value):
             return None
         else:
             return json.dumps(self.value, ensure_ascii=False)
@@ -370,7 +379,7 @@ class UAString(UABuiltIn):
 
 @dataclass(eq=True, frozen=True)
 class UADateTime(UABuiltIn):
-    value: datetime
+    value: datetime = pd.NA
 
     def __post_init__(self):
         if not isinstance(self.value, datetime):
@@ -384,7 +393,7 @@ class UADateTime(UABuiltIn):
             ">"
             + (
                 self.value.strftime("%Y-%m-%dT%H:%M:%S.%fZ")
-                if self.value is not None
+                if not pd.isna(self.value)
                 else ""
             )
             + "</DateTime>"
@@ -408,12 +417,12 @@ class UAGuid(UAString):
 
 @dataclass(eq=True, frozen=True)
 class UAByteString(UABuiltIn):
-    value: Optional[ByteString]
+    value: ByteString = pd.NA
 
     def __post_init__(self):
-        if self.value is not None and not isinstance(self.value, ByteString):
+        if not pd.isna(self.value) and not isinstance(self.value, ByteString):
             raise TypeError("ByteString value must be a ByteString object")
-        object.__setattr__(self, "value", self.value if self.value else None)
+        object.__setattr__(self, "value", self.value if self.value else pd.NA)
 
     def xml_encode(self, include_xmlns: bool) -> str:
         x = "<ByteString"
@@ -421,7 +430,7 @@ class UAByteString(UABuiltIn):
             x += " " + UAXMLNS_ATTRIB
         x += (
             ">"
-            + (b64encode(self.value).decode("utf-8") if self.value is not None else "")
+            + (b64encode(self.value).decode("utf-8") if not pd.isna(self.value) else "")
             + "</ByteString>"
         )
         return x
@@ -430,7 +439,7 @@ class UAByteString(UABuiltIn):
         """ByteStryings are encoded as base64 strings in JSON, are enclosed
         in double quotes, and cannot contain illegal JSON characters.
         """
-        if self.value is None and not isinstance(self.value, ByteString):
+        if pd.isna(self.value) and not isinstance(self.value, ByteString):
             return None
         else:
             base64_string = b64encode(self.value).decode("utf-8")
@@ -439,10 +448,10 @@ class UAByteString(UABuiltIn):
 
 @dataclass(eq=True, frozen=True)
 class UABoolean(UABuiltIn):
-    value: Optional[bool]
+    value: bool = pd.NA
 
     def __post_init__(self):
-        if self.value is not None and not isinstance(self.value, bool):
+        if not pd.isna(self.value) and not isinstance(self.value, bool):
             raise TypeError("Boolean value must be a bool")
 
     def xml_encode(self, include_xmlns: bool) -> str:
@@ -453,7 +462,7 @@ class UABoolean(UABuiltIn):
             ">"
             + (
                 ("true" if self.value is True else "false")
-                if self.value is not None
+                if not pd.isna(self.value)
                 else ""
             )
             + "</Boolean>"
@@ -461,7 +470,7 @@ class UABoolean(UABuiltIn):
         return x
 
     def json_encode(self) -> Union[str, None]:
-        if self.value is None:
+        if pd.isna(self.value):
             return None
         else:
             return str(self.value).lower()
@@ -478,7 +487,7 @@ class UAXMLElement(UABuiltIn):
     def xml_encode(self, include_xmlns: bool) -> str:
         return self.value
 
-    def json_encode(self) -> Union[str, None]:
+    def json_encode(self) -> str:
         return json.dumps(self.value, ensure_ascii=False)
 
 
@@ -538,7 +547,7 @@ class UANodeId(UABuiltIn):
         nodeid_type_int_to_string = {0: "i", 1: "s", 2: "g", 3: "b"}
         if nodeid_type_int in nodeid_type_int_to_string:
             return nodeid_type_int_to_string[nodeid_type_int]
-        raise TypeError(f"NodeIdType {self.nodeid_type.value} is not supported")
+        raise TypeError(f"NodeIdType {nodeid_type_int} is not supported")
 
     def nodeid_type_value_to_int(self):
         nodeid_type_symbol_to_int = {"i": 0, "s": 1, "g": 2, "b": 3}
@@ -574,7 +583,7 @@ class UANodeId(UABuiltIn):
 
 @dataclass(eq=True, frozen=True)
 class UAExpandedNodeId(UAString):
-    value: Optional[str]
+    value: str = pd.NA
 
 
 @dataclass(eq=True, frozen=True)
@@ -589,7 +598,7 @@ class UADiagnosticInfo(UABuiltIn):
 
 @dataclass(eq=True, frozen=True)
 class UAQualifiedName(UABuiltIn):
-    namespace_index: uint16
+    namespace_index: np.uint16
     name: str
 
     def __post_init__(self):
@@ -598,7 +607,7 @@ class UAQualifiedName(UABuiltIn):
         if isinstance(self.namespace_index, int):
             if self.namespace_index < 0:
                 raise ValueError("Namespace index must be a positive integer")
-            object.__setattr__(self, "namespace_index", uint16(self.namespace_index))
+            object.__setattr__(self, "namespace_index", np.uint16(self.namespace_index))
         if not isinstance(self.name, str):
             raise TypeError("Name must be a string")
 
@@ -621,15 +630,15 @@ class UAQualifiedName(UABuiltIn):
 
 @dataclass(eq=True, frozen=True)
 class UALocalizedText(UABuiltIn):
-    text: Optional[str]
-    locale: Optional[str] = None
+    text: str = pd.NA
+    locale: str = pd.NA
 
     def __post_init__(self):
-        if (not isinstance(self.text, str)) and (self.text is not None):
-            raise TypeError("text must be a string or None")
-        if (not isinstance(self.locale, str)) and (self.locale is not None):
-            raise TypeError("locale must be a string or None")
-        if self.locale is not None:
+        if (not isinstance(self.text, str)) and (not pd.isna(self.text)):
+            raise TypeError("text must be a string or pd.NA")
+        if (not isinstance(self.locale, str)) and (not pd.isna(self.locale)):
+            raise TypeError("locale must be a string or pd.NA")
+        if not pd.isna(self.locale):
             if not self.is_valid_locale(self.locale):
                 raise ValueError(
                     "locale must be a valid locale string following the IETF RFC 5646 standard"
@@ -665,13 +674,17 @@ class UALocalizedText(UABuiltIn):
         if include_xmlns:
             x += " " + UAXMLNS_ATTRIB
         x += ">"
-        x += "<Locale>" + (self.locale if self.locale is not None else "") + "</Locale>"
-        x += "<Text>" + (escape(self.text) if self.text is not None else "") + "</Text>"
+        x += (
+            "<Locale>" + (self.locale if not pd.isna(self.locale) else "") + "</Locale>"
+        )
+        x += (
+            "<Text>" + (escape(self.text) if not pd.isna(self.text) else "") + "</Text>"
+        )
         x += "</LocalizedText>"
         return x
 
     def json_encode(self, input_locale: Optional[str] = None) -> Union[str, None]:
-        if self.text is None and not isinstance(self.text, str):
+        if pd.isna(self.text):
             return None
 
         json_content = ""
@@ -688,7 +701,7 @@ class UALocalizedText(UABuiltIn):
 
 @dataclass(eq=True, frozen=True)
 class UAVariant(UABuiltIn):
-    value: Any = None
+    value: Any = pd.NA
     type: VariantType = VariantType.Null
 
     def __post_init__(self):
@@ -721,7 +734,7 @@ class UAVariant(UABuiltIn):
             UADiagnosticInfo: VariantType.DiagnosticInfo,
         }
         # Checking that the value is of the correct type
-        if self.value is not None:
+        if not pd.isna(self.value):
             if not isinstance(self.value, tuple(ua_class_type_to_variant_type.keys())):
                 raise TypeError(
                     "Value must be one of the valid Built-In types in OPC UA"
@@ -730,7 +743,7 @@ class UAVariant(UABuiltIn):
         if not isinstance(self.type, VariantType):
             raise TypeError("Type must be of type VariantType")
 
-        if self.type is VariantType.Null and self.value is not None:
+        if self.type is VariantType.Null and not pd.isna(self.value):
             if ua_class_type_to_variant_type.get(type(self.value)) is not None:
                 object.__setattr__(
                     self, "type", ua_class_type_to_variant_type.get(type(self.value))
@@ -745,7 +758,7 @@ class UAVariant(UABuiltIn):
         if include_xmlns:
             x += " " + UAXMLNS_ATTRIB
         x += ">"
-        if self.value is not None:
+        if not pd.isna(self.value):
             x += "<Value>"
             if isinstance(self.value, UABuiltIn) and hasattr(self.value, "xml_encode"):
                 x += self.value.xml_encode(include_xmlns=include_xmlns)
@@ -756,7 +769,7 @@ class UAVariant(UABuiltIn):
         return x
 
     def json_encode(self, **kwargs) -> str:
-        if self.value is None:
+        if pd.isna(self.value):
             return "null"
         if self.type is VariantType.Null:
             return "null"
@@ -792,8 +805,14 @@ class UADecimal(UAData):
 
 @dataclass(eq=True, frozen=True)
 class UAEnumeration(UAInt32):
-    string: str
-    name: str
+    string: str = ""
+    name: str = ""
+
+    def __post_init__(self):
+        if not isinstance(self.string, str):
+            raise TypeError("String must be a string")
+        if not isinstance(self.name, str):
+            raise TypeError("Name must be a string")
 
 
 @dataclass(eq=True, frozen=True)
@@ -803,20 +822,20 @@ class UAArray(UAData):
 
 @dataclass(eq=True, frozen=True)
 class UAStructure(UAData):
-    value: Any
+    value: Any = pd.NA
 
     def xml_encode(self, include_xmlns: bool) -> str:
-        if self.value is None:
+        if pd.isna(self.value):
             return ""
-        if self.value is not None and hasattr(self.value, "xml_encode"):
+        if not pd.isna(self.value) and hasattr(self.value, "xml_encode"):
             return self.value.xml_encode(include_xmlns)
         else:
             return ""
 
     def json_encode(self, **kwargs) -> str:
-        if self.value is None:
+        if pd.isna(self.value):
             return "null"
-        if self.value is not None and hasattr(self.value, "json_encode"):
+        if not pd.isna(self.value) and hasattr(self.value, "json_encode"):
             return self.value.json_encode(**kwargs)
         else:
             return "null"
@@ -829,9 +848,9 @@ class UAStructureOptionalField(UAData):
 
 @dataclass(eq=True, frozen=True)
 class UAExtensionObject(UABuiltIn):
-    type_nodeid: UANodeId
-    body: Union[UAByteString, UAStructure, UAXMLElement]
-    encoding_json: Optional[int] = None
+    type_nodeid: UANodeId = pd.NA
+    body: Union[UAByteString, UAStructure, UAXMLElement] = pd.NA
+    encoding_json: int = pd.NA
 
     def __post_init__(self):
         if not isinstance(self.type_nodeid, UANodeId):
@@ -845,10 +864,10 @@ class UAExtensionObject(UABuiltIn):
             UAStructure: 0,
             UAByteString: 1,
             UAXMLElement: 2,
-            0: None,
+            0: pd.NA,
         }
         object.__setattr__(
-            self, "encoding_json", instance_map.get(self.body.__class__, None)
+            self, "encoding_json", instance_map.get(self.body.__class__, pd.NA)
         )
 
     def xml_encode(self, include_xmlns: bool) -> str:
@@ -860,7 +879,7 @@ class UAExtensionObject(UABuiltIn):
             "<TypeId>"
             + (
                 self.type_nodeid.xml_encode(include_xmlns=False)
-                if self.type_nodeid is not None
+                if not pd.isna(self.type_nodeid)
                 else ""
             )
             + "</TypeId>"
@@ -869,7 +888,7 @@ class UAExtensionObject(UABuiltIn):
             "<Body>"
             + (
                 self.body.xml_encode(include_xmlns=False)
-                if self.body is not None
+                if not pd.isna(self.body)
                 else ""
             )
             + "</Body>"
@@ -878,7 +897,7 @@ class UAExtensionObject(UABuiltIn):
         return x
 
     def json_encode(self, **kwargs) -> str:
-        if self.body is None or not hasattr(self.body, "json_encode"):
+        if pd.isna(self.body) or not hasattr(self.body, "json_encode"):
             return "null"
         if self.body.json_encode(**kwargs) is None:
             return "null"
@@ -898,7 +917,7 @@ class UAExtensionObject(UABuiltIn):
             )
 
         # OPC UA Spec: If the Body is None, NULL, or 0 (Structure), the Encoding field shall be omitted.
-        if (self.encoding_json is not None) and (self.encoding_json != 0):
+        if (not pd.isna(self.encoding_json)) and (self.encoding_json != 0):
             json += ","
             json += '"Encoding":' + str(self.encoding_json)
         return "{" + json + "}"
@@ -906,43 +925,43 @@ class UAExtensionObject(UABuiltIn):
 
 @dataclass(eq=True, frozen=True)
 class UAEUInformation(UAData):
-    display_name: UALocalizedText
-    description: UALocalizedText
-    unit_id: int
-    namespace_uri: str
+    display_name: UALocalizedText = pd.NA
+    description: UALocalizedText = pd.NA
+    unit_id: int = pd.NA
+    namespace_uri: str = pd.NA
 
-    def __init__(
-        self,
-        display_name: UALocalizedText,
-        description: UALocalizedText,
-        unit_id: int,
-        namespace_uri: str,
-    ):
-        if not isinstance(display_name, UALocalizedText) and isinstance(
-            display_name, str
+    def __post_init__(self):
+        if not isinstance(self.display_name, UALocalizedText) and isinstance(
+            self.display_name, str
         ):
-            object.__setattr__(self, "display_name", UALocalizedText(text=display_name))
-        elif isinstance(display_name, UALocalizedText) or display_name is None:
-            object.__setattr__(self, "display_name", display_name)
+            object.__setattr__(
+                self, "display_name", UALocalizedText(text=self.display_name)
+            )
+        elif isinstance(self.display_name, UALocalizedText) or pd.isna(
+            self.display_name
+        ):
+            object.__setattr__(self, "display_name", self.display_name)
         else:
             raise TypeError("display_name must be of type UALocalizedText")
 
-        if not isinstance(description, UALocalizedText) and isinstance(
-            description, str
+        if not isinstance(self.description, UALocalizedText) and isinstance(
+            self.description, str
         ):
-            object.__setattr__(self, "description", UALocalizedText(text=description))
-        elif isinstance(description, UALocalizedText) or display_name is None:
-            object.__setattr__(self, "description", description)
+            object.__setattr__(
+                self, "description", UALocalizedText(text=self.description)
+            )
+        elif isinstance(self.description, UALocalizedText) or pd.isna(self.description):
+            object.__setattr__(self, "description", self.description)
         else:
             raise TypeError("description must be of type UALocalizedText")
 
-        if not isinstance(unit_id, int):
+        if not isinstance(self.unit_id, int):
             raise TypeError("unit_id must be of type int")
-        object.__setattr__(self, "unit_id", unit_id)
+        object.__setattr__(self, "unit_id", self.unit_id)
 
-        if not isinstance(namespace_uri, str):
+        if not isinstance(self.namespace_uri, str):
             raise TypeError("namespace_uri must be of type str")
-        object.__setattr__(self, "namespace_uri", namespace_uri)
+        object.__setattr__(self, "namespace_uri", self.namespace_uri)
 
     def xml_encode(self, include_xmlns: bool) -> str:
         body_contents = "<EUInformation"
@@ -956,26 +975,30 @@ class UAEUInformation(UAData):
             "<Locale>"
             + (
                 self.display_name.locale
-                if self.display_name.locale is not None
+                if not pd.isna(self.display_name.locale)
                 else "en"
             )
             + "</Locale>"
         )
         body_contents += (
             "<Text>"
-            + (self.display_name.text if self.display_name.text is not None else "")
+            + (self.display_name.text if not pd.isna(self.display_name.text) else "")
             + "</Text>"
         )
         body_contents += "</DisplayName>"
         body_contents += "<Description>"
         body_contents += (
             "<Locale>"
-            + (self.description.locale if self.description.locale is not None else "en")
+            + (
+                self.description.locale
+                if not pd.isna(self.description.locale)
+                else "en"
+            )
             + "</Locale>"
         )
         body_contents += (
             "<Text>"
-            + (self.description.text if self.description.text is not None else "")
+            + (self.description.text if not pd.isna(self.description.text) else "")
             + "</Text>"
         )
         body_contents += "</Description>"
@@ -985,29 +1008,29 @@ class UAEUInformation(UAData):
 
     def json_encode(self, **kwargs) -> Union[str, None]:
         if (
-            self.display_name.json_encode(input_locale=kwargs.get("input_locale", None))
+            self.display_name.json_encode(input_locale=kwargs.get("input_locale"))
             is None
-            or self.description.json_encode(
-                input_locale=kwargs.get("input_locale", None)
-            )
+            or self.description.json_encode(input_locale=kwargs.get("input_locale"))
             is None
         ):
             return None
 
         json_content = ""
-        json_content += (
-            '{"DisplayName":'
-            + self.display_name.json_encode(
-                input_locale=kwargs.get("input_locale", None)
-            )
-            + ","
+        decoded_display_name = self.display_name.json_encode(
+            input_locale=kwargs.get("input_locale", None)
         )
         json_content += (
-            '"Description":'
-            + self.description.json_encode(
-                input_locale=kwargs.get("input_locale", None)
-            )
-            + ","
+            '{"DisplayName":' + decoded_display_name + ","
+            if decoded_display_name
+            else '""' + ","
+        )
+        decoded_description = self.description.json_encode(
+            input_locale=kwargs.get("input_locale", None)
+        )
+        json_content += (
+            '"Description":' + decoded_description + ","
+            if decoded_description
+            else '""' + ","
         )
         json_content += '"UnitId":' + str(self.unit_id) + ","
         json_content += '"NamespaceUri":' + json.dumps(
@@ -1037,6 +1060,18 @@ class UAEngineeringUnits(UAData):
                 unit_id=unit_id,
                 namespace_uri=namespace_uri,
             ),
+        )
+
+    def __repr__(self):
+        """
+        Fixed object representation, so it can be reinstantiated with performing
+        eval() on the object's representation string.
+        """
+        ua_eu_information_param_name = list(self.__dataclass_fields__.keys())[0]
+        ua_eu_information_repr = repr(getattr(self, ua_eu_information_param_name))
+        ua_eu_information = getattr(self, ua_eu_information_param_name)
+        return ua_eu_information_repr.replace(
+            ua_eu_information.__class__.__name__, self.__class__.__name__, 1
         )
 
     def xml_encode(self, include_xmlns: bool) -> str:
@@ -1098,6 +1133,18 @@ class UAEURange(UAData):
 
         object.__setattr__(self, "ua_range", UARange(low=float(low), high=float(high)))
 
+    def __repr__(self):
+        """
+        Fixed object representation, so it can be reinstantiated with performing
+        eval() on the object's representation string.
+        """
+        ua_range_param_name = list(self.__dataclass_fields__.keys())[0]
+        ua_range_repr = repr(getattr(self, ua_range_param_name))
+        ua_range = getattr(self, ua_range_param_name)
+        return ua_range_repr.replace(
+            ua_range.__class__.__name__, self.__class__.__name__, 1
+        )
+
     def xml_encode(self, include_xmlns: bool) -> str:
         ua_type_nodeid = UANodeId(0, NodeIdType.NUMERIC, "885")
         ua_extension_object = UAExtensionObject(
@@ -1136,14 +1183,17 @@ class UAListOf(UAData):
 
     def __post_init__(self):
         first_element_type = type(self.value[0])
-        if any(not isinstance(element, first_element_type) for element in self.value):
+        if any(
+            not isinstance((_element := element), first_element_type)
+            for element in self.value
+        ):
             raise TypeError(
-                f"UAListOf must contain only one type of UAData. {first_element_type} != {type(element)}"
+                f"UAListOf must contain only one type of UAData. {first_element_type} != {type(_element)}"
             )
 
     def xml_encode(self, include_xmlns: bool) -> str:
         encodedvalues = []
-        if self.value is not None:
+        if not pd.isna(self.value):
             encodedvalues = [v.xml_encode(include_xmlns=False) for v in self.value]
 
         x = "<ListOf" + self.typename + " "

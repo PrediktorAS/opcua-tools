@@ -1,5 +1,10 @@
-from datetime import datetime
 import decimal
+import json
+from datetime import datetime
+
+import pandas as pd
+import pytest
+
 from opcua_tools.ua_data_types import (
     NodeIdType,
     UAInt16,
@@ -29,9 +34,6 @@ from opcua_tools.ua_data_types import (
     UADateTime,
     VariantType,
 )
-import json
-import pytest
-import pandas as pd
 
 
 def test_ua_integer_creation_with_incorrect_type():
@@ -184,9 +186,9 @@ def test_ua_floating_point_creation_casting_from_integer():
 
 def test_ua_floating_point_creation_with_none_value():
     ua_float = UAFloat(None)
-    assert ua_float.value is None
+    assert isinstance(ua_float.value, pd._libs.missing.NAType)
     ua_double = UADouble(None)
-    assert ua_double.value is None
+    assert isinstance(ua_double.value, pd._libs.missing.NAType)
 
 
 def test_ua_floating_point_xml_encode_with_value():
@@ -241,7 +243,7 @@ def test_ua_string_creation_with_incorrect_type():
 
 def test_ua_string_creation_with_none_value():
     ua_string = UAString(None)
-    assert ua_string.value is None
+    assert isinstance(ua_string.value, pd._libs.missing.NAType)
 
 
 def test_ua_string_xml_encode():
@@ -324,7 +326,7 @@ def test_ua_byte_string_creation_with_incorrect_type():
 
 def test_ua_byte_string_creation_with_none_value():
     ua_byte_string = UAByteString(None)
-    assert ua_byte_string.value is None
+    assert isinstance(ua_byte_string.value, pd._libs.missing.NAType)
 
 
 def test_ua_byte_string_xml_encode():
@@ -1081,31 +1083,24 @@ def test_ua_eu_information_creation_with_incorrect_values():
         )
     with pytest.raises(TypeError):
         UAEUInformation(
-            namespace_namespace_uri="www.mynamespace.com/",
+            namespace_uri="www.mynamespace.com/",
             unit_id="42",
             display_name=UALocalizedText(text="bar", locale="en"),
             description=UALocalizedText(text="bar", locale="en"),
         )
     with pytest.raises(TypeError):
         UAEUInformation(
-            namespace_namespace_uri="www.mynamespace.com/",
+            namespace_uri="www.mynamespace.com/",
             unit_id=42,
             display_name=42,
             description=UALocalizedText(text="bar", locale="en"),
         )
     with pytest.raises(TypeError):
         UAEUInformation(
-            namespace_namespace_uri="www.mynamespace.com/",
+            namespace_uri="www.mynamespace.com/",
             unit_id=42,
             display_name=UALocalizedText(text="bar", locale="en"),
             description=42,
-        )
-    with pytest.raises(TypeError):
-        UAEUInformation(
-            namespace_namespace_uri="www.mynamespace.com/",
-            unit_id=42,
-            display_name=UALocalizedText(text="bar", locale="en"),
-            description=UALocalizedText(text="bar", locale="en"),
         )
     with pytest.raises(TypeError):
         UAEUInformation(
@@ -1127,6 +1122,22 @@ def test_ua_eu_information_creation_with_correct_values():
     assert ua_eu_information.unit_id == 42
     assert ua_eu_information.display_name == UALocalizedText(text="bar", locale="en")
     assert ua_eu_information.description == UALocalizedText(text="bar", locale="en")
+
+
+def test_ua_eu_information_creation_with_empty_description():
+    expected_namespace_uri = "www.mynamespace.com/"
+    expected_unit_id = 42
+    expected_display_name = UALocalizedText(text="bar", locale="en")
+    ua_eu_information = UAEUInformation(
+        namespace_uri=expected_namespace_uri,
+        unit_id=expected_unit_id,
+        display_name=expected_display_name,
+        description=pd.NA,
+    )
+    assert ua_eu_information.namespace_uri == expected_namespace_uri
+    assert ua_eu_information.unit_id == expected_unit_id
+    assert ua_eu_information.display_name == expected_display_name
+    assert isinstance(ua_eu_information.description, pd._libs.missing.NAType)
 
 
 def test_ua_eu_information_xml_encode():

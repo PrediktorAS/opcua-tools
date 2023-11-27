@@ -16,6 +16,7 @@ import base64
 import re
 import copy
 import lxml.etree as ET
+import pandas as pd
 
 from dateutil import parser
 from typing import Dict, Optional
@@ -274,19 +275,19 @@ def parse_nodeid(
 def parse_localized_text(el):
     txt = el.find(uaxsd + "Text")
     if txt is None:
-        text = None
+        text = pd.NA
     else:
         text = txt.text
 
     loc = el.find(uaxsd + "Locale")
     if loc is None:
-        locale = None
+        locale = pd.NA
     elif loc.text is None:
-        locale = None
+        locale = pd.NA
     elif type(loc.text) == str:
         loc_text_str = loc.text.strip()
         if loc_text_str == "":
-            locale = None
+            locale = pd.NA
         else:
             locale = loc.text
     else:

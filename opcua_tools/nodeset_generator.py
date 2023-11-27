@@ -392,6 +392,7 @@ def denormalize_nodes_nodeids(nodes, lookup_df):
         if c in nodes.columns.values:
             uniques = lookup_df.rename(columns={"uniques": c}, errors="raise")
             nodes = nodes.set_index(c).join(uniques).reset_index(drop=True)
+            nodes[c] = nodes[c].fillna(pd.NA)
     return nodes
 
 
