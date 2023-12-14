@@ -13,9 +13,11 @@
 # limitations under the License.
 
 import os
+
 import pytest
+
 import opcua_tools as ot
-from definitions import get_project_root
+from opcua_tools.definitions import get_project_root
 
 PATH_HERE = os.path.dirname(__file__)
 

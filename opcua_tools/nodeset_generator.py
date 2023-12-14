@@ -23,7 +23,9 @@ import logging
 import pandas as pd
 import numpy as np
 from io import StringIO
-from opcua_tools.ua_data_types import UANodeId, NodeIdType
+
+from opcua_tools.validator import value_validator
+from opcua_tools.ua_data_types import UANodeId
 
 PATH_HERE = os.path.dirname(__file__)
 
@@ -184,6 +186,7 @@ def generate_nodes_xml(
     references["ReferenceType"] = replacer(references["ReferenceType"].map(str))
 
     nodes = nodes.copy()
+    nodes = value_validator.validate_values_in_df(nodes)
 
     encode_values(nodes)
     encode_definitions(nodes)
