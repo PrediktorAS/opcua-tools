@@ -1,11 +1,12 @@
+import pathlib
+
 import pandas as pd
 
-from opcua_tools import definitions, ua_data_types
+from opcua_tools import ua_data_types
 from opcua_tools.validator import exceptions
 
 MAPPING_FILE_PATH = (
-    definitions.get_project_root()
-    / "opcua_tools/validator/data_type_to_value_mapping.csv"
+    pathlib.Path(__file__).parent.parent / "static/data_type_to_value_mapping.csv"
 )
 OPCUA_TOOLS_CLASSES_TO_SKIP = ["UAEnumeration"]
 VALUE_VALIDATION_ERROR_MESSAGE = "Invalid Value for row {}: given instance: {}."

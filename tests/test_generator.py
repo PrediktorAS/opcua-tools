@@ -17,7 +17,7 @@ from opcua_tools.nodeset_generator import (
     denormalize_nodes_nodeids,
     denormalize_references_nodeids,
 )
-from opcua_tools.definitions import get_project_root
+from definitions import get_project_root
 from opcua_tools import UAGraph
 import os
 import pandas as pd

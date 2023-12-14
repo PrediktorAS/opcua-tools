@@ -3,7 +3,7 @@ import os
 import pytest
 
 from opcua_tools import UAGraph, UAEnumeration, UAInt32
-from opcua_tools.definitions import get_project_root
+from definitions import get_project_root
 from opcua_tools.nodes_manipulation import transform_ints_to_enums
 from opcua_tools.nodeset_parser import parse_xml_files
 

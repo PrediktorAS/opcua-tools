@@ -4,7 +4,7 @@ import pandas as pd
 import pytest
 
 from opcua_tools.ua_data_types import NodeIdType, UAEURange, UANodeId
-from opcua_tools.definitions import get_project_root
+from definitions import get_project_root
 
 
 @pytest.fixture(scope="session")
@@ -13,7 +13,7 @@ def paper_example_path():
 
 
 @pytest.fixture(scope="session")
-def invalid_files_root_path() -> pathlib.PosixPath:
+def invalid_files_root_path() -> pathlib.Path:
     return get_project_root() / "tests" / "testdata" / "invalid_example"
 
 
