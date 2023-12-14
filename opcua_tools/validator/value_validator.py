@@ -66,9 +66,6 @@ def validate_value(row: pd.Series) -> pd.Series:
     does_value_match_data_type = isinstance(value_to_check, data_type_opcua_tools_class)
 
     row["IsValidValue"] = does_value_match_data_type
-
-    if not does_value_match_data_type:
-        a = 1
     return row
 
 

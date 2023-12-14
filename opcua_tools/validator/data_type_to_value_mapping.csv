@@ -10,13 +10,13 @@ DataType,NodeIdDataType,OPCUAToolsClass
 8,i=2,
 9,i=3,
 10,i=4,
-11,i=5,
+11,i=5,UAUInt16
 12,i=6,
 13,i=7,UAUInt32
 14,i=8,
 15,i=9,
-16,i=10,
-17,i=11,
+16,i=10,UAFloat
+17,i=11,UADouble
 18,i=12,UAString
 19,i=13,UADateTime
 20,i=14,
@@ -438,7 +438,7 @@ DataType,NodeIdDataType,OPCUAToolsClass
 436,i=16139,
 437,i=25267,
 438,i=11645,
-439,i=11646,
+439,i=11646,UABoolean
 440,i=11647,
 441,i=11648,
 442,i=11649,
@@ -3144,8 +3144,8 @@ DataType,NodeIdDataType,OPCUAToolsClass
 3142,i=17315,
 3143,i=17214,
 3144,i=17318,
-3145,i=17319,UAListOf
-3146,i=17321,UAListOf
+3145,i=17319,
+3146,i=17321,
 3147,i=17322,
 3148,i=17558,
 3149,i=17325,
@@ -3196,7 +3196,7 @@ DataType,NodeIdDataType,OPCUAToolsClass
 3194,i=19286,
 3195,i=19287,
 3196,i=19288,
-3197,i=17427,UAListOf
+3197,i=17427,
 3198,i=17428,
 3199,i=17456,
 3200,i=17465,
@@ -4460,7 +4460,7 @@ DataType,NodeIdDataType,OPCUAToolsClass
 4458,i=15728,
 4459,i=23520,
 4460,i=12676,
-4461,i=32386,
+4461,i=32386,UAExtensionObject
 4462,i=15950,
 4463,i=14796,
 4464,i=15589,
