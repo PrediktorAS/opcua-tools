@@ -220,6 +220,7 @@ def generate_nodes_xml(
         "MethodDeclarationId",
         "EventNotifier",
         "Historizing",
+        "WriteMask",
     ]:
         if a in nodes.columns.values:
             notna = ~nodes[a].isna()
