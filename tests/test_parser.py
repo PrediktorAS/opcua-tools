@@ -12,16 +12,18 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+import os
+from pathlib import Path
+
+import pandas as pd
+
+import opcua_tools as ot
+from definitions import get_project_root
 from opcua_tools.nodeset_parser import (
     exclude_files_not_in_namespaces,
     get_list_of_xml_files,
     get_xml_namespaces,
 )
-import opcua_tools as ot
-import os
-import pandas as pd
-from pathlib import Path
-from definitions import get_project_root
 
 PATH_HERE = os.path.dirname(__file__)
 

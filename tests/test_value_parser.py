@@ -12,24 +12,26 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from opcua_tools.ua_data_types import UAEURange
-from opcua_tools.value_parser import parse_boolean
-from opcua_tools.ua_graph import UAGraph
-from definitions import get_project_root
-import pytest
 import os
+
 import pandas as pd
+import pytest
+
+from definitions import get_project_root
+from opcua_tools.ua_data_types import UAEURange
+from opcua_tools.ua_graph import UAGraph
+from opcua_tools.value_parser import parse_boolean
 
 
 @pytest.fixture(scope="session")
 def boolean_test_data():
-    list = [
+    df_values = [
         ["Boolean", "false", False],
         ["Boolean", "False", False],
         ["Boolean", "true", True],
         ["Boolean", "True", True],
     ]
-    data = pd.DataFrame(list, columns=["tag_type", "input", "solution"])
+    data = pd.DataFrame(df_values, columns=["tag_type", "input", "solution"])
     return data
 
 

@@ -553,9 +553,16 @@ def parse_xml_files(
 
     nodes = pd.concat(df_nodes_list, ignore_index=True)
     columns_to_fix_missing_values = [
+        "SymbolicName",
+        "IsAbstract",
         "Symmetric",
+        "ValueRank",
+        "ParentNodeId",
+        "ArrayDimensions",
         "ReleaseStatus",
         "MinimumSamplingInterval",
+        "MethodDeclarationId",
+        "EventNotifier",
     ]
     for column in columns_to_fix_missing_values:
         if column in nodes.columns:

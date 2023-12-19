@@ -12,8 +12,8 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from definitions import get_project_root
 import opcua_tools as ot
+from definitions import get_project_root
 from opcua_tools.nodeset_generator import (
     denormalize_nodes_nodeids,
     denormalize_references_nodeids,
@@ -27,7 +27,7 @@ def test_values_correct(paper_example_path):
     references = parse_dict["references"]
     lookup_df = parse_dict["lookup_df"]
     nodes = denormalize_nodes_nodeids(nodes, lookup_df)
-    references = denormalize_references_nodeids(references, lookup_df)
+    denormalize_references_nodeids(references, lookup_df)
     nodes = nodes.drop(columns=["id"])
     nodes = nodes.sort_values(by=nodes.columns.values.tolist()).reset_index(drop=True)
 
