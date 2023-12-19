@@ -9,7 +9,9 @@ MAPPING_FILE_PATH = (
     pathlib.Path(__file__).parent.parent / "static/data_type_to_value_mapping.csv"
 )
 OPCUA_TOOLS_CLASSES_TO_SKIP = ["UAEnumeration"]
-VALUE_VALIDATION_ERROR_MESSAGE = "Invalid Value for row {}: given instance: {}."
+VALUE_VALIDATION_ERROR_MESSAGE = (
+    "Invalid Value for rows with the following display names: {}."
+)
 
 
 def get_data_type_to_value_mapping() -> pd.DataFrame:
@@ -124,13 +126,13 @@ def validate_values_in_df(df_to_validate: pd.DataFrame) -> pd.DataFrame:
     df_to_validate = df_to_validate.apply(validate_value, axis=1)
 
     if not df_to_validate["IsValidValue"].all():
-        for index, row in df_to_validate.iterrows():
-            if not row["IsValidValue"]:
-                raise exceptions.ValidationError(
-                    VALUE_VALIDATION_ERROR_MESSAGE.format(
-                        index, row["Value"].__class__.__name__
-                    )
-                )
+        invalid_display_names = df_to_validate[df_to_validate["IsValidValue"] == False][
+            "DisplayName"
+        ]
+        invalid_display_names_as_list = invalid_display_names.values.tolist()
+        raise exceptions.ValidationError(
+            VALUE_VALIDATION_ERROR_MESSAGE.format(invalid_display_names_as_list)
+        )
 
     else:
         df_to_validate = df_to_validate.drop(columns=["IsValidValue"])

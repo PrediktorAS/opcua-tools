@@ -1,0 +1,60 @@
+<?xml version="1.0" encoding="utf-8"?>
+<UANodeSet xmlns="http://opcfoundation.org/UA/2011/03/UANodeSet.xsd">
+    <NamespaceUris>
+        <Uri>http://prediktor.com/paper_example</Uri>
+        <Uri>http://prediktor.com/RDS-OG-Fragment</Uri>
+        <Uri>http://prediktor.com/iec63131_fragment</Uri>
+    </NamespaceUris>
+    <Models>
+        <Model ModelUri="http://prediktor.com/paper_example" PublicationDate="2020-04-06T08:03:52Z" Version="1.0.0">
+        </Model>
+    </Models>
+    <Aliases>
+    </Aliases>
+    <UAObject NodeId="ns=1;i=1" BrowseName="1:Site1">
+        <DisplayName>Site1</DisplayName>
+        <Description>Lorem ipsum dolor sit amet</Description>
+        <References>
+            <Reference ReferenceType="ns=0;i=40">ns=2;s=SiteType</Reference>
+            <Reference ReferenceType="ns=0;i=47">ns=1;i=48</Reference>
+        </References>
+    </UAObject>
+    <UAObject NodeId="ns=1;i=2" BrowseName="1:Site1.WaterInjectionSystem">
+        <DisplayName>WaterInjectionSystem</DisplayName>
+        <Description>Lorem ipsum dolor sit amet</Description>
+        <References>
+            <Reference ReferenceType="ns=2;s=FunctionalAspect" IsForward="false">ns=1;i=1</Reference>
+            <Reference ReferenceType="ns=0;i=40">ns=2;s=E</Reference>
+        </References>
+    </UAObject>
+    <UAVariable NodeId="ns=1;i=3" BrowseName="2:FunctionalAspectName" DataType="i=12">
+        <DisplayName>FunctionalAspectName</DisplayName>
+        <Description>Lorem ipsum dolor sit amet</Description>
+        <References>
+            <Reference ReferenceType="ns=0;i=40">ns=0;i=63</Reference>
+            <Reference ReferenceType="ns=0;i=46" IsForward="false">ns=1;i=2</Reference>
+        </References>
+        <Value>
+            <String xmlns="http://opcfoundation.org/UA/2008/02/Types.xsd">E1</String>
+        </Value>
+    </UAVariable>
+    <UAObject NodeId="ns=1;i=4" BrowseName="1:Site1.InjectionSystem">
+        <DisplayName>WaterInjectionSystem</DisplayName>
+        <Description>Lorem ipsum dolor sit amet</Description>
+        <References>
+            <Reference ReferenceType="ns=2;s=FunctionalAspect" IsForward="false">ns=1;i=2</Reference>
+            <Reference ReferenceType="ns=0;i=40">ns=2;s=KA</Reference>
+        </References>
+    </UAObject>
+    <UAVariable NodeId="ns=1;i=5" BrowseName="2:FunctionalAspectName" DataType="i=1">
+        <DisplayName>FunctionalAspectName</DisplayName>
+        <Description>Lorem ipsum dolor sit amet</Description>
+        <References>
+            <Reference ReferenceType="ns=0;i=40">ns=0;i=63</Reference>
+            <Reference ReferenceType="ns=0;i=46" IsForward="false">ns=1;i=4</Reference>
+        </References>
+        <Value>
+            <String xmlns="http://opcfoundation.org/UA/2008/02/Types.xsd">KA1</String>
+        </Value>
+    </UAVariable>
+</UANodeSet>

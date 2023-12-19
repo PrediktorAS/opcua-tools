@@ -30,6 +30,31 @@ class TestValidatorFeature:
                 output_file_path, "http://prediktor.com/paper_example"
             )
 
+    def test_validate_values_in_df_raises_validation_error(
+        self, invalid_files_root_path
+    ):
+        path_to_xmls = str(invalid_files_root_path / "non_matching_datatype")
+        ua_graph = UAGraph.from_path(path_to_xmls)
+
+        output_folder = get_project_root() / "tests" / "output"
+        output_file_path = str(
+            output_folder / "invalid_output_that_eventually_wont_be_created.xml"
+        )
+
+        # Creating output folder if it does not exist
+        if not os.path.exists(str(output_folder)):
+            os.makedirs(str(output_folder))
+
+        with pytest.raises(exceptions.ValidationError) as e:
+            ua_graph.write_nodeset(
+                output_file_path, "http://prediktor.com/paper_example"
+            )
+        exception_obj = e.value
+        assert (
+            str(exception_obj)
+            == "Invalid Value for rows with the following display names: ['FunctionalAspectName']."
+        )
+
 
 class TestValidatorUnit:
     def test_validator_row_is_valid_when_nodeclass_is_not_uavariable(
