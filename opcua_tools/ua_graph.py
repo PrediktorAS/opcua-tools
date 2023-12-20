@@ -40,9 +40,9 @@ class UAGraph:
         )
         self.namespaces = namespaces
 
-    @staticmethod
+    @classmethod
     def from_path(
-        path: str, namespace_dict: Optional[Dict[int, str]] = None
+        cls, path: str, namespace_dict: Optional[Dict[int, str]] = None
     ) -> "UAGraph":
         if namespace_dict:
             namespace_list = []
@@ -56,7 +56,7 @@ class UAGraph:
         else:
             parse_dict = parse_xml_dir(path)
 
-        ua_graph = UAGraph(
+        ua_graph = cls(
             nodes=parse_dict["nodes"],
             references=parse_dict["references"],
             namespaces=parse_dict["namespaces"],
@@ -66,10 +66,10 @@ class UAGraph:
 
         return ua_graph
 
-    @staticmethod
-    def from_file_list(file_list: List[str]) -> "UAGraph":
+    @classmethod
+    def from_file_list(cls, file_list: List[str]) -> "UAGraph":
         parse_dict = parse_xml_files(file_list)
-        return UAGraph(
+        return cls(
             nodes=parse_dict["nodes"],
             references=parse_dict["references"],
             namespaces=parse_dict["namespaces"],
