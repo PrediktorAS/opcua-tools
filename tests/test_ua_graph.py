@@ -12,9 +12,15 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+import os
+
 import pandas as pd
+
 import opcua_tools as ot
 from opcua_tools.ua_data_types import NodeIdType, UANodeId
+
+
+PATH_HERE = os.path.dirname(__file__)
 
 
 def test_create_node_paths_by_reference_types(paper_example_path, ua_graph_data_path):
@@ -91,3 +97,22 @@ def test_ua_graph_nodeid_by_browsename_without_nodeclass(paper_example_path):
     nodeid = ua_graph.nodeid_by_browsename("I_SCD_CA")
     expected_nodeid = UANodeId(namespace=3, nodeid_type=NodeIdType("i"), value="1035")
     assert nodeid == expected_nodeid
+
+
+def test_ua_graph_get_instances_with_type_info(paper_example_path):
+    ua_graph = ot.UAGraph.from_path(str(paper_example_path))
+
+    references = ua_graph.get_instances_with_type_info()
+    # references.to_csv(
+    #     os.path.join(PATH_HERE, "expected", "ua_graph", "references.csv"),
+    #     index=False
+    # )
+    output_references_path = os.path.join(PATH_HERE, "output", "output_references.csv")
+    references.to_csv(output_references_path, index=False)
+    output_references = pd.read_csv(output_references_path)
+
+    expected_references = pd.read_csv(
+        os.path.join(PATH_HERE, "expected", "ua_graph", "references.csv")
+    )
+
+    pd.testing.assert_frame_equal(expected_references, output_references)

@@ -362,9 +362,10 @@ class UAGraph:
             "id", drop=False
         )
         has_type_def_id = self.reference_type_by_browsename("HasTypeDefinition")
-        htd = self.references.loc[
-            self.references["ReferenceType"] == has_type_def_id, [["Src", "Trg"]]
+        references_with_htd_id = self.references.loc[
+            self.references["ReferenceType"] == has_type_def_id
         ]
+        references_with_htd_id = references_with_htd_id[["Src", "Trg"]]
         typeinfo = nodes.rename(
             columns={
                 "BrowseName": "TypeBrowseName",
@@ -373,8 +374,13 @@ class UAGraph:
             },
             errors="raise",
         ).drop(columns=["NodeClass"])
-        htd = htd.set_index("Src").join(nodes).set_index("Trg").join(typeinfo)
-        return htd
+        references_with_nodes = (
+            references_with_htd_id.set_index("Src")
+            .join(nodes)
+            .set_index("Trg")
+            .join(typeinfo)
+        )
+        return references_with_nodes
 
     def get_enum_dict(self, enum_name: str):
         """This function will return the enum given its name in
