@@ -30,6 +30,7 @@ def test_idempotency():
     ot.create_nodeset2_file(
         nodes=parse_dict["nodes"].copy(),
         references=parse_dict["references"].copy(),
+        models=parse_dict["models"].copy(),
         namespaces=parse_dict["namespaces"],
         serialize_namespace=0,
         filename_or_stringio=PATH_HERE + "/expected/generator/nodeset2.xml",
