@@ -44,12 +44,23 @@ def validate_value(row: pd.Series) -> pd.Series:
         )
 
     if isinstance(data_type_from_row, ua_data_types.UANodeId):
-        data_type_from_row = transform_data_type_to_plain_int(data_type_from_row)
+        try:
+            data_type_from_row = transform_data_type_to_plain_int(data_type_from_row)
+            opcua_tools_class_as_str = get_opcua_tools_class_name(
+                data_type_from_row, row, value_from_row
+            )
+        except IndexError:
+            opcua_tools_class_as_str = handle_missing_data_type(
+                data_type_from_row, value_from_row
+            )
+            if opcua_tools_class_as_str is None:
+                row["IsValidValue"] = False
+                return row
+    else:
+        opcua_tools_class_as_str = get_opcua_tools_class_name(
+            data_type_from_row, row, value_from_row
+        )
 
-    class_name_from_value = value_from_row.__class__.__name__
-    opcua_tools_class_as_str = get_opcua_tools_class_name_from_mapping(
-        class_name_from_value, data_type_from_row, row
-    )
     if opcua_tools_class_as_str in OPCUA_TOOLS_CLASSES_TO_SKIP:
         row["IsValidValue"] = True
         return row
@@ -98,6 +109,16 @@ def include_missing_opcua_class_in_mapping_file(
     return class_name_from_value
 
 
+def get_opcua_tools_class_name(
+    data_type_from_row: int, row: pd.Series, value_from_row
+) -> str:
+    class_name_from_value = value_from_row.__class__.__name__
+    opcua_tools_class_as_str = get_opcua_tools_class_name_from_mapping(
+        class_name_from_value, data_type_from_row, row
+    )
+    return opcua_tools_class_as_str
+
+
 def get_opcua_tools_class_name_from_mapping(
     class_name_from_value: str, data_type_from_row: int, row: pd.Series
 ) -> str:
@@ -137,3 +158,31 @@ def validate_values_in_df(df_to_validate: pd.DataFrame) -> pd.DataFrame:
     else:
         df_to_validate = df_to_validate.drop(columns=["IsValidValue"])
         return df_to_validate
+
+
+def handle_missing_data_type(
+    data_type_from_row: ua_data_types.UANodeId, value_from_row
+) -> [str | None]:
+    known_missing_data_types_mapping = {
+        "3002": ua_data_types.UAEnumeration,
+        "3004": ua_data_types.UAEnumeration,
+        "3010": ua_data_types.UAEnumeration,
+        "3011": ua_data_types.UAEnumeration,
+        "3013": ua_data_types.UAEnumeration,
+    }
+    try:
+        data_type_from_mapping = known_missing_data_types_mapping[
+            str(data_type_from_row.value)
+        ]
+    except KeyError:
+        raise ValueError("Missing data type mapping!")
+
+    ua_enumeration_class_name = ua_data_types.UAEnumeration.__name__
+    if data_type_from_mapping.__name__ == ua_enumeration_class_name:
+        return ua_enumeration_class_name
+    else:
+        return (
+            data_type_from_mapping.__name__
+            if isinstance(value_from_row, data_type_from_mapping)
+            else None
+        )

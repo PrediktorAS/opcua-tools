@@ -10,7 +10,7 @@ DataType,NodeIdDataType,OPCUAToolsClass
 8,i=2,
 9,i=3,
 10,i=4,
-11,i=5,UAUInt16
+11,i=5,UAEnumeration
 12,i=6,
 13,i=7,UAUInt32
 14,i=8,
@@ -44,7 +44,7 @@ DataType,NodeIdDataType,OPCUAToolsClass
 42,i=40,
 43,i=41,
 44,i=3065,
-45,i=44,
+45,i=44,UAEnumeration
 46,i=45,
 47,i=46,
 48,i=47,
