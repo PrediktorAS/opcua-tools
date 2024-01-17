@@ -51,6 +51,41 @@ def ua_object_node_row() -> pd.Series:
 
 
 @pytest.fixture
+def sample_original_nodes(ua_object_node_row) -> pd.DataFrame:
+    return pd.DataFrame.from_records(
+        [
+            ua_object_node_row,
+            pd.Series(
+                {
+                    "NodeClass": "UADataType",
+                    "DisplayName": "Enumeration",
+                    "Description": "",
+                    "Value": pd.NA,
+                    "NodeId": UANodeId(
+                        namespace=0, nodeid_type=NodeIdType.NUMERIC, value="29"
+                    ),
+                    "BrowseName": "Enumeration",
+                    "SymbolicName": pd.NA,
+                    "IsAbstract": "true",
+                    "Symmetric": pd.NA,
+                    "ValueRank": pd.NA,
+                    "DataType": pd.NA,
+                    "ParentNodeId": pd.NA,
+                    "ArrayDimensions": pd.NA,
+                    "MinimumSamplingInterval": pd.NA,
+                    "AccessLevel": pd.NA,
+                    "MethodDeclarationId": pd.NA,
+                    "EventNotifier": pd.NA,
+                    "BrowseNameNamespace": 0,
+                    "ns": 0,
+                    "id": 1,
+                }
+            ),
+        ]
+    )
+
+
+@pytest.fixture
 def ua_variable_node_row() -> pd.Series:
     return pd.Series(
         {
