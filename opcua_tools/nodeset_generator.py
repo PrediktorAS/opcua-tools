@@ -166,7 +166,10 @@ def encode_values(nodes):
 
 
 def generate_nodes_xml(
-    nodes: pd.DataFrame, references: pd.DataFrame, lookup_df: pd.DataFrame
+    nodes: pd.DataFrame,
+    references: pd.DataFrame,
+    lookup_df: pd.DataFrame,
+    original_nodes: pd.DataFrame,
 ):
     assert (
         nodes["BrowseNameNamespace"].isna().sum() == 0
@@ -178,6 +181,7 @@ def generate_nodes_xml(
     nodes["Description"] = replacer(nodes["Description"])
     nodes["NodeId"] = replacer(nodes["NodeId"].map(str))
 
+    nodes = value_validator.validate_values_in_df(nodes, original_nodes)
     nodes = denormalize_nodes_nodeids(nodes, lookup_df=lookup_df)
     references = denormalize_references_nodeids(references, lookup_df=lookup_df)
 
@@ -186,7 +190,6 @@ def generate_nodes_xml(
     references["ReferenceType"] = replacer(references["ReferenceType"].map(str))
 
     nodes = nodes.copy()
-    nodes = value_validator.validate_values_in_df(nodes)
 
     encode_values(nodes)
     encode_definitions(nodes)
@@ -302,6 +305,7 @@ def create_nodeset2_file(
         nodes=nodes, references=references, namespace_index=serialize_namespace
     )
     namespaces_in_use.sort()
+    original_nodes = nodes.copy()
     nodes = nodes[nodes["ns"].map(lambda x: x in (namespaces_in_use))].copy()
     serialize_namespace_uri = namespaces[serialize_namespace]
     original_namespaces = namespaces
@@ -323,8 +327,7 @@ def create_nodeset2_file(
 
     nodes = nodes[nodes["ns"] == serialize_namespace].copy()
     # References restrict themselves
-
-    nodes_df = generate_nodes_xml(nodes, references, lookup_df)
+    nodes_df = generate_nodes_xml(nodes, references, lookup_df, original_nodes)
     end_time = time.time()
     logger.info(f"Creating nodeset2xml-string took {str(end_time - start_time)}")
     logger.info("Writing nodeset2xml")
