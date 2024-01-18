@@ -57,7 +57,7 @@ simplevariants = {
 def create_header_xml(
     namespaces,
     serialize_namespace,
-    models: list[ua_models.UAModel],
+    models: List[ua_models.UAModel],
     xmlns_dict: Optional[dict] = None,
     last_modified: Optional[datetime] = None,
     publication_date: Optional[datetime] = None,
@@ -299,7 +299,7 @@ def encode_definitions(nodes: pd.DataFrame):
 def create_nodeset2_file(
     nodes: pd.DataFrame,
     references: pd.DataFrame,
-    models: list[ua_models.UAModel],
+    models: List[ua_models.UAModel],
     namespaces: List[str],
     serialize_namespace: int,
     filename_or_stringio: Union[str, StringIO] = "nodeset2.xml",
@@ -465,7 +465,7 @@ def find_namespaces_in_use(nodes, references, namespace_index):
 
 
 def create_required_models(
-    models: list[ua_models.UAModel],
+    models: List[ua_models.UAModel],
     model_uri: str,
 ) -> str:
     required_models_str = ""

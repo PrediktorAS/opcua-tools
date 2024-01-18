@@ -32,8 +32,8 @@ class UAGraph:
         self,
         nodes: pd.DataFrame,
         references: pd.DataFrame,
-        namespaces: list[str],
-        models: list[ua_models.UAModel],
+        namespaces: List[str],
+        models: List[ua_models.UAModel],
     ):
         self.nodes = nodes
         self.nodes["id"] = self.nodes["id"].astype(pd.Int32Dtype())

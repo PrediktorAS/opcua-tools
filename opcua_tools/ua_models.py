@@ -1,10 +1,11 @@
 import dataclasses
+from typing import List, Union
 
 
 @dataclasses.dataclass
 class UAModelBase:
     model_uri: str
-    publication_date: str | None
+    publication_date: Union[str, None]
     version: str
 
 
@@ -15,4 +16,4 @@ class UARequiredModel(UAModelBase):
 
 @dataclasses.dataclass
 class UAModel(UAModelBase):
-    required_models: list[UARequiredModel] = dataclasses.field(default_factory=list)
+    required_models: List[UARequiredModel] = dataclasses.field(default_factory=list)
