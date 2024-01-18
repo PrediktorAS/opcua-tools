@@ -111,30 +111,21 @@ def test_ua_graph_write_nodeset_with_required_models(create_required_models_mock
     ua_graph.write_nodeset(output_file_path, namespace_uri)
 
     create_required_models_mock.assert_called_once_with(
-        [
-            ua_models.UAModel(
-                model_uri=namespace_uri,
-                publication_date="2018-02-05T00:00:00Z",
-                version="2.0",
-                required_models=[
-                    ua_models.UARequiredModel(
-                        model_uri="http://opcfoundation.org/UA/IEC61850-7-3",
-                        publication_date=None,
-                        version="2.0",
-                    ),
-                    ua_models.UARequiredModel(
-                        model_uri="http://opcfoundation.org/UA/",
-                        publication_date="2019-05-01T00:00:00Z",
-                        version="1.04",
-                    ),
-                ],
-            ),
-            ua_models.UAModel(
-                model_uri="http://opcfoundation.org/UA/",
-                publication_date="2021-01-21T00:00:00Z",
-                version="1.04.9",
-                required_models=[],
-            ),
-        ],
-        namespace_uri,
+        ua_models.UAModel(
+            model_uri=namespace_uri,
+            publication_date="2018-02-05T00:00:00Z",
+            version="2.0",
+            required_models=[
+                ua_models.UARequiredModel(
+                    model_uri="http://opcfoundation.org/UA/IEC61850-7-3",
+                    publication_date=None,
+                    version="2.0",
+                ),
+                ua_models.UARequiredModel(
+                    model_uri="http://opcfoundation.org/UA/",
+                    publication_date="2019-05-01T00:00:00Z",
+                    version="1.04",
+                ),
+            ],
+        )
     )

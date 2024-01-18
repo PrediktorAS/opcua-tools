@@ -217,8 +217,6 @@ def iterparse_xml(
     models = []
     current_model = None
 
-    default_version = "1.0.0"
-
     for event, elem in tagiter:
         if elem.tag == nodeset:
             if event == "start":
@@ -236,7 +234,7 @@ def iterparse_xml(
             if event == "start":
                 model = ua_models.UAModel(
                     model_uri=elem.attrib["ModelUri"],
-                    version=elem.attrib.get("Version", default_version),
+                    version=elem.attrib.get("Version"),
                     publication_date=elem.attrib.get("PublicationDate"),
                 )
                 current_model = model
@@ -245,7 +243,7 @@ def iterparse_xml(
             if event == "start":
                 required_model = ua_models.UARequiredModel(
                     model_uri=elem.attrib["ModelUri"],
-                    version=elem.attrib.get("Version", default_version),
+                    version=elem.attrib.get("Version"),
                     publication_date=elem.attrib.get("PublicationDate"),
                 )
                 current_model.required_models.append(required_model)

@@ -94,13 +94,24 @@ def create_header_xml(
         namespaceheader += "</NamespaceUris>\n"
 
     model_uri = namespaces[serialize_namespace]
-    required_models = create_required_models(models, model_uri)
+    try:
+        model = next(model for model in models if model.model_uri == model_uri)
+    except StopIteration:
+        model = ua_models.UAModel(
+            model_uri=model_uri,
+            publication_date=publication_date.isoformat(),
+            version=None,
+        )
+
+    required_models = create_required_models(model)
+    default_version = "1.0.0"
+    version = model.version if model.version is not None else default_version
 
     return """<?xml version="1.0" encoding="utf-8"?>
 <UANodeSet LastModified="{}" {}>
 {}
 <Models>
-    <Model ModelUri="{}" PublicationDate="{}" Version="1.0.0">{}</Model>
+    <Model ModelUri="{}" PublicationDate="{}" Version="{}">{}</Model>
 </Models>
 <Aliases></Aliases>
 """.format(
@@ -109,6 +120,7 @@ def create_header_xml(
         namespaceheader,
         model_uri,
         publication_date.isoformat(),
+        version,
         required_models,
     )
 
@@ -464,14 +476,9 @@ def find_namespaces_in_use(nodes, references, namespace_index):
     return namespaces_in_use
 
 
-def create_required_models(
-    models: List[ua_models.UAModel],
-    model_uri: str,
-) -> str:
+def create_required_models(model: Optional[ua_models.UAModel]) -> str:
     required_models_str = ""
-    try:
-        model = next(model for model in models if model.model_uri == model_uri)
-    except StopIteration:
+    if model is None:
         return required_models_str
 
     for required_model in model.required_models:

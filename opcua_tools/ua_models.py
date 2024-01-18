@@ -6,7 +6,7 @@ from typing import List, Union
 class UAModelBase:
     model_uri: str
     publication_date: Union[str, None]
-    version: str
+    version: Union[str, None]
 
 
 @dataclasses.dataclass
