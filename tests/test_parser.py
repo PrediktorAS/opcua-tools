@@ -73,7 +73,12 @@ def test_parse_file_list():
         if os.path.isfile(full_xml_path):
             xml_list.append(full_xml_path)
 
-    ot.parse_xml_files(xml_list)
+    parse_dict = ot.parse_xml_files(xml_list)
+    assert "nodes" in parse_dict
+    assert "references" in parse_dict
+    assert "namespaces" in parse_dict
+    assert "lookup_df" in parse_dict
+    assert "models" in parse_dict
 
 
 def test_parse_no_namespace_list(paper_example_path):

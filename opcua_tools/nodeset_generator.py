@@ -478,7 +478,9 @@ def create_required_models(
         required_model_to_add = """\n        <RequiredModel ModelUri="{}" Version="{}" PublicationDate="{}" />""".format(
             required_model.model_uri,
             required_model.version,
-            required_model.publication_date,
+            required_model.publication_date
+            if required_model.publication_date is not None
+            else datetime.now(tz=pytz.UTC),
         )
         required_models_str = "{}{}".format(
             required_models_str,

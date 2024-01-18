@@ -11,16 +11,19 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
+import os
+from pathlib import Path
+from unittest import mock
+
+import pandas as pd
 
 import opcua_tools as ot
+from definitions import get_project_root
+from opcua_tools import UAGraph, ua_models
 from opcua_tools.nodeset_generator import (
     denormalize_nodes_nodeids,
     denormalize_references_nodeids,
 )
-from definitions import get_project_root
-from opcua_tools import UAGraph
-import os
-import pandas as pd
 
 PATH_HERE = os.path.dirname(__file__)
 
@@ -85,3 +88,53 @@ def test_ua_graph_write_nodeset_without_crash(paper_example_path):
         os.makedirs(str(output_folder))
 
     ua_graph.write_nodeset(output_file_path, "http://prediktor.com/paper_example")
+
+
+@mock.patch("opcua_tools.nodeset_generator.create_required_models")
+def test_ua_graph_write_nodeset_with_required_models(create_required_models_mock):
+    path_to_xml = str(
+        Path(PATH_HERE) / "testdata" / "parser" / "Opc.Ua.IEC61850-6.NodeSet2.xml"
+    )
+    path_to_type_library = str(
+        Path(PATH_HERE) / "testdata" / "parser" / "Opc.Ua.NodeSet2.xml"
+    )
+    ua_graph = UAGraph.from_file_list([path_to_xml, path_to_type_library])
+
+    output_folder = get_project_root() / "tests" / "output"
+    output_file_path = str(output_folder / "required_models_output.xml")
+
+    # Creating output folder if it does not exist
+    if not os.path.exists(str(output_folder)):
+        os.makedirs(str(output_folder))
+
+    namespace_uri = "http://opcfoundation.org/UA/IEC61850-6"
+    ua_graph.write_nodeset(output_file_path, namespace_uri)
+
+    create_required_models_mock.assert_called_once_with(
+        [
+            ua_models.UAModel(
+                model_uri=namespace_uri,
+                publication_date="2018-02-05T00:00:00Z",
+                version="2.0",
+                required_models=[
+                    ua_models.UARequiredModel(
+                        model_uri="http://opcfoundation.org/UA/IEC61850-7-3",
+                        publication_date=None,
+                        version="2.0",
+                    ),
+                    ua_models.UARequiredModel(
+                        model_uri="http://opcfoundation.org/UA/",
+                        publication_date="2019-05-01T00:00:00Z",
+                        version="1.04",
+                    ),
+                ],
+            ),
+            ua_models.UAModel(
+                model_uri="http://opcfoundation.org/UA/",
+                publication_date="2021-01-21T00:00:00Z",
+                version="1.04.9",
+                required_models=[],
+            ),
+        ],
+        namespace_uri,
+    )
