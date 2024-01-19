@@ -81,6 +81,32 @@ def sample_original_nodes(ua_object_node_row) -> pd.DataFrame:
                     "id": 1,
                 }
             ),
+            pd.Series(
+                {
+                    "NodeClass": "UADataType",
+                    "DisplayName": "Int32",
+                    "Description": "",
+                    "Value": pd.NA,
+                    "NodeId": UANodeId(
+                        namespace=0, nodeid_type=NodeIdType.NUMERIC, value="6"
+                    ),
+                    "BrowseName": "Enumeration",
+                    "SymbolicName": pd.NA,
+                    "IsAbstract": "true",
+                    "Symmetric": pd.NA,
+                    "ValueRank": pd.NA,
+                    "DataType": pd.NA,
+                    "ParentNodeId": pd.NA,
+                    "ArrayDimensions": pd.NA,
+                    "MinimumSamplingInterval": pd.NA,
+                    "AccessLevel": pd.NA,
+                    "MethodDeclarationId": pd.NA,
+                    "EventNotifier": pd.NA,
+                    "BrowseNameNamespace": 0,
+                    "ns": 0,
+                    "id": 5,
+                }
+            ),
         ]
     )
 
