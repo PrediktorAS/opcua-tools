@@ -1,4 +1,4 @@
-import ua_models
+from opcua_tools import ua_models
 
 
 def test_ensure_that_required_models_are_hashable():
