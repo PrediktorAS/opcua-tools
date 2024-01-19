@@ -30,7 +30,9 @@ def validate_value(row: pd.Series, original_nodes: pd.DataFrame) -> pd.Series:
         )
 
     data_types_mapping = constants.DATA_TYPES_MAPPING
-    data_type_display_name = original_nodes.iloc[data_type_from_row]["DisplayName"]
+    data_type_display_name = original_nodes[original_nodes["id"] == data_type_from_row][
+        "DisplayName"
+    ].to_list()[0]
 
     if (
         value_from_row.__class__ not in data_types_mapping.values()

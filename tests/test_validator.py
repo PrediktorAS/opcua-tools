@@ -90,3 +90,14 @@ class TestValidatorUnit:
             ua_variable_node_row, sample_original_nodes
         )
         assert row["IsValidValue"] is True
+
+    def test_validator_gets_correct_data_type(
+        self, ua_variable_node_row, sample_original_nodes
+    ):
+        ua_variable_node_row["Value"] = UAInt32()
+        sample_nodes_int32_id = 5
+        ua_variable_node_row["DataType"] = sample_nodes_int32_id
+        row = value_validator.validate_value(
+            ua_variable_node_row, sample_original_nodes
+        )
+        assert row["IsValidValue"] is True
