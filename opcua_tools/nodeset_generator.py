@@ -487,7 +487,7 @@ def create_required_models(model: Optional[ua_models.UAModel]) -> str:
             required_model.version,
             required_model.publication_date
             if required_model.publication_date is not None
-            else datetime.now(tz=pytz.UTC),
+            else datetime.now(tz=pytz.UTC).isoformat(),
         )
         required_models_str = "{}{}".format(
             required_models_str,
