@@ -11,7 +11,11 @@ class UAModelBase:
 
 @dataclasses.dataclass
 class UARequiredModel(UAModelBase):
-    pass
+    def __hash__(self):
+        key_to_hash = "{}_{}_{}".format(
+            self.model_uri, self.publication_date, self.version
+        )
+        return hash(key_to_hash)
 
 
 @dataclasses.dataclass
