@@ -11,10 +11,11 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-
+import itertools
 import os
 import re
 from typing import List, Dict, Any, Optional, Union
+from opcua_tools import ua_models
 from opcua_tools.value_parser import parse_value, parse_nodeid
 from opcua_tools.ua_data_types import UANodeId
 
@@ -178,7 +179,12 @@ def iterparse_xml(
     """
     uaxsd = "{http://opcfoundation.org/UA/2011/03/UANodeSet.xsd}"
 
-    aliasnses = list(map(lambda x: uaxsd + x, ["NamespaceUris", "Uri", "Alias"]))
+    tags_to_find = list(
+        map(
+            lambda x: uaxsd + x,
+            ["NamespaceUris", "Uri", "Model", "RequiredModel", "Alias"],
+        )
+    )
     namespace_list = []
     alias_map = {}
 
@@ -199,7 +205,7 @@ def iterparse_xml(
     tagiter = ET.iterparse(
         xmlfile,
         events=("start", "end"),
-        tag=[nodeset] + nodeclasses_xsd + aliasnses,
+        tag=[nodeset] + nodeclasses_xsd + tags_to_find,
         encoding="utf-8",
     )
 
@@ -208,23 +214,42 @@ def iterparse_xml(
     i = 1
     foundnses = False
     namespace_map = {0: 0}
-    xml_nsmap = {}
+    models = []
+    current_model = None
+
     for event, elem in tagiter:
         if elem.tag == nodeset:
             if event == "start":
-                xml_nsmap = elem.nsmap.copy()
+                elem.nsmap.copy()
             if event == "end":
                 pass
         elif not foundnses and event == "end" and elem.tag == uaxsd + "Uri":
             namespace_list.append(elem.text)
             elem.clear()
-        elif event == "end" and elem.tag == uaxsd + "Alias":
-            alias_map[elem.attrib["Alias"]] = parse_nodeid(elem.text, namespace_map)
-            elem.clear()
         elif not foundnses and event == "end" and elem.tag == uaxsd + "NamespaceUris":
             # All uris in "NamespaceUris" are parsed
             foundnses = True
             extend_namespace_map(desired_namespace_list, namespace_list, namespace_map)
+        elif elem.tag == f"{uaxsd}Model":
+            if event == "start":
+                model = ua_models.UAModel(
+                    model_uri=elem.attrib["ModelUri"],
+                    version=elem.attrib.get("Version"),
+                    publication_date=elem.attrib.get("PublicationDate"),
+                )
+                current_model = model
+                models.append(model)
+        elif elem.tag == f"{uaxsd}RequiredModel":
+            if event == "start":
+                required_model = ua_models.UARequiredModel(
+                    model_uri=elem.attrib["ModelUri"],
+                    version=elem.attrib.get("Version"),
+                    publication_date=elem.attrib.get("PublicationDate"),
+                )
+                current_model.required_models.append(required_model)
+        elif event == "end" and elem.tag == uaxsd + "Alias":
+            alias_map[elem.attrib["Alias"]] = parse_nodeid(elem.text, namespace_map)
+            elem.clear()
         elif event == "end":
             elems.append(elem)
         if i % batchsize == 0:
@@ -249,7 +274,12 @@ def iterparse_xml(
 
     nodes = pd.concat(df_list)
 
-    return {"nodes": nodes, "alias_map": alias_map, "namespace_map": namespace_map}
+    return {
+        "nodes": nodes,
+        "alias_map": alias_map,
+        "namespace_map": namespace_map,
+        "models": models,
+    }
 
 
 def extend_namespace_map(
@@ -482,7 +512,13 @@ def parse_xml_without_normalization(
         nodes["Value"] = pd.NA
 
     nodes["ns"] = nodes["NodeId"].map(lambda x: x.namespace).astype(pd.Int8Dtype())
-    return {"nodes": nodes, "references": references, "namespaces": namespaces}
+    models = parse_dict["models"]
+    return {
+        "nodes": nodes,
+        "references": references,
+        "namespaces": namespaces,
+        "models": models,
+    }
 
 
 def parse_xml_dir(
@@ -536,6 +572,8 @@ def parse_xml_files(
     df_references_list = []
 
     files.sort()
+    models = []
+
     for file in files:
         if not file.endswith(".xml"):
             continue
@@ -549,6 +587,7 @@ def parse_xml_files(
         namespaces = parse_dict["namespaces"]
         df_nodes_list.append(parse_dict["nodes"])
         df_references_list.append((parse_dict["references"]))
+        models = list(itertools.chain(models, parse_dict["models"]))
         logger.info("Finished parsing " + str(file))
 
     nodes = pd.concat(df_nodes_list, ignore_index=True)
@@ -570,9 +609,11 @@ def parse_xml_files(
 
     references = pd.concat(df_references_list, ignore_index=True)
     lookup_df = normalize_wrt_nodeid(nodes, references)
+
     return {
         "nodes": nodes,
         "references": references,
         "namespaces": namespaces,
         "lookup_df": lookup_df,
+        "models": models,
     }

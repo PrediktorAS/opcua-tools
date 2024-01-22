@@ -6,6 +6,7 @@ from typing import Dict, List, Optional, Union
 import pandas as pd
 
 import opcua_tools.nodes_manipulation as nodes_manipulation
+from opcua_tools import ua_models
 from opcua_tools.navigation import (
     hierarchical_references,
     resolve_ids_from_browsenames,
@@ -28,7 +29,11 @@ logger.addHandler(logging.NullHandler())
 
 class UAGraph:
     def __init__(
-        self, nodes: pd.DataFrame, references: pd.DataFrame, namespaces: List[str]
+        self,
+        nodes: pd.DataFrame,
+        references: pd.DataFrame,
+        namespaces: List[str],
+        models: List[ua_models.UAModel],
     ):
         self.nodes = nodes
         self.nodes["id"] = self.nodes["id"].astype(pd.Int32Dtype())
@@ -39,6 +44,7 @@ class UAGraph:
             pd.Int32Dtype()
         )
         self.namespaces = namespaces
+        self.models = models
 
     @classmethod
     def from_path(
@@ -60,6 +66,7 @@ class UAGraph:
             nodes=parse_dict["nodes"],
             references=parse_dict["references"],
             namespaces=parse_dict["namespaces"],
+            models=parse_dict["models"],
         )
 
         nodes_manipulation.transform_ints_to_enums(ua_graph)
@@ -73,6 +80,7 @@ class UAGraph:
             nodes=parse_dict["nodes"],
             references=parse_dict["references"],
             namespaces=parse_dict["namespaces"],
+            models=parse_dict["models"],
         )
 
     def all_references_of_type(self, browsename: str):
@@ -261,6 +269,7 @@ class UAGraph:
         create_nodeset2_file(
             nodes=use_nodes,
             references=use_references,
+            models=self.models,
             serialize_namespace=1,
             namespaces=new_namespaces_list,
             filename_or_stringio=filename_or_stringio,

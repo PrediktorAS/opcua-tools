@@ -24,6 +24,7 @@ import pandas as pd
 import numpy as np
 from io import StringIO
 
+from opcua_tools import ua_models
 from opcua_tools.validator import value_validator
 from opcua_tools.ua_data_types import UANodeId
 
@@ -56,6 +57,7 @@ simplevariants = {
 def create_header_xml(
     namespaces,
     serialize_namespace,
+    models: List[ua_models.UAModel],
     xmlns_dict: Optional[dict] = None,
     last_modified: Optional[datetime] = None,
     publication_date: Optional[datetime] = None,
@@ -91,19 +93,35 @@ def create_header_xml(
             namespaceheader += "<Uri>{}</Uri>\n".format(n)
         namespaceheader += "</NamespaceUris>\n"
 
+    model_uri = namespaces[serialize_namespace]
+    try:
+        model = next(model for model in models if model.model_uri == model_uri)
+    except StopIteration:
+        model = ua_models.UAModel(
+            model_uri=model_uri,
+            publication_date=publication_date.isoformat(),
+            version=None,
+        )
+
+    required_models = create_required_models(model)
+    default_version = "1.0.0"
+    version = model.version if model.version is not None else default_version
+
     return """<?xml version="1.0" encoding="utf-8"?>
 <UANodeSet LastModified="{}" {}>
 {}
 <Models>
-    <Model ModelUri="{}" PublicationDate="{}" Version="1.0.0"></Model>
+    <Model ModelUri="{}" PublicationDate="{}" Version="{}">{}</Model>
 </Models>
 <Aliases></Aliases>
 """.format(
         last_modified.isoformat(),
         prefixes,
         namespaceheader,
-        namespaces[serialize_namespace],
+        model_uri,
         publication_date.isoformat(),
+        version,
+        required_models,
     )
 
 
@@ -293,6 +311,7 @@ def encode_definitions(nodes: pd.DataFrame):
 def create_nodeset2_file(
     nodes: pd.DataFrame,
     references: pd.DataFrame,
+    models: List[ua_models.UAModel],
     namespaces: List[str],
     serialize_namespace: int,
     filename_or_stringio: Union[str, StringIO] = "nodeset2.xml",
@@ -307,10 +326,8 @@ def create_nodeset2_file(
     namespaces_in_use.sort()
     original_nodes = nodes.copy()
     nodes = nodes[nodes["ns"].map(lambda x: x in (namespaces_in_use))].copy()
-    serialize_namespace_uri = namespaces[serialize_namespace]
     original_namespaces = namespaces
     namespaces = [namespaces[i] for i in namespaces_in_use]
-    serialize_namespace = namespaces.index(serialize_namespace_uri)
     reindex_nodeids_browsenames(nodes, original_namespaces, namespaces)
     nodes["ns"] = nodes["NodeId"].map(lambda x: x.namespace)
     lookup_df = create_lookup_df(nodes)
@@ -318,6 +335,7 @@ def create_nodeset2_file(
     header = create_header_xml(
         namespaces,
         serialize_namespace,
+        models,
         xmlns_dict=xmlns_dict,
         last_modified=last_modified,
         publication_date=publication_date,
@@ -456,3 +474,26 @@ def find_namespaces_in_use(nodes, references, namespace_index):
     namespaces_in_use = list(set(namespaces_in_use + browsename_namespaces))
 
     return namespaces_in_use
+
+
+def create_required_models(model: Optional[ua_models.UAModel]) -> str:
+    required_models_str = ""
+    if model is None:
+        return required_models_str
+
+    for required_model in model.required_models:
+        required_model_to_add = """\n        <RequiredModel ModelUri="{}" Version="{}" PublicationDate="{}" />""".format(
+            required_model.model_uri,
+            required_model.version,
+            required_model.publication_date
+            if required_model.publication_date is not None
+            else datetime.now(tz=pytz.UTC).isoformat(),
+        )
+        required_models_str = "{}{}".format(
+            required_models_str,
+            required_model_to_add,
+        )
+    if model.required_models:
+        required_models_str = f"{required_models_str}\n    "
+
+    return required_models_str
