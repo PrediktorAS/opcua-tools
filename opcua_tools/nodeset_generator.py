@@ -11,28 +11,31 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-
-import os
-from typing import Optional, Union, List
-import time
-from xml.sax.saxutils import escape
-import lxml.etree as ET
-from datetime import datetime
-import pytz
+import gc
 import logging
-import pandas as pd
-import numpy as np
-from io import StringIO
+import os
+import time
 
-from opcua_tools import ua_models
-from opcua_tools.validator import value_validator
+from datetime import datetime
+from io import StringIO
+from typing import Optional, Union, List
+from xml.sax.saxutils import escape
+
+import lxml.etree as ET
+import numpy as np
+import pandas as pd
+import pytz
+
+from opcua_tools import memory_optimizer, ua_models
 from opcua_tools.ua_data_types import UANodeId
+from opcua_tools.validator import value_validator
 
 PATH_HERE = os.path.dirname(__file__)
 
 
 logger = logging.getLogger(__name__)
 logger.addHandler(logging.NullHandler())
+memory_optimizer.replace_default_pandas_del_method()
 
 
 simplevariants = {
@@ -297,6 +300,16 @@ def generate_nodes_xml(
         )
 
     nodes["nodexml"] = nodes["nodexml"] + "</" + nodes["NodeClass"] + ">"
+
+    # Delete pandas DataFrames manually to force memory release
+    del replacer
+    del references
+    del new_references
+    del nodes_tojoin
+    del lookup_df
+    del original_nodes
+    gc.collect()
+
     return nodes["nodexml"].astype(str)
 
 
@@ -359,6 +372,14 @@ def create_nodeset2_file(
     else:
         filename_or_stringio.write(outstr)
     end_time = time.time()
+
+    # Delete pandas DataFrames manually to force memory release
+    del nodes_df
+    del nodes
+    del original_nodes
+    del references
+    del lookup_df
+    gc.collect()
     logger.info(f"Writing nodeset2xml-file took: {str(end_time - start_time)}")
 
 
@@ -473,6 +494,8 @@ def find_namespaces_in_use(nodes, references, namespace_index):
     )
     namespaces_in_use = list(set(namespaces_in_use + browsename_namespaces))
 
+    del ids_in_ns
+    gc.collect()
     return namespaces_in_use
 
 
