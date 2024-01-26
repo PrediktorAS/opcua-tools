@@ -15,9 +15,9 @@
 import os
 
 import pytest
+from definitions import get_project_root
 
 import opcua_tools as ot
-from definitions import get_project_root
 
 PATH_HERE = os.path.dirname(__file__)
 

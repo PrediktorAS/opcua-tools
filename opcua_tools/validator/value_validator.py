@@ -3,7 +3,6 @@ import pandas as pd
 from opcua_tools import constants
 from opcua_tools.validator import exceptions
 
-
 VALUE_VALIDATION_ERROR_MESSAGE = (
     "Invalid Value for rows with the following display names: {}."
 )

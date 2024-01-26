@@ -15,10 +15,9 @@ import gc
 import logging
 import os
 import time
-
 from datetime import datetime
 from io import StringIO
-from typing import Optional, Union, List
+from typing import List, Optional, Union
 from xml.sax.saxutils import escape
 
 import lxml.etree as ET
@@ -508,9 +507,11 @@ def create_required_models(model: Optional[ua_models.UAModel]) -> str:
         required_model_to_add = """\n        <RequiredModel ModelUri="{}" Version="{}" PublicationDate="{}" />""".format(
             required_model.model_uri,
             required_model.version,
-            required_model.publication_date
-            if required_model.publication_date is not None
-            else datetime.now(tz=pytz.UTC).isoformat(),
+            (
+                required_model.publication_date
+                if required_model.publication_date is not None
+                else datetime.now(tz=pytz.UTC).isoformat()
+            ),
         )
         required_models_str = "{}{}".format(
             required_models_str,

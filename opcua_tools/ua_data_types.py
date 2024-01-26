@@ -13,16 +13,15 @@
 # limitations under the License.
 
 import json
-import re
 import math
-
-from decimal import Decimal
-from typing import ByteString, Optional, Tuple, Union, Any
-from dataclasses import dataclass, astuple
-from datetime import datetime
+import re
 from abc import ABC, abstractmethod
 from base64 import b64encode
+from dataclasses import astuple, dataclass
+from datetime import datetime
+from decimal import Decimal
 from enum import Enum
+from typing import Any, ByteString, Optional, Tuple, Union
 from xml.sax.saxutils import escape
 
 import numpy as np

@@ -13,9 +13,11 @@
 # limitations under the License.
 
 from typing import List, Union
+
 import numpy as np
 import pandas as pd
 from scipy.sparse import coo_matrix, eye
+
 from opcua_tools.value_parser import parse_nodeid
 
 
@@ -128,12 +130,13 @@ def non_hierarchical_references_trg_has_no_modelling_rule(
     trg_no_modelling_rule = ~non_hierarchical_refs_has_no_modelling_rule.index.isin(
         has_modelling_rule.index
     )
-    non_hierarchical_refs_has_no_modelling_rule = non_hierarchical_refs_has_no_modelling_rule[
-        trg_no_modelling_rule
-    ].copy()
+    non_hierarchical_refs_has_no_modelling_rule = (
+        non_hierarchical_refs_has_no_modelling_rule[trg_no_modelling_rule].copy()
+    )
     return non_hierarchical_refs_has_no_modelling_rule[
         ["Src", "Trg", "ReferenceType"]
     ].copy()
+
 
 def find_relatives(
     nodes: pd.DataFrame,

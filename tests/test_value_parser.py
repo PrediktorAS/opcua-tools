@@ -16,8 +16,8 @@ import os
 
 import pandas as pd
 import pytest
-
 from definitions import get_project_root
+
 from opcua_tools.ua_data_types import UAEURange
 from opcua_tools.ua_graph import UAGraph
 from opcua_tools.value_parser import parse_boolean
