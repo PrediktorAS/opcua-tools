@@ -41,7 +41,7 @@ setup(
     include_package_data=True,
     install_requires=[
         "lxml>=4.9.3",
-        "lxml<5.0",
+        "lxml<6.0",
         "xmltodict>=0.13.0",
         "pandas>=2.0.0",
         "pandas<2.2.0",
