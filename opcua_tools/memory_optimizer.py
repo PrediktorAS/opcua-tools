@@ -34,7 +34,4 @@ def replace_default_pandas_del_method():
         logger.info("Applying memory optimizer for pd.DataFrame.__del__")
         pd.DataFrame.__del__ = __malloc_trim_del
     else:
-        print(
-            "Memory optimizer not applied: libc or malloc_trim() not found",
-            file=sys.stderr,
-        )
+        logger.info("Memory optimizer not applied: libc or malloc_trim() not found")
