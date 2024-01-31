@@ -80,8 +80,9 @@ def test_ua_graph_xml_encode_for_eurange(ua_graph):
     )
 
     path_to_tests = get_project_root() / "tests"
+    # Technically, the eurange_lines is not a valid XML file, so it is saved as a TXT file.
     expected_eurange = str(
-        path_to_tests / "expected" / "value_parser" / "eurange_lines.xml"
+        path_to_tests / "expected" / "value_parser" / "eurange_lines.txt"
     )
 
     with open(expected_eurange) as expected_file:
