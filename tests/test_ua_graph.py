@@ -19,7 +19,6 @@ import pandas as pd
 import opcua_tools as ot
 from opcua_tools.ua_data_types import NodeIdType, UANodeId
 
-
 PATH_HERE = os.path.dirname(__file__)
 
 

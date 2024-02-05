@@ -16,10 +16,10 @@ from opcua_tools.navigation import *
 from opcua_tools.nodes_manipulation import transform_ints_to_enums
 from opcua_tools.nodeset_generator import create_nodeset2_file, validate_nodeset2_file
 from opcua_tools.nodeset_parser import (
+    normalize_wrt_nodeid,
+    parse_xml,
     parse_xml_dir,
     parse_xml_files,
-    parse_xml,
-    normalize_wrt_nodeid,
 )
 from opcua_tools.ua_data_types import *
 from opcua_tools.ua_graph import UAGraph

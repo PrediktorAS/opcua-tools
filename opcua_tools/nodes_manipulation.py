@@ -13,20 +13,20 @@
 # limitations under the License.
 
 
-from opcua_tools.ua_graph import UAGraph
+import logging
 from typing import Dict
+
+import pandas as pd
+import xmltodict
+
 from opcua_tools.ua_data_types import (
     UAEnumeration,
+    UAExtensionObject,
     UAInt32,
     UAListOf,
-    UAExtensionObject,
     UALocalizedText,
 )
-
-import xmltodict
-import pandas as pd
-import logging
-
+from opcua_tools.ua_graph import UAGraph
 
 logger = logging.getLogger(__name__)
 logger.addHandler(logging.NullHandler())

@@ -27,7 +27,6 @@ from opcua_tools.ua_data_types import (
     VariantType,
 )
 
-
 DATA_TYPES_MAPPING = {
     VariantType.Boolean.name: UABoolean,
     VariantType.SByte.name: UASByte,

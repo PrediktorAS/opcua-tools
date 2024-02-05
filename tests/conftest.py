@@ -2,9 +2,9 @@ import pathlib
 
 import pandas as pd
 import pytest
+from definitions import get_project_root
 
 from opcua_tools.ua_data_types import NodeIdType, UAEURange, UANodeId
-from definitions import get_project_root
 
 
 @pytest.fixture(scope="session")

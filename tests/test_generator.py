@@ -16,9 +16,9 @@ from pathlib import Path
 from unittest import mock
 
 import pandas as pd
+from definitions import get_project_root
 
 import opcua_tools as ot
-from definitions import get_project_root
 from opcua_tools import UAGraph, ua_models
 from opcua_tools.nodeset_generator import (
     denormalize_nodes_nodeids,

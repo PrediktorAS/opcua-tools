@@ -13,37 +13,38 @@
 # limitations under the License.
 
 import base64
-import re
 import copy
+import re
+from typing import Dict, Optional
+
 import lxml.etree as ET
 import pandas as pd
-
 from dateutil import parser
-from typing import Dict, Optional
+
 from opcua_tools.ua_data_types import (
-    UASByte,
-    UAByte,
-    UAInt16,
-    UAUInt16,
-    UAInt32,
-    UAUInt32,
-    UAInt64,
-    UAUInt64,
-    UAFloat,
-    UADouble,
-    UAGuid,
-    UAByteString,
-    UAXMLElement,
-    UADateTime,
-    UAEngineeringUnits,
-    UAExtensionObject,
-    UANodeId,
-    UABoolean,
-    UAString,
-    UAEURange,
-    UALocalizedText,
-    UAListOf,
     NodeIdType,
+    UABoolean,
+    UAByte,
+    UAByteString,
+    UADateTime,
+    UADouble,
+    UAEngineeringUnits,
+    UAEURange,
+    UAExtensionObject,
+    UAFloat,
+    UAGuid,
+    UAInt16,
+    UAInt32,
+    UAInt64,
+    UAListOf,
+    UALocalizedText,
+    UANodeId,
+    UASByte,
+    UAString,
+    UAUInt16,
+    UAUInt32,
+    UAUInt64,
+    UAXMLElement,
 )
 
 simple = {

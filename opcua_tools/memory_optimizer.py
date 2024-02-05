@@ -2,12 +2,11 @@
 Call the memory optimizer in order to minimize possible pandas' memory leaks.
 Works for Linux. Does not change anything for MacOS.
 """
+
 import logging
-import sys
-from ctypes import cdll, CDLL
+from ctypes import CDLL, cdll
 
 import pandas as pd
-
 
 logger = logging.getLogger(__name__)
 logger.addHandler(logging.NullHandler())

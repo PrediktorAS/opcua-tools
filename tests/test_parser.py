@@ -16,9 +16,9 @@ import os
 from pathlib import Path
 
 import pandas as pd
+from definitions import get_project_root
 
 import opcua_tools as ot
-from definitions import get_project_root
 from opcua_tools.nodeset_parser import (
     exclude_files_not_in_namespaces,
     get_list_of_xml_files,

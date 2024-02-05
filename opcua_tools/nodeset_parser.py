@@ -12,19 +12,19 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 import itertools
+import logging
 import os
 import re
-from typing import List, Dict, Any, Optional, Union
-from opcua_tools import ua_models
-from opcua_tools.value_parser import parse_value, parse_nodeid
-from opcua_tools.ua_data_types import UANodeId
+from io import BytesIO
+from typing import Any, Dict, List, Optional, Union
 
 import lxml.etree as ET
 import numpy as np
 import pandas as pd
-import logging
-from io import BytesIO
 
+from opcua_tools import ua_models
+from opcua_tools.ua_data_types import UANodeId
+from opcua_tools.value_parser import parse_nodeid, parse_value
 
 logger = logging.getLogger(__name__)
 logger.addHandler(logging.NullHandler())
@@ -478,9 +478,9 @@ def parse_xml_without_normalization(
 
     references["Trg"] = references["References"].map(lambda x: x[0])
     references["IsForward"] = references["References"].map(
-        lambda x: False
-        if "IsForward" in x[1] and x[1]["IsForward"] == "false"
-        else True
+        lambda x: (
+            False if "IsForward" in x[1] and x[1]["IsForward"] == "false" else True
+        )
     )
     refsrc = references[["Src"]]
     references.loc[~references["IsForward"], "Src"] = references.loc[
