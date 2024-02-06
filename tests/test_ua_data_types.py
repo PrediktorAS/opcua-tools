@@ -621,6 +621,32 @@ def test_ua_localized_text_json_encoding_with_none():
     assert actual_json == expected_json
 
 
+def test_ua_localized_text_json_encoding_with_pd_na():
+    ua_localized_text = UALocalizedText(text=pd.NA, locale=pd.NA)
+    expected_json = None
+    actual_json = ua_localized_text.json_encode()
+    assert actual_json == expected_json
+
+    ua_localized_text = UALocalizedText(text=pd.NA, locale="en-US")
+    expected_json = None
+    actual_json = ua_localized_text.json_encode()
+    assert actual_json == expected_json
+
+
+def test_ua_localized_text_json_encoding_with_input_locale_as_pd_na():
+    ua_localized_text = UALocalizedText(text="Some text", locale=pd.NA)
+    expected_json = '{"Text":"Some text"}'
+    actual_json = ua_localized_text.json_encode(input_locale=pd.NA)
+    assert actual_json == expected_json
+
+
+def test_ua_localized_text_json_encoding_with_locale_as_pd_na():
+    ua_localized_text = UALocalizedText(text="Some text", locale=pd.NA)
+    expected_json = '{"Text":"Some text"}'
+    actual_json = ua_localized_text.json_encode()
+    assert actual_json == expected_json
+
+
 def test_ua_localized_text_json_encode_with_input_locale():
     # Testing that input_locale overrides the locale if there
     ua_localized_text = UALocalizedText(text="foo", locale="en-US")

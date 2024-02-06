@@ -629,8 +629,8 @@ class UAQualifiedName(UABuiltIn):
 
 @dataclass(eq=True, frozen=True)
 class UALocalizedText(UABuiltIn):
-    text: str = pd.NA
-    locale: str = pd.NA
+    text: Optional[str] = pd.NA
+    locale: Optional[str] = pd.NA
 
     def __post_init__(self):
         if (not isinstance(self.text, str)) and (not pd.isna(self.text)):
@@ -689,9 +689,9 @@ class UALocalizedText(UABuiltIn):
         json_content = ""
         json_content += '"Text":' + json.dumps(self.text, ensure_ascii=False)
 
-        if input_locale is not None:
+        if not pd.isna(input_locale):
             json_content += ',"Locale":' + json.dumps(input_locale, ensure_ascii=False)
-        elif self.locale is not None:
+        elif not pd.isna(self.locale):
             json_content += ',"Locale":' + json.dumps(self.locale, ensure_ascii=False)
 
         json_content = "{" + json_content + "}"
