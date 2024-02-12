@@ -80,13 +80,15 @@ def test_ua_graph_xml_encode_for_eurange(ua_graph):
     )
 
     path_to_tests = get_project_root() / "tests"
-    # Technically, the eurange_lines is not a valid XML file, so it is saved as a TXT file.
-    expected_eurange = str(
-        path_to_tests / "expected" / "value_parser" / "eurange_lines.txt"
+    expected_file_path = str(
+        path_to_tests / "expected" / "value_parser" / "expected_nodeset_eurange.xml"
     )
 
-    with open(expected_eurange) as expected_file:
-        expected_eurange_xml_lines = [lines for lines in expected_file]
+    expected_eurange_xml_lines = []
+    with open(expected_file_path) as expected_file:
+        for line in expected_file:
+            if "ns=1;i=40" in line or "ns=1;i=31" in line:
+                expected_eurange_xml_lines.append(line)
 
     output_eurange_xml_lines = []
     with open(output_file_path) as output_file:
