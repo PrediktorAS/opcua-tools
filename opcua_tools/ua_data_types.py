@@ -354,9 +354,10 @@ class UAString(UABuiltIn):
     def __post_init__(self):
         if not pd.isna(self.value) and not isinstance(self.value, str):
             raise TypeError("String value must be a string")
-        object.__setattr__(
-            self, "value", str(self.value) if not pd.isna(self.value) else pd.NA
-        )
+        if not (value := str(self.value)) or pd.isna(self.value):
+            object.__setattr__(self, "value", pd.NA)
+        else:
+            object.__setattr__(self, "value", value)
 
     def xml_encode(self, include_xmlns: bool) -> str:
         x = "<String"
