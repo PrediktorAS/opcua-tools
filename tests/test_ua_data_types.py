@@ -246,6 +246,12 @@ def test_ua_string_creation_with_none_value():
     assert isinstance(ua_string.value, pd._libs.missing.NAType)
 
 
+def test_ua_string_should_be_pd_na_if_empty_one_given():
+    ua_string = UAString("")
+
+    assert isinstance(ua_string.value, pd._libs.missing.NAType)
+
+
 def test_ua_string_xml_encode():
     ua_string = UAString("Hello, World!")
     assert ua_string.xml_encode(include_xmlns=False) == "<String>Hello, World!</String>"
