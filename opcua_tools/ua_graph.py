@@ -1,3 +1,4 @@
+import gc
 import logging
 from datetime import datetime
 from io import StringIO
@@ -6,7 +7,7 @@ from typing import Dict, List, Optional, Union
 import pandas as pd
 
 import opcua_tools.nodes_manipulation as nodes_manipulation
-from opcua_tools import ua_models
+from opcua_tools import memory_optimizer, ua_models
 from opcua_tools.navigation import (
     fast_transitive_closure,
     find_relatives,
@@ -24,6 +25,7 @@ from opcua_tools.ua_data_types import UANodeId
 
 logger = logging.getLogger(__name__)
 logger.addHandler(logging.NullHandler())
+memory_optimizer.replace_default_pandas_del_method()
 
 
 class UAGraph:
@@ -67,6 +69,10 @@ class UAGraph:
             namespaces=parse_dict["namespaces"],
             models=parse_dict["models"],
         )
+
+        del parse_dict["nodes"]
+        del parse_dict["references"]
+        gc.collect()
 
         nodes_manipulation.transform_ints_to_enums(ua_graph)
 
