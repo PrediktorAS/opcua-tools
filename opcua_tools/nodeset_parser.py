@@ -155,6 +155,7 @@ def process_elem_batch(
     )
     df["Value"] = df["elem"].map(lambda x: findval(x, uaxsd))
     df = df.drop(columns="elem")
+    df = df.convert_dtypes()
     return df
 
 
@@ -464,7 +465,7 @@ def parse_xml_without_normalization(
     nodes = parse_dict["nodes"].reset_index()
     nodes = nodes.rename(columns={"Tag": "NodeClass"})
 
-    attrib_df = pd.DataFrame.from_records(nodes["Attrib"].values)
+    attrib_df = get_attrib_df(nodes)
     attrib_df = attrib_df.fillna(pd.NA)
     nodes = pd.concat([nodes, attrib_df], axis=1).drop(columns="Attrib")
 
@@ -504,8 +505,10 @@ def parse_xml_without_normalization(
         lambda x: int(x.split(":")[0]) if ":" in x else 0
     )
     nodes["BrowseNameNamespace"] = nodes["BrowseNameNamespace"].map(namespace_map)
-    nodes["BrowseName"] = nodes["BrowseName"].map(
-        lambda x: x.split(":")[1] if ":" in x else x
+    nodes["BrowseName"] = (
+        nodes["BrowseName"]
+        .map(lambda x: x.split(":")[1] if ":" in x else x)
+        .astype("str")
     )
 
     if "Value" not in nodes.columns.values:
@@ -519,6 +522,54 @@ def parse_xml_without_normalization(
         "namespaces": namespaces,
         "models": models,
     }
+
+
+def get_attrib_df(nodes: pd.DataFrame) -> pd.DataFrame:
+    attrib_df = pd.DataFrame.from_records(nodes["Attrib"].values)
+
+    is_abstract_column_name = "IsAbstract"
+    if is_abstract_column_name in attrib_df.columns:
+        attrib_df[is_abstract_column_name] = attrib_df[is_abstract_column_name].replace(
+            {np.nan: False, "false": False}
+        )
+        attrib_df[is_abstract_column_name] = attrib_df[is_abstract_column_name].astype(
+            "bool"
+        )
+
+    symmetric_column_name = "Symmetric"
+    if symmetric_column_name in attrib_df.columns:
+        attrib_df[symmetric_column_name] = attrib_df[symmetric_column_name].replace(
+            {np.nan: False, "false": False}
+        )
+        attrib_df[symmetric_column_name] = attrib_df[symmetric_column_name].astype(
+            "bool"
+        )
+
+    attrib_df = attrib_df.convert_dtypes()
+
+    value_rank_column_name = "ValueRank"
+    if value_rank_column_name in attrib_df.columns:
+        attrib_df[value_rank_column_name] = attrib_df[value_rank_column_name].astype(
+            "Int8"
+        )
+
+    minimum_sampling_interval_column_name = "MinimumSamplingInterval"
+    if minimum_sampling_interval_column_name in attrib_df.columns:
+        attrib_df[minimum_sampling_interval_column_name] = attrib_df[
+            minimum_sampling_interval_column_name
+        ].astype("Int32")
+
+    access_level_column_name = "AccessLevel"
+    if access_level_column_name in attrib_df.columns:
+        attrib_df[access_level_column_name] = attrib_df[
+            access_level_column_name
+        ].astype("Int8")
+
+    event_notifier_column_name = "EventNotifier"
+    if event_notifier_column_name in attrib_df.columns:
+        attrib_df["EventNotifier"] = attrib_df["EventNotifier"].astype("Int8")
+
+    return attrib_df
 
 
 def parse_xml_dir(

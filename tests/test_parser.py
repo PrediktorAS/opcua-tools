@@ -50,7 +50,10 @@ def test_parser_easy_example_stays_put():
     actual_nodes = pd.read_csv(PATH_HERE + "/expected/parser/nodes.csv")
     actual_references = pd.read_csv(PATH_HERE + "/expected/parser/references.csv")
 
-    expected_nodes = pd.read_csv(PATH_HERE + "/expected/parser/expected_nodes.csv")
+    expected_nodes = pd.read_csv(
+        PATH_HERE + "/expected/parser/expected_nodes.csv",
+        dtype={"IsAbstract": bool, "Symmetric": bool},
+    )
     expected_references = pd.read_csv(
         PATH_HERE + "/expected/parser/expected_references.csv"
     )
