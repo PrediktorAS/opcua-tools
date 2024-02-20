@@ -527,14 +527,14 @@ def parse_xml_without_normalization(
 def get_attrib_df(nodes: pd.DataFrame) -> pd.DataFrame:
     attrib_df = pd.DataFrame.from_records(nodes["Attrib"].values)
 
-    is_abstract_coloumn_name = "IsAbstract"
-    if is_abstract_coloumn_name in attrib_df.columns:
-        attrib_df[is_abstract_coloumn_name] = attrib_df[
-            is_abstract_coloumn_name
-        ].replace({np.nan: False, "false": False})
-        attrib_df[is_abstract_coloumn_name] = attrib_df[
-            is_abstract_coloumn_name
-        ].astype("bool")
+    is_abstract_column_name = "IsAbstract"
+    if is_abstract_column_name in attrib_df.columns:
+        attrib_df[is_abstract_column_name] = attrib_df[is_abstract_column_name].replace(
+            {np.nan: False, "false": False}
+        )
+        attrib_df[is_abstract_column_name] = attrib_df[is_abstract_column_name].astype(
+            "bool"
+        )
 
     symmetric_column_name = "Symmetric"
     if symmetric_column_name in attrib_df.columns:
