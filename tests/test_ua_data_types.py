@@ -617,24 +617,24 @@ def test_ua_localized_text_xml_encoding_with_value():
 
 def test_ua_localized_text_json_encoding_with_none():
     ua_localized_text = UALocalizedText(text=None, locale=None)
-    expected_json = None
+    expected_json = '{"Text":""}'
     actual_json = ua_localized_text.json_encode()
     assert actual_json == expected_json
 
     ua_localized_text = UALocalizedText(text=None, locale="en-US")
-    expected_json = None
+    expected_json = '{"Text":"","Locale":"en-US"}'
     actual_json = ua_localized_text.json_encode()
     assert actual_json == expected_json
 
 
 def test_ua_localized_text_json_encoding_with_pd_na():
     ua_localized_text = UALocalizedText(text=pd.NA, locale=pd.NA)
-    expected_json = None
+    expected_json = '{"Text":""}'
     actual_json = ua_localized_text.json_encode()
     assert actual_json == expected_json
 
     ua_localized_text = UALocalizedText(text=pd.NA, locale="en-US")
-    expected_json = None
+    expected_json = '{"Text":"","Locale":"en-US"}'
     actual_json = ua_localized_text.json_encode()
     assert actual_json == expected_json
 
