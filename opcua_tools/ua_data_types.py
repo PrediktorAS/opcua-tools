@@ -684,11 +684,12 @@ class UALocalizedText(UABuiltIn):
         return x
 
     def json_encode(self, input_locale: Optional[str] = None) -> Union[str, None]:
-        if pd.isna(self.text):
-            return None
-
         json_content = ""
-        json_content += '"Text":' + json.dumps(self.text, ensure_ascii=False)
+
+        if pd.isna(self.text):
+            json_content += '"Text":' + json.dumps("", ensure_ascii=False)
+        else:
+            json_content += '"Text":' + json.dumps(self.text, ensure_ascii=False)
 
         if not pd.isna(input_locale):
             json_content += ',"Locale":' + json.dumps(input_locale, ensure_ascii=False)
