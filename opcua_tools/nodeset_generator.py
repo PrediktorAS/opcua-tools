@@ -189,7 +189,7 @@ def generate_nodes_xml(
     nodes: pd.DataFrame,
     references: pd.DataFrame,
     lookup_df: pd.DataFrame,
-    original_nodes: pd.DataFrame,
+    data_type_nodes: pd.DataFrame,
 ):
     assert (
         nodes["BrowseNameNamespace"].isna().sum() == 0
@@ -201,7 +201,7 @@ def generate_nodes_xml(
     nodes["Description"] = replacer(nodes["Description"])
     nodes["NodeId"] = replacer(nodes["NodeId"].map(str))
 
-    nodes = value_validator.validate_values_in_df(nodes, original_nodes)
+    nodes = value_validator.validate_values_in_df(nodes, data_type_nodes)
     nodes = denormalize_nodes_nodeids(nodes, lookup_df=lookup_df)
     references = denormalize_references_nodeids(references, lookup_df=lookup_df)
 
@@ -306,7 +306,6 @@ def generate_nodes_xml(
     del new_references
     del nodes_tojoin
     del lookup_df
-    del original_nodes
     gc.collect()
 
     return nodes["nodexml"].astype(str)
@@ -336,7 +335,7 @@ def create_nodeset2_file(
         nodes=nodes, references=references, namespace_index=serialize_namespace
     )
     namespaces_in_use.sort()
-    original_nodes = nodes.copy()
+    data_type_nodes = nodes[nodes["NodeClass"] == "UADataType"].copy()
     nodes = nodes[nodes["ns"].map(lambda x: x in (namespaces_in_use))].copy()
     original_namespaces = namespaces
     namespaces = [namespaces[i] for i in namespaces_in_use]
@@ -357,7 +356,7 @@ def create_nodeset2_file(
 
     nodes = nodes[nodes["ns"] == serialize_namespace].copy()
     # References restrict themselves
-    nodes_df = generate_nodes_xml(nodes, references, lookup_df, original_nodes)
+    nodes_df = generate_nodes_xml(nodes, references, lookup_df, data_type_nodes)
     end_time = time.time()
     logger.info(f"Creating nodeset2xml-string took {str(end_time - start_time)}")
     logger.info("Writing nodeset2xml")
@@ -375,7 +374,6 @@ def create_nodeset2_file(
     # Delete pandas DataFrames manually to force memory release
     del nodes_df
     del nodes
-    del original_nodes
     del references
     del lookup_df
     gc.collect()

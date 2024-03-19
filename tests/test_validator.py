@@ -57,47 +57,68 @@ class TestValidatorFeature:
 
 
 class TestValidatorUnit:
-    def test_validator_row_is_valid_when_nodeclass_is_not_uavariable(
-        self, ua_object_node_row, sample_original_nodes
-    ):
-        row = value_validator.validate_value(ua_object_node_row, sample_original_nodes)
-        assert row["IsValidValue"] is True
+    def test_validator_df_is_valid_when_empty(self, sample_date_type_nodes):
+        empty_df = pd.DataFrame({})
 
-    def test_validator_row_is_valid_when_uavariable_has_empty_value(
-        self, ua_variable_node_row, sample_original_nodes
-    ):
-        ua_variable_node_row["Value"] = pd.NA
-        row = value_validator.validate_value(
-            ua_variable_node_row, sample_original_nodes
+        result_df = value_validator.validate_values_in_df(
+            empty_df, sample_date_type_nodes
         )
-        assert row["IsValidValue"] is True
+
+        pd.testing.assert_frame_equal(result_df, empty_df)
+
+    def test_validator_df_is_valid_when_nodeclass_is_not_uavariable(
+        self, ua_object_node_df, sample_date_type_nodes
+    ):
+        ua_object_node_df["NodeClass"] = "UAObject"
+
+        result_df = value_validator.validate_values_in_df(
+            ua_object_node_df, sample_date_type_nodes
+        )
+
+        pd.testing.assert_frame_equal(result_df, ua_object_node_df)
+
+    def test_validator_df_is_valid_when_uavariable_has_empty_value(
+        self, ua_object_node_df, sample_date_type_nodes
+    ):
+        result_df = value_validator.validate_values_in_df(
+            ua_object_node_df, sample_date_type_nodes
+        )
+
+        pd.testing.assert_frame_equal(result_df, ua_object_node_df)
 
     def test_validator_row_is_invalid_when_opcua_tools_class_name_is_invalid(
-        self, ua_variable_node_row, sample_original_nodes
+        self, ua_object_node_df, sample_date_type_nodes
     ):
-        ua_variable_node_row["Value"] = 123
+        ua_object_node_df["Value"] = UAInt32(value=100)
         invalid_data_type_id = 99999999999
-        ua_variable_node_row["DataType"] = invalid_data_type_id
-        with pytest.raises(IndexError):
-            value_validator.validate_value(ua_variable_node_row, sample_original_nodes)
+        ua_object_node_df["DataType"] = invalid_data_type_id
+
+        with pytest.raises(exceptions.ValidationError):
+            value_validator.validate_values_in_df(
+                ua_object_node_df, sample_date_type_nodes
+            )
 
     def test_validator_row_is_valid_when_enumeration_is_given(
-        self, ua_variable_node_row, sample_original_nodes
+        self, ua_object_node_df, sample_date_type_nodes
     ):
-        ua_variable_node_row["Value"] = UAInt32()
-        ua_variable_node_row["DataType"] = 1
-        row = value_validator.validate_value(
-            ua_variable_node_row, sample_original_nodes
+        ua_object_node_df["Value"] = UAInt32()
+        ua_object_node_df["DataType"] = 0
+
+        result_df = value_validator.validate_values_in_df(
+            ua_object_node_df, sample_date_type_nodes
         )
-        assert row["IsValidValue"] is True
+
+        pd.testing.assert_frame_equal(result_df, ua_object_node_df)
 
     def test_validator_gets_correct_data_type(
-        self, ua_variable_node_row, sample_original_nodes
+        self, ua_object_node_df, sample_date_type_nodes
     ):
-        ua_variable_node_row["Value"] = UAInt32()
-        sample_nodes_int32_id = 5
-        ua_variable_node_row["DataType"] = sample_nodes_int32_id
-        row = value_validator.validate_value(
-            ua_variable_node_row, sample_original_nodes
+        ua_object_node_df["Value"] = UAInt32()
+        sample_nodes_int32_id = 1
+        ua_object_node_df["DataType"] = sample_nodes_int32_id
+
+        result_df = value_validator.validate_values_in_df(
+            ua_object_node_df, sample_date_type_nodes
         )
-        assert row["IsValidValue"] is True
+
+        pd.testing.assert_frame_equal(result_df, ua_object_node_df)
