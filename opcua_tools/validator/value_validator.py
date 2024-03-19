@@ -53,20 +53,6 @@ def validate_values_in_df(
         str(k): v for k, v in data_type_nodes["DisplayName"].to_dict().items()
     }
 
-    are_all_data_types_valid_mask = (
-        df_with_rows_to_validate["DataType"]
-        .astype(str)
-        .isin(data_int_type_to_data_type_class_mapping)
-    )
-    if not df_with_rows_to_validate[~are_all_data_types_valid_mask].empty:
-        invalid_data_types_df = df_with_rows_to_validate.loc[
-            ~are_all_data_types_valid_mask, "DisplayName"
-        ]
-        invalid_data_types_as_list = invalid_data_types_df.values.tolist()
-        raise exceptions.ValidationError(
-            DATA_TYPE_VALIDATION_ERROR_MESSAGE.format(invalid_data_types_as_list)
-        )
-
     df_with_rows_to_validate["ExpectedDataType"] = (
         df_with_rows_to_validate["DataType"]
         .astype("str")
@@ -83,13 +69,18 @@ def validate_values_in_df(
         df_with_rows_to_validate["StringifiedDatatypeClass"] == UALISTOF_CLASS_NAME
     ) | ~df_with_rows_to_validate["ExpectedDataType"].isin(simple_data_types_names)
 
-    if not df_with_rows_to_validate[~skip_validation_mask]["IsValidValue"].all():
-        invalid_display_names = df_with_rows_to_validate.loc[
-            ~df_with_rows_to_validate["IsValidValue"], "DisplayName"
-        ]
-        invalid_display_names_as_list = invalid_display_names.values.tolist()
-        raise exceptions.ValidationError(
-            VALUE_VALIDATION_ERROR_MESSAGE.format(invalid_display_names_as_list)
+    potentially_invalid_df = df_with_rows_to_validate[~skip_validation_mask]
+
+    if not potentially_invalid_df["IsValidValue"].all():
+        does_not_contain_ua_enumaration_only_mask = ~(
+            potentially_invalid_df["StringifiedDatatypeClass"] == "UAEnumeration"
         )
-    else:
-        return df_to_validate
+        if not potentially_invalid_df[does_not_contain_ua_enumaration_only_mask].empty:
+            invalid_display_names = df_with_rows_to_validate.loc[
+                ~df_with_rows_to_validate["IsValidValue"], "DisplayName"
+            ]
+            invalid_display_names_as_list = invalid_display_names.values.tolist()
+            raise exceptions.ValidationError(
+                VALUE_VALIDATION_ERROR_MESSAGE.format(invalid_display_names_as_list)
+            )
+    return df_to_validate

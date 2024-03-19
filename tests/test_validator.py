@@ -4,7 +4,7 @@ import pandas as pd
 import pytest
 from definitions import get_project_root
 
-from opcua_tools.ua_data_types import UAInt32
+from opcua_tools.ua_data_types import UABoolean, UAInt32
 from opcua_tools.ua_graph import UAGraph
 from opcua_tools.validator import exceptions, value_validator
 
@@ -89,8 +89,8 @@ class TestValidatorUnit:
     def test_validator_row_is_invalid_when_opcua_tools_class_name_is_invalid(
         self, ua_object_node_df, sample_date_type_nodes
     ):
-        ua_object_node_df["Value"] = UAInt32(value=100)
-        invalid_data_type_id = 99999999999
+        ua_object_node_df["Value"] = UABoolean(value=True)
+        invalid_data_type_id = 1
         ua_object_node_df["DataType"] = invalid_data_type_id
 
         with pytest.raises(exceptions.ValidationError):
