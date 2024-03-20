@@ -4,10 +4,6 @@ from opcua_tools import constants, ua_data_types
 from opcua_tools.validator import exceptions
 
 UALISTOF_CLASS_NAME = ua_data_types.UAListOf.__name__
-
-DATA_TYPE_VALIDATION_ERROR_MESSAGE = (
-    "Invalid DataType for rows with the following display names: {}."
-)
 VALUE_VALIDATION_ERROR_MESSAGE = (
     "Invalid Value for rows with the following display names: {}."
 )
