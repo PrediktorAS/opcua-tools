@@ -99,61 +99,61 @@ def parse_singular_value(val, tagtype):
         else:
             stripped = None
         if tagtype == "SByte":
-            if stripped is not None and stripped != "":
+            if stripped:
                 return UASByte(value=int(stripped))
 
             return UASByte(value=None)
 
         elif tagtype == "Byte":
-            if stripped is not None and stripped != "":
+            if stripped:
                 return UAByte(value=int(stripped))
 
             return UAByte(value=None)
 
         elif tagtype == "Int16":
-            if stripped is not None and stripped != "":
+            if stripped:
                 return UAInt16(value=int(stripped))
 
             return UAInt16(value=None)
 
         elif tagtype == "UInt16":
-            if stripped is not None and stripped != "":
+            if stripped:
                 return UAUInt16(value=int(stripped))
 
             return UAUInt16(value=None)
 
         elif tagtype == "Int32":
-            if stripped is not None and stripped != "":
+            if stripped:
                 return UAInt32(value=int(stripped))
 
             return UAInt32(value=None)
 
         elif tagtype == "UInt32":
-            if stripped is not None and stripped != "":
+            if stripped:
                 return UAUInt32(value=int(stripped))
 
             return UAUInt32(value=None)
 
         elif tagtype == "Int64":
-            if stripped is not None and stripped != "":
+            if stripped:
                 return UAInt64(value=int(stripped))
 
             return UAInt64(value=None)
 
         elif tagtype == "UInt64":
-            if stripped is not None and stripped != "":
+            if stripped:
                 return UAUInt64(value=int(stripped))
 
             return UAUInt64(value=None)
 
         elif tagtype == "Float":
-            if stripped is not None and stripped != "":
+            if stripped:
                 return UAFloat(value=float(stripped))
 
             return UAFloat(value=None)
 
         elif tagtype == "Double":
-            if stripped is not None and stripped != "":
+            if stripped:
                 return UADouble(value=float(stripped))
 
             return UADouble(value=None)

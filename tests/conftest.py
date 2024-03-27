@@ -23,38 +23,39 @@ def ua_graph_data_path():
 
 
 @pytest.fixture
-def ua_object_node_row() -> pd.Series:
-    return pd.Series(
-        {
-            "NodeClass": "UAObject",
-            "DisplayName": "Site1",
-            "Description": "Lorem ipsum dolor sit amet",
-            "Value": pd.NA,
-            "NodeId": "ns=1;i=1",
-            "BrowseName": "Site1",
-            "SymbolicName": pd.NA,
-            "IsAbstract": pd.NA,
-            "Symmetric": pd.NA,
-            "ValueRank": pd.NA,
-            "ArrayDimensions": pd.NA,
-            "MinimumSamplingInterval": pd.NA,
-            "AccessLevel": pd.NA,
-            "EventNotifier": pd.NA,
-            "BrowseNameNamespace": 1,
-            "ns": 1,
-            "id": 3909,
-            "ParentNodeId": pd.NA,
-            "DataType": pd.NA,
-            "MethodDeclarationId": pd.NA,
-        }
+def ua_object_node_df() -> pd.DataFrame:
+    return pd.DataFrame.from_records(
+        [
+            {
+                "NodeClass": "UAVariable",
+                "DisplayName": "Site1",
+                "Description": "Lorem ipsum dolor sit amet",
+                "Value": pd.NA,
+                "NodeId": "ns=1;i=1",
+                "BrowseName": "Site1",
+                "SymbolicName": pd.NA,
+                "IsAbstract": pd.NA,
+                "Symmetric": pd.NA,
+                "ValueRank": pd.NA,
+                "ArrayDimensions": pd.NA,
+                "MinimumSamplingInterval": pd.NA,
+                "AccessLevel": pd.NA,
+                "EventNotifier": pd.NA,
+                "BrowseNameNamespace": 1,
+                "ns": 1,
+                "id": 3909,
+                "ParentNodeId": pd.NA,
+                "DataType": pd.NA,
+                "MethodDeclarationId": pd.NA,
+            }
+        ]
     )
 
 
 @pytest.fixture
-def sample_original_nodes(ua_object_node_row) -> pd.DataFrame:
+def sample_date_type_nodes(ua_object_node_df) -> pd.DataFrame:
     return pd.DataFrame.from_records(
         [
-            ua_object_node_row,
             pd.Series(
                 {
                     "NodeClass": "UADataType",
