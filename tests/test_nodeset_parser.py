@@ -1,8 +1,8 @@
 import os.path
 
-import nodeset_parser
+from definitions import get_project_root
 
-from tests.definitions import get_project_root
+from opcua_tools import nodeset_parser
 
 
 def test_get_namespace_data_from_file():
