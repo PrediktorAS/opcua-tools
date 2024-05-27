@@ -52,13 +52,7 @@ class UAGraph:
         cls, path: str, namespace_dict: Optional[Dict[int, str]] = None
     ) -> "UAGraph":
         if namespace_dict:
-            namespace_list = []
-            max_namespace = max(namespace_dict.keys()) + 1
-            for namespace_index in range(0, max_namespace):
-                if namespace_index in namespace_dict.keys():
-                    namespace_list.append(namespace_dict[namespace_index])
-                else:
-                    namespace_list.append("None")
+            namespace_list = UAGraph._get_namespace_list(namespace_dict)
             parse_dict = parse_xml_dir(path, namespace_list)
         else:
             parse_dict = parse_xml_dir(path)
@@ -79,14 +73,32 @@ class UAGraph:
         return ua_graph
 
     @classmethod
-    def from_file_list(cls, file_list: List[str]) -> "UAGraph":
-        parse_dict = parse_xml_files(file_list)
+    def from_file_list(
+        cls, file_list: List[str], namespace_dict: Optional[Dict[int, str]] = None
+    ) -> "UAGraph":
+        if namespace_dict:
+            namespace_list = UAGraph._get_namespace_list(namespace_dict)
+            parse_dict = parse_xml_files(file_list, namespace_list)
+        else:
+            parse_dict = parse_xml_files(file_list)
+
         return cls(
             nodes=parse_dict["nodes"],
             references=parse_dict["references"],
             namespaces=parse_dict["namespaces"],
             models=parse_dict["models"],
         )
+
+    @staticmethod
+    def _get_namespace_list(namespace_dict: dict) -> list:
+        namespace_list = []
+        max_namespace = max(namespace_dict.keys()) + 1
+        for namespace_index in range(0, max_namespace):
+            if namespace_index in namespace_dict.keys():
+                namespace_list.append(namespace_dict[namespace_index])
+            else:
+                namespace_list.append("None")
+        return namespace_list
 
     def all_references_of_type(self, browsename: str):
         return self.references[

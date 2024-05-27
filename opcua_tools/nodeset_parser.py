@@ -30,6 +30,7 @@ logger = logging.getLogger(__name__)
 logger.addHandler(logging.NullHandler())
 
 tagsplit = re.compile(r"({.*\})(.*)")
+OPCFOUNDATION_NAMESPACE = "http://opcfoundation.org/UA/"
 
 
 def findrefs(
@@ -363,7 +364,7 @@ def get_xml_namespaces(xml_file: str) -> List[str]:
     # therefore using the common files name as well.
     if xml_file.endswith("Opc.Ua.NodeSet2.xml"):
         namespace_list.append("http://opcfoundation.org/UA")
-        namespace_list.append("http://opcfoundation.org/UA/")
+        namespace_list.append(OPCFOUNDATION_NAMESPACE)
         return namespace_list
 
     # Adding tags which contain Models and ModelUri.
@@ -395,6 +396,64 @@ def get_xml_namespaces(xml_file: str) -> List[str]:
             break
 
     return namespace_list
+
+
+def get_namespace_data_from_file(xml_file: str) -> dict:
+    """Opens the xml file provided and peeks inside the file to look for Namespace tags
+    to resolve which namespaces it includes.
+
+    Args:
+        xml_file (str): The full filepath to the xml file to check
+
+    Returns:
+        A dictionary containing file namespace name and a list of required namespaces
+        Example:
+            {
+                "name": "http://powerview.com/enterprise",
+                "included_namespaces": {
+                    "http://prediktor.no/PVTypes/",
+                    "http://opcfoundation.org/UA/",
+                }
+            }
+    """
+    uaxsd = "{http://opcfoundation.org/UA/2011/03/UANodeSet.xsd}"
+
+    # In some NodeSet2 definition files the <Model> tag is not found
+    # therefore using the common files name as well.
+    if xml_file.endswith("Opc.Ua.NodeSet2.xml"):
+        return {"name": OPCFOUNDATION_NAMESPACE, "included_namespaces": []}
+
+    tree = ET.parse(xml_file)
+    root = tree.getroot()
+
+    root_iter_models = root.iter(uaxsd + "Models")
+
+    namespace_data = None
+    for models_tag in root_iter_models:
+        for model in models_tag:
+            namespace_data = {
+                "name": model.get("ModelUri"),
+                "included_namespaces": {OPCFOUNDATION_NAMESPACE},
+            }
+            model.clear()
+            break  # get just the first Model tag (there should be no more Model tags)
+        models_tag.clear()
+
+    if namespace_data is None:
+        message = f"Missing 'Model' tag in {xml_file}"
+        logger.error(message)
+        raise ValueError(message)
+
+    root_namespace_uris = root.iter(uaxsd + "NamespaceUris")
+    for namespace_uris_tag in root_namespace_uris:
+        for uri_tag in namespace_uris_tag:
+            namespace_uri = uri_tag.text
+            if namespace_uri != namespace_data["name"]:
+                namespace_data["included_namespaces"].add(namespace_uri)
+            uri_tag.clear()
+        namespace_uris_tag.clear()
+
+    return namespace_data
 
 
 def get_list_of_xml_files(xml_directory_path: str) -> List[str]:
@@ -457,7 +516,7 @@ def parse_xml_without_normalization(
     if namespaces is None:
         namespaces = []
 
-    uans = "http://opcfoundation.org/UA/"
+    uans = OPCFOUNDATION_NAMESPACE
     if uans not in namespaces:
         namespaces.append(uans)
 
