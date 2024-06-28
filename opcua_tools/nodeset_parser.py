@@ -420,8 +420,12 @@ def get_namespace_data_from_file(xml_file: str) -> dict:
 
     # In some NodeSet2 definition files the <Model> tag is not found
     # therefore using the common files name as well.
+    opcua_namespace_data = {
+        "name": OPCFOUNDATION_NAMESPACE,
+        "included_namespaces": set(),
+    }
     if xml_file.endswith("Opc.Ua.NodeSet2.xml"):
-        return {"name": OPCFOUNDATION_NAMESPACE, "included_namespaces": []}
+        return opcua_namespace_data
 
     tree = ET.parse(xml_file)
     root = tree.getroot()
@@ -431,10 +435,14 @@ def get_namespace_data_from_file(xml_file: str) -> dict:
     namespace_data = None
     for models_tag in root_iter_models:
         for model in models_tag:
-            namespace_data = {
-                "name": model.get("ModelUri"),
-                "included_namespaces": {OPCFOUNDATION_NAMESPACE},
-            }
+            model_uri = model.get("ModelUri")
+            if model_uri == OPCFOUNDATION_NAMESPACE:
+                namespace_data = opcua_namespace_data
+            else:
+                namespace_data = {
+                    "name": model.get("ModelUri"),
+                    "included_namespaces": {OPCFOUNDATION_NAMESPACE},
+                }
             model.clear()
             break  # get just the first Model tag (there should be no more Model tags)
         models_tag.clear()
