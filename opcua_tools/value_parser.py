@@ -14,8 +14,9 @@
 
 import base64
 import copy
+import functools
 import re
-from typing import Dict, Optional
+from typing import Dict, Optional, Tuple
 
 import lxml.etree as ET
 import pandas as pd
@@ -247,6 +248,26 @@ def parse_singular_value(val, tagtype):
     raise NotImplementedError(tagtype)
 
 
+@functools.cache
+def cached_parse_nodeid(
+    nodeidstr: str,
+) -> Tuple[int, NodeIdType, str]:
+    if "ns" in nodeidstr:
+        nodeidstr_split = nodeidstr.split(";")
+        ns = int(nodeidstr_split[0].split("=")[1])
+        nodeid_type, value = nodeidstr_split[1].split("=")
+        nodeid_type = NodeIdType(nodeid_type)
+        return ns, nodeid_type, str(value)
+
+    nodeidstr_split = nodeidstr.split("=")
+    if len(nodeidstr_split) == 2:
+        nodeid_type = nodeidstr_split[0]
+        value = nodeidstr_split[1]
+        return 0, NodeIdType(nodeid_type), str(value)
+
+    raise ValueError("Could not parse {nodeid}".format(nodeid=nodeidstr))
+
+
 def parse_nodeid(
     nodeidstr: str,
     namespace_map: Optional[Dict[int, int]] = None,
@@ -255,22 +276,14 @@ def parse_nodeid(
     if alias_map is not None and nodeidstr in alias_map:
         return alias_map[nodeidstr]
 
-    withns = r"ns=(.*?);([isgb])=(.*)"
-    fm_withns = re.fullmatch(withns, nodeidstr)
-    if fm_withns is not None:
-        ns = int(fm_withns.group(1))
-        if namespace_map is not None:
-            ns = namespace_map[ns]
-        nodeid_type = NodeIdType(fm_withns.group(2))
-        value = fm_withns.group(3)
-    else:
-        withoutns = r"([isgb])=(.*)"
-        fm_withoutns = re.fullmatch(withoutns, nodeidstr)
-        nodeid_type = NodeIdType(fm_withoutns.group(1))
-        ns = 0
-        value = fm_withoutns.group(2)
+    if namespace_map:
+        ns, nodeid_type, value = cached_parse_nodeid(nodeidstr)
+        ns = namespace_map[ns]
 
-    return UANodeId(ns, nodeid_type, str(value))
+    else:
+        ns, nodeid_type, value = cached_parse_nodeid(nodeidstr)
+
+    return UANodeId(ns, nodeid_type, value)
 
 
 def parse_localized_text(el):
