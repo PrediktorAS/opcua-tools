@@ -11,7 +11,7 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-
+import functools
 import json
 import math
 import re
@@ -169,6 +169,7 @@ class UASByte(UASignedInteger):
         x += ">" + (str(self.value) if not pd.isna(self.value) else "") + "</SByte>"
         return x
 
+    @functools.cache
     def json_encode(self) -> Union[str, None]:
         if pd.isna(self.value):
             return None
@@ -185,6 +186,7 @@ class UAByte(UAUnsignedInteger):
         x += ">" + (str(self.value) if not pd.isna(self.value) else "") + "</UAByte>"
         return x
 
+    @functools.cache
     def json_encode(self) -> Union[str, None]:
         if pd.isna(self.value):
             return None
@@ -201,6 +203,7 @@ class UAInt16(UASignedInteger):
         x += ">" + (str(self.value) if not pd.isna(self.value) else "") + "</Int16>"
         return x
 
+    @functools.cache
     def json_encode(self) -> Union[str, None]:
         if pd.isna(self.value):
             return None
@@ -217,6 +220,7 @@ class UAUInt16(UAUnsignedInteger):
         x += ">" + (str(self.value) if not pd.isna(self.value) else "") + "</UInt16>"
         return x
 
+    @functools.cache
     def json_encode(self) -> Union[str, None]:
         if pd.isna(self.value):
             return None
@@ -233,6 +237,7 @@ class UAInt32(UASignedInteger):
         x += ">" + (str(self.value) if not pd.isna(self.value) else "") + "</Int32>"
         return x
 
+    @functools.cache
     def json_encode(self) -> Union[str, None]:
         if pd.isna(self.value):
             return None
@@ -249,6 +254,7 @@ class UAUInt32(UAUnsignedInteger):
         x += ">" + (str(self.value) if not pd.isna(self.value) else "") + "</UInt32>"
         return x
 
+    @functools.cache
     def json_encode(self) -> Union[str, None]:
         if pd.isna(self.value):
             return None
@@ -265,6 +271,7 @@ class UAInt64(UASignedInteger):
         x += ">" + (str(self.value) if not pd.isna(self.value) else "") + "</Int64>"
         return x
 
+    @functools.cache
     def json_encode(self) -> Union[str, None]:
         # Int64 and UInt64 are to be formatted as number encoded
         # as a JSON string according to spec
@@ -283,6 +290,7 @@ class UAUInt64(UAUnsignedInteger):
         x += ">" + (str(self.value) if not pd.isna(self.value) else "") + "</UInt64>"
         return x
 
+    @functools.cache
     def json_encode(self) -> Union[str, None]:
         # Int64 and UInt64 are to be formatted as number encoded
         # as a JSON string according to spec
@@ -309,6 +317,7 @@ class UAFloatingPoint(UABuiltIn):
         else:
             object.__setattr__(self, "value", float(self.value))
 
+    @functools.cache
     def json_encode(self) -> [str, None]:
         # According to the spec, special values are to be encoded as JSON
         # strings in the following manner
@@ -370,6 +379,7 @@ class UAString(UABuiltIn):
         )
         return x
 
+    @functools.cache
     def json_encode(self) -> Union[str, None]:
         if pd.isna(self.value):
             return None
@@ -400,6 +410,7 @@ class UADateTime(UABuiltIn):
         )
         return x
 
+    @functools.cache
     def json_encode(self) -> Union[str, None]:
         """
         The time format used here is the recommended for RDF graphs
@@ -435,6 +446,7 @@ class UAByteString(UABuiltIn):
         )
         return x
 
+    @functools.cache
     def json_encode(self):
         """ByteStryings are encoded as base64 strings in JSON, are enclosed
         in double quotes, and cannot contain illegal JSON characters.
@@ -469,6 +481,7 @@ class UABoolean(UABuiltIn):
         )
         return x
 
+    @functools.cache
     def json_encode(self) -> Union[str, None]:
         if pd.isna(self.value):
             return None
