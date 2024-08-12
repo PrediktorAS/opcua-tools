@@ -12,6 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 import itertools
+import json
 import logging
 import os
 import re
@@ -23,6 +24,12 @@ import numpy as np
 import pandas as pd
 
 from opcua_tools import ua_models
+from opcua_tools.json_parser.type_hints import (
+    ModelLine,
+    ModelsLine,
+    NameSpaceURIsLine,
+    UANodeSetLine,
+)
 from opcua_tools.ua_data_types import UANodeId
 from opcua_tools.value_parser import parse_nodeid, parse_value
 
@@ -179,6 +186,11 @@ def iterparse_xml(
     list([('0:0:69', {'ReferenceType': 'HasTypeDefinition'}), ('0:0:7617', {'ReferenceType': 'HasComponent', 'IsForward': 'false'})])
 
     """
+    if not xmlfile.endswith("_parsed.json"):
+        json_file_path = xmlfile + "_parsed.json"
+    else:
+        json_file_path = xmlfile
+
     uaxsd = "{http://opcfoundation.org/UA/2011/03/UANodeSet.xsd}"
 
     tags_to_find = list(
@@ -218,6 +230,27 @@ def iterparse_xml(
     namespace_map = {0: 0}
     models = []
     current_model = None
+    models: List[ModelLine] = []
+
+    with open(json_file_path, "r") as f:
+        for line in f.readlines():
+            line = json.loads(line)
+            if line["elem_type"] == "UANodeSet":
+                line: UANodeSetLine
+                continue
+            elif line["elem_type"] == "NamespaceUris":
+                line: NameSpaceURIsLine
+                extend_namespace_map(
+                    desired_namespace_list, line["uris"], namespace_map
+                )
+            elif line["elem_type"] == "Models":
+                line: ModelsLine
+                m: ModelLine
+                for m in line["models"]:
+                    m: ModelLine
+                    models.append(m)
+            else:
+                break
 
     for event, elem in tagiter:
         if elem.tag == nodeset:
@@ -231,8 +264,8 @@ def iterparse_xml(
         elif not foundnses and event == "end" and elem.tag == uaxsd + "NamespaceUris":
             # All uris in "NamespaceUris" are parsed
             foundnses = True
-            extend_namespace_map(desired_namespace_list, namespace_list, namespace_map)
         elif elem.tag == f"{uaxsd}Model":
+            continue
             if event == "start":
                 model = ua_models.UAModel(
                     model_uri=elem.attrib["ModelUri"],
@@ -243,6 +276,7 @@ def iterparse_xml(
                 models.append(model)
         elif elem.tag == f"{uaxsd}RequiredModel":
             if event == "start":
+                continue
                 required_model = ua_models.UARequiredModel(
                     model_uri=elem.attrib["ModelUri"],
                     version=elem.attrib.get("Version"),
@@ -416,6 +450,11 @@ def get_namespace_data_from_file(xml_file: str) -> dict:
                 }
             }
     """
+    if not xml_file.endswith("_parsed.json"):
+        json_file_path = xml_file + "_parsed.json"
+    else:
+        json_file_path = xml_file
+
     uaxsd = "{http://opcfoundation.org/UA/2011/03/UANodeSet.xsd}"
 
     # In some NodeSet2 definition files the <Model> tag is not found
