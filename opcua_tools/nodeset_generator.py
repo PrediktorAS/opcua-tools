@@ -97,17 +97,18 @@ def create_header_xml(
 
     model_uri = namespaces[serialize_namespace]
     try:
-        model = next(model for model in models if model.model_uri == model_uri)
+        model = next(model for model in models if model["uri"] == model_uri)
     except StopIteration:
-        model = ua_models.UAModel(
-            model_uri=model_uri,
-            publication_date=publication_date.isoformat(),
-            version=None,
-        )
+        model = {
+            "uri": model_uri,
+            "publication_date": publication_date.isoformat(),
+            "version": None,
+            "required_models": [],
+        }
 
     required_models = create_required_models(model)
     default_version = "1.0.0"
-    version = model.version if model.version is not None else default_version
+    version = model["version"] if model["version"] is not None else default_version
 
     return """<?xml version="1.0" encoding="utf-8"?>
 <UANodeSet LastModified="{}" {}>
@@ -496,18 +497,18 @@ def find_namespaces_in_use(nodes, references, namespace_index):
     return namespaces_in_use
 
 
-def create_required_models(model: Optional[ua_models.UAModel]) -> str:
+def create_required_models(model: Optional[dict]) -> str:
     required_models_str = ""
     if model is None:
         return required_models_str
 
-    for required_model in model.required_models:
+    for required_model in model["required_models"]:
         required_model_to_add = """\n        <RequiredModel ModelUri="{}" Version="{}" PublicationDate="{}" />""".format(
-            required_model.model_uri,
-            required_model.version,
+            required_model["uri"],
+            required_model["version"],
             (
-                required_model.publication_date
-                if required_model.publication_date is not None
+                required_model["publication_date"]
+                if required_model["publication_date"] is not None
                 else datetime.now(tz=pytz.UTC).isoformat()
             ),
         )
@@ -515,7 +516,7 @@ def create_required_models(model: Optional[ua_models.UAModel]) -> str:
             required_models_str,
             required_model_to_add,
         )
-    if model.required_models:
+    if model["required_models"]:
         required_models_str = f"{required_models_str}\n    "
 
     return required_models_str

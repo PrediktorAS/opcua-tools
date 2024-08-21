@@ -19,17 +19,23 @@ import pandas as pd
 from definitions import get_project_root
 
 import opcua_tools as ot
-from opcua_tools import UAGraph, ua_models
+from opcua_tools import UAGraph
+from opcua_tools.json_parser.parse import pre_process_xml_to_json
 from opcua_tools.nodeset_generator import (
     denormalize_nodes_nodeids,
     denormalize_references_nodeids,
 )
+from opcua_tools.nodeset_parser import get_list_of_xml_files
 
 PATH_HERE = os.path.dirname(__file__)
 
 
 def test_idempotency():
-    parse_dict = ot.parse_xml_dir(PATH_HERE + "/testdata/generator")
+    xml_dir = PATH_HERE + "/testdata/generator"
+    files = get_list_of_xml_files(xml_dir)
+    for f in files:
+        pre_process_xml_to_json(f)
+    parse_dict = ot.parse_xml_dir(xml_dir)
     ot.create_nodeset2_file(
         nodes=parse_dict["nodes"].copy(),
         references=parse_dict["references"].copy(),
@@ -38,6 +44,11 @@ def test_idempotency():
         serialize_namespace=0,
         filename_or_stringio=PATH_HERE + "/expected/generator/nodeset2.xml",
     )
+    xml_dir = PATH_HERE + "/expected/generator"
+    files = get_list_of_xml_files(xml_dir)
+    for f in files:
+        pre_process_xml_to_json(f)
+
     parse_dict2 = ot.parse_xml_dir(PATH_HERE + "/expected/generator")
 
     nodes = parse_dict["nodes"]
@@ -77,6 +88,10 @@ def test_idempotency():
 
 
 def test_ua_graph_write_nodeset_without_crash(paper_example_path):
+    files = get_list_of_xml_files(paper_example_path)
+    for f in files:
+        pre_process_xml_to_json(f)
+
     path_to_xmls = str(paper_example_path)
     ua_graph = UAGraph.from_path(path_to_xmls)
 
@@ -95,9 +110,11 @@ def test_ua_graph_write_nodeset_with_required_models(create_required_models_mock
     path_to_xml = str(
         Path(PATH_HERE) / "testdata" / "parser" / "Opc.Ua.IEC61850-6.NodeSet2.xml"
     )
+    pre_process_xml_to_json(path_to_xml)
     path_to_type_library = str(
         Path(PATH_HERE) / "testdata" / "parser" / "Opc.Ua.NodeSet2.xml"
     )
+    pre_process_xml_to_json(path_to_type_library)
     ua_graph = UAGraph.from_file_list([path_to_xml, path_to_type_library])
 
     output_folder = get_project_root() / "tests" / "output"
@@ -111,21 +128,21 @@ def test_ua_graph_write_nodeset_with_required_models(create_required_models_mock
     ua_graph.write_nodeset(output_file_path, namespace_uri)
 
     create_required_models_mock.assert_called_once_with(
-        ua_models.UAModel(
-            model_uri=namespace_uri,
-            publication_date="2018-02-05T00:00:00Z",
-            version="2.0",
-            required_models=[
-                ua_models.UARequiredModel(
-                    model_uri="http://opcfoundation.org/UA/IEC61850-7-3",
-                    publication_date=None,
-                    version="2.0",
-                ),
-                ua_models.UARequiredModel(
-                    model_uri="http://opcfoundation.org/UA/",
-                    publication_date="2019-05-01T00:00:00Z",
-                    version="1.04",
-                ),
+        {
+            "uri": "http://opcfoundation.org/UA/IEC61850-6",
+            "publication_date": "2018-02-05T00:00:00Z",
+            "version": "2.0",
+            "required_models": [
+                {
+                    "uri": "http://opcfoundation.org/UA/IEC61850-7-3",
+                    "publication_date": None,
+                    "version": "2.0",
+                },
+                {
+                    "uri": "http://opcfoundation.org/UA/",
+                    "publication_date": "2019-05-01T00:00:00Z",
+                    "version": "1.04",
+                },
             ],
-        )
+        }
     )

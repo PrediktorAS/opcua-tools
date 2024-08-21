@@ -21,7 +21,7 @@ README = (HERE / "README.md").read_text()
 
 setup(
     name="opcua-tools",
-    version="1.6.2",
+    version="1.6.3",
     description="OPCUA Tools for Python using Pandas DataFrames",
     long_description=README,
     long_description_content_type="text/markdown",
@@ -38,7 +38,7 @@ setup(
         "Programming Language :: Python :: 3.11",
         "Programming Language :: Python :: 3.12",
     ],
-    packages=["opcua_tools", "opcua_tools.validator"],
+    packages=["opcua_tools", "opcua_tools.validator", "opcua_tools.json_parser"],
     include_package_data=True,
     install_requires=[
         "lxml>=4.9.3",

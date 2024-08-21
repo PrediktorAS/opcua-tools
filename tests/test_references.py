@@ -18,6 +18,8 @@ import pytest
 from definitions import get_project_root
 
 import opcua_tools as ot
+from opcua_tools.json_parser.parse import pre_process_xml_to_json
+from opcua_tools.nodeset_parser import get_list_of_xml_files
 
 PATH_HERE = os.path.dirname(__file__)
 
@@ -29,6 +31,8 @@ def circular_uag():
         1: "http://test.org/Circular/",
     }
     xml_directory = str(get_project_root() / "tests" / "testdata" / "circular")
+    for f in get_list_of_xml_files(xml_directory):
+        pre_process_xml_to_json(f)
     return ot.UAGraph.from_path(xml_directory, namespace_dict)
 
 

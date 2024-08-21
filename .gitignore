@@ -142,3 +142,6 @@ tests/expected/paper_example/nodes.csv
 /tests/testdata/ua_graph_functions/output
 
 .vscode
+
+# pre-processed xml to jsonl files
+*xml_parsed.json
