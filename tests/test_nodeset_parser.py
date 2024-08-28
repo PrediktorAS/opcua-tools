@@ -25,7 +25,7 @@ def test_get_namespace_data_from_file():
     }
 
 
-def test_get_namespaca_data_should_have_empty_namespaces_data_regardless_file_name():
+def test_get_namespace_data_should_have_empty_namespaces_data_regardless_file_name():
     example_xml_path = os.path.join(
         get_project_root(),
         "tests",

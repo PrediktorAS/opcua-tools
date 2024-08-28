@@ -1,0 +1,733 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<!--
+ * Copyright (c) 2005-2020 The OPC Foundation, Inc. All rights reserved.
+ *
+ * OPC Foundation MIT License 1.00
+ *
+ * Permission is hereby granted, free of charge, to any person
+ * obtaining a copy of this software and associated documentation
+ * files (the "Software"), to deal in the Software without
+ * restriction, including without limitation the rights to use,
+ * copy, modify, merge, publish, distribute, sublicense, and/or sell
+ * copies of the Software, and to permit persons to whom the
+ * Software is furnished to do so, subject to the following
+ * conditions:
+ *
+ * The above copyright notice and this permission notice shall be
+ * included in all copies or substantial portions of the Software.
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,
+ * EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES
+ * OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND
+ * NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT
+ * HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY,
+ * WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING
+ * FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR
+ * OTHER DEALINGS IN THE SOFTWARE.
+ *
+ * The complete license agreement can be found here:
+ * http://opcfoundation.org/License/MIT/1.00/
+-->
+
+<UANodeSet xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" LastModified="2020-11-20T00:00:00Z" xmlns="http://opcfoundation.org/UA/2011/03/UANodeSet.xsd">
+  <Models>
+    <Model ModelUri="http://opcfoundation.org/UA/" Version="1.04.8" PublicationDate="2020-11-20T00:00:00Z" />
+  </Models>
+  <Aliases>
+    <Alias Alias="Boolean">i=1</Alias>
+    <Alias Alias="SByte">i=2</Alias>
+    <Alias Alias="Byte">i=3</Alias>
+    <Alias Alias="Int16">i=4</Alias>
+    <Alias Alias="UInt16">i=5</Alias>
+    <Alias Alias="Int32">i=6</Alias>
+    <Alias Alias="UInt32">i=7</Alias>
+    <Alias Alias="Int64">i=8</Alias>
+    <Alias Alias="UInt64">i=9</Alias>
+    <Alias Alias="Float">i=10</Alias>
+    <Alias Alias="Double">i=11</Alias>
+    <Alias Alias="DateTime">i=13</Alias>
+    <Alias Alias="String">i=12</Alias>
+    <Alias Alias="ByteString">i=15</Alias>
+    <Alias Alias="Guid">i=14</Alias>
+    <Alias Alias="XmlElement">i=16</Alias>
+    <Alias Alias="NodeId">i=17</Alias>
+    <Alias Alias="ExpandedNodeId">i=18</Alias>
+    <Alias Alias="QualifiedName">i=20</Alias>
+    <Alias Alias="LocalizedText">i=21</Alias>
+    <Alias Alias="StatusCode">i=19</Alias>
+    <Alias Alias="Structure">i=22</Alias>
+    <Alias Alias="Number">i=26</Alias>
+    <Alias Alias="Integer">i=27</Alias>
+    <Alias Alias="UInteger">i=28</Alias>
+    <Alias Alias="HasComponent">i=47</Alias>
+    <Alias Alias="HasProperty">i=46</Alias>
+    <Alias Alias="Organizes">i=35</Alias>
+    <Alias Alias="HasEventSource">i=36</Alias>
+    <Alias Alias="HasNotifier">i=48</Alias>
+    <Alias Alias="HasSubtype">i=45</Alias>
+    <Alias Alias="HasTypeDefinition">i=40</Alias>
+    <Alias Alias="HasModellingRule">i=37</Alias>
+    <Alias Alias="HasEncoding">i=38</Alias>
+    <Alias Alias="HasDescription">i=39</Alias>
+  </Aliases>
+  <UAObject NodeId="i=3062" BrowseName="Default Binary" SymbolicName="DefaultBinary">
+    <DisplayName>Default Binary</DisplayName>
+    <References>
+      <Reference ReferenceType="HasTypeDefinition">i=58</Reference>
+    </References>
+  </UAObject>
+  <UAObject NodeId="i=3063" BrowseName="Default XML" SymbolicName="DefaultXml">
+    <DisplayName>Default XML</DisplayName>
+    <References>
+      <Reference ReferenceType="HasTypeDefinition">i=58</Reference>
+    </References>
+  </UAObject>
+  <UADataType NodeId="i=24" BrowseName="BaseDataType" IsAbstract="true">
+    <DisplayName>BaseDataType</DisplayName>
+    <Documentation>https://reference.opcfoundation.org/v104/Core/docs/Part5/12.2</Documentation>
+    <References />
+  </UADataType>
+  <UADataType NodeId="i=26" BrowseName="Number" IsAbstract="true">
+    <DisplayName>Number</DisplayName>
+    <Documentation>https://reference.opcfoundation.org/v104/Core/docs/Part5/12.2</Documentation>
+    <References>
+      <Reference ReferenceType="HasSubtype" IsForward="false">i=24</Reference>
+    </References>
+  </UADataType>
+  <UADataType NodeId="i=27" BrowseName="Integer" IsAbstract="true">
+    <DisplayName>Integer</DisplayName>
+    <Documentation>https://reference.opcfoundation.org/v104/Core/docs/Part5/12.2</Documentation>
+    <References>
+      <Reference ReferenceType="HasSubtype" IsForward="false">i=26</Reference>
+    </References>
+  </UADataType>
+  <UADataType NodeId="i=28" BrowseName="UInteger" IsAbstract="true">
+    <DisplayName>UInteger</DisplayName>
+    <Documentation>https://reference.opcfoundation.org/v104/Core/docs/Part5/12.2</Documentation>
+    <References>
+      <Reference ReferenceType="HasSubtype" IsForward="false">i=26</Reference>
+    </References>
+  </UADataType>
+  <UADataType NodeId="i=29" BrowseName="Enumeration" IsAbstract="true">
+    <DisplayName>Enumeration</DisplayName>
+    <Documentation>https://reference.opcfoundation.org/v104/Core/docs/Part5/12.2</Documentation>
+    <References>
+      <Reference ReferenceType="HasSubtype" IsForward="false">i=24</Reference>
+    </References>
+  </UADataType>
+  <UADataType NodeId="i=1" BrowseName="Boolean">
+    <DisplayName>Boolean</DisplayName>
+    <Documentation>https://reference.opcfoundation.org/v104/Core/docs/Part3/8.8</Documentation>
+    <References>
+      <Reference ReferenceType="HasSubtype" IsForward="false">i=24</Reference>
+    </References>
+  </UADataType>
+  <UADataType NodeId="i=2" BrowseName="SByte">
+    <DisplayName>SByte</DisplayName>
+    <Documentation>https://reference.opcfoundation.org/v104/Core/docs/Part3/8.17</Documentation>
+    <References>
+      <Reference ReferenceType="HasSubtype" IsForward="false">i=27</Reference>
+    </References>
+  </UADataType>
+  <UADataType NodeId="i=3" BrowseName="Byte">
+    <DisplayName>Byte</DisplayName>
+    <Documentation>https://reference.opcfoundation.org/v104/Core/docs/Part3/8.9</Documentation>
+    <References>
+      <Reference ReferenceType="HasSubtype" IsForward="false">i=28</Reference>
+    </References>
+  </UADataType>
+  <UADataType NodeId="i=4" BrowseName="Int16">
+    <DisplayName>Int16</DisplayName>
+    <Documentation>https://reference.opcfoundation.org/v104/Core/docs/Part3/8.25</Documentation>
+    <References>
+      <Reference ReferenceType="HasSubtype" IsForward="false">i=27</Reference>
+    </References>
+  </UADataType>
+  <UADataType NodeId="i=5" BrowseName="UInt16">
+    <DisplayName>UInt16</DisplayName>
+    <Documentation>https://reference.opcfoundation.org/v104/Core/docs/Part3/8.35</Documentation>
+    <References>
+      <Reference ReferenceType="HasSubtype" IsForward="false">i=28</Reference>
+    </References>
+  </UADataType>
+  <UADataType NodeId="i=6" BrowseName="Int32">
+    <DisplayName>Int32</DisplayName>
+    <Documentation>https://reference.opcfoundation.org/v104/Core/docs/Part3/8.26</Documentation>
+    <References>
+      <Reference ReferenceType="HasSubtype" IsForward="false">i=27</Reference>
+    </References>
+  </UADataType>
+  <UADataType NodeId="i=7" BrowseName="UInt32">
+    <DisplayName>UInt32</DisplayName>
+    <Documentation>https://reference.opcfoundation.org/v104/Core/docs/Part3/8.36</Documentation>
+    <References>
+      <Reference ReferenceType="HasSubtype" IsForward="false">i=28</Reference>
+    </References>
+  </UADataType>
+  <UADataType NodeId="i=8" BrowseName="Int64">
+    <DisplayName>Int64</DisplayName>
+    <Documentation>https://reference.opcfoundation.org/v104/Core/docs/Part3/8.27</Documentation>
+    <References>
+      <Reference ReferenceType="HasSubtype" IsForward="false">i=27</Reference>
+    </References>
+  </UADataType>
+  <UADataType NodeId="i=9" BrowseName="UInt64">
+    <DisplayName>UInt64</DisplayName>
+    <Documentation>https://reference.opcfoundation.org/v104/Core/docs/Part5/12.2</Documentation>
+    <References>
+      <Reference ReferenceType="HasSubtype" IsForward="false">i=28</Reference>
+    </References>
+  </UADataType>
+  <UADataType NodeId="i=10" BrowseName="Float">
+    <DisplayName>Float</DisplayName>
+    <Documentation>https://reference.opcfoundation.org/v104/Core/docs/Part3/8.15</Documentation>
+    <References>
+      <Reference ReferenceType="HasSubtype" IsForward="false">i=26</Reference>
+    </References>
+  </UADataType>
+  <UADataType NodeId="i=11" BrowseName="Double">
+    <DisplayName>Double</DisplayName>
+    <Documentation>https://reference.opcfoundation.org/v104/Core/docs/Part5/12.2</Documentation>
+    <References>
+      <Reference ReferenceType="HasSubtype" IsForward="false">i=26</Reference>
+    </References>
+  </UADataType>
+  <UADataType NodeId="i=12" BrowseName="String">
+    <DisplayName>String</DisplayName>
+    <Documentation>https://reference.opcfoundation.org/v104/Core/docs/Part5/12.2</Documentation>
+    <References>
+      <Reference ReferenceType="HasSubtype" IsForward="false">i=24</Reference>
+    </References>
+  </UADataType>
+  <UADataType NodeId="i=13" BrowseName="DateTime">
+    <DisplayName>DateTime</DisplayName>
+    <Documentation>https://reference.opcfoundation.org/v104/Core/docs/Part5/12.2</Documentation>
+    <References>
+      <Reference ReferenceType="HasSubtype" IsForward="false">i=24</Reference>
+    </References>
+  </UADataType>
+  <UADataType NodeId="i=14" BrowseName="Guid">
+    <DisplayName>Guid</DisplayName>
+    <Documentation>https://reference.opcfoundation.org/v104/Core/docs/Part3/8.16</Documentation>
+    <References>
+      <Reference ReferenceType="HasSubtype" IsForward="false">i=24</Reference>
+    </References>
+  </UADataType>
+  <UADataType NodeId="i=15" BrowseName="ByteString">
+    <DisplayName>ByteString</DisplayName>
+    <Documentation>https://reference.opcfoundation.org/v104/Core/docs/Part5/12.2</Documentation>
+    <References>
+      <Reference ReferenceType="HasSubtype" IsForward="false">i=24</Reference>
+    </References>
+  </UADataType>
+  <UADataType NodeId="i=16" BrowseName="XmlElement">
+    <DisplayName>XmlElement</DisplayName>
+    <Documentation>https://reference.opcfoundation.org/v104/Core/docs/Part3/8.39</Documentation>
+    <References>
+      <Reference ReferenceType="HasSubtype" IsForward="false">i=24</Reference>
+    </References>
+  </UADataType>
+  <UADataType NodeId="i=17" BrowseName="NodeId">
+    <DisplayName>NodeId</DisplayName>
+    <Documentation>https://reference.opcfoundation.org/v104/Core/docs/Part3/5.2.2</Documentation>
+    <References>
+      <Reference ReferenceType="HasSubtype" IsForward="false">i=24</Reference>
+    </References>
+  </UADataType>
+  <UADataType NodeId="i=18" BrowseName="ExpandedNodeId">
+    <DisplayName>ExpandedNodeId</DisplayName>
+    <Documentation>https://reference.opcfoundation.org/v104/Core/docs/Part4/7.11</Documentation>
+    <References>
+      <Reference ReferenceType="HasSubtype" IsForward="false">i=24</Reference>
+    </References>
+  </UADataType>
+  <UADataType NodeId="i=19" BrowseName="StatusCode">
+    <DisplayName>StatusCode</DisplayName>
+    <Documentation>https://reference.opcfoundation.org/v104/Core/docs/Part4/7.34.1</Documentation>
+    <References>
+      <Reference ReferenceType="HasSubtype" IsForward="false">i=24</Reference>
+    </References>
+  </UADataType>
+  <UADataType NodeId="i=20" BrowseName="QualifiedName">
+    <DisplayName>QualifiedName</DisplayName>
+    <Documentation>https://reference.opcfoundation.org/v104/Core/docs/Part3/8.3</Documentation>
+    <References>
+      <Reference ReferenceType="HasSubtype" IsForward="false">i=24</Reference>
+    </References>
+  </UADataType>
+  <UADataType NodeId="i=21" BrowseName="LocalizedText">
+    <DisplayName>LocalizedText</DisplayName>
+    <Documentation>https://reference.opcfoundation.org/v104/Core/docs/Part3/8.5</Documentation>
+    <References>
+      <Reference ReferenceType="HasSubtype" IsForward="false">i=24</Reference>
+    </References>
+  </UADataType>
+  <UADataType NodeId="i=22" BrowseName="Structure" IsAbstract="true">
+    <DisplayName>Structure</DisplayName>
+    <Documentation>https://reference.opcfoundation.org/v104/Core/docs/Part5/12.2</Documentation>
+    <References>
+      <Reference ReferenceType="HasSubtype" IsForward="false">i=24</Reference>
+    </References>
+  </UADataType>
+  <UADataType NodeId="i=23" BrowseName="DataValue">
+    <DisplayName>DataValue</DisplayName>
+    <Documentation>https://reference.opcfoundation.org/v104/Core/docs/Part4/7.7.1</Documentation>
+    <References>
+      <Reference ReferenceType="HasSubtype" IsForward="false">i=24</Reference>
+    </References>
+  </UADataType>
+  <UADataType NodeId="i=25" BrowseName="DiagnosticInfo">
+    <DisplayName>DiagnosticInfo</DisplayName>
+    <Documentation>https://reference.opcfoundation.org/v104/Core/docs/Part4/7.8</Documentation>
+    <References>
+      <Reference ReferenceType="HasSubtype" IsForward="false">i=24</Reference>
+    </References>
+  </UADataType>
+  <UADataType NodeId="i=30" BrowseName="Image" IsAbstract="true">
+    <DisplayName>Image</DisplayName>
+    <Documentation>https://reference.opcfoundation.org/v104/Core/docs/Part5/12.2</Documentation>
+    <References>
+      <Reference ReferenceType="HasSubtype" IsForward="false">i=15</Reference>
+    </References>
+  </UADataType>
+  <UADataType NodeId="i=50" BrowseName="Decimal">
+    <DisplayName>Decimal</DisplayName>
+    <Documentation>https://reference.opcfoundation.org/v104/Core/docs/Part3/8.54</Documentation>
+    <References>
+      <Reference ReferenceType="HasSubtype" IsForward="false">i=26</Reference>
+    </References>
+  </UADataType>
+  <UAReferenceType NodeId="i=31" BrowseName="References" IsAbstract="true" Symmetric="true">
+    <DisplayName>References</DisplayName>
+    <Documentation>https://reference.opcfoundation.org/v104/Core/docs/Part5/11.1</Documentation>
+    <References />
+  </UAReferenceType>
+  <UAReferenceType NodeId="i=32" BrowseName="NonHierarchicalReferences" IsAbstract="true" Symmetric="true">
+    <DisplayName>NonHierarchicalReferences</DisplayName>
+    <Documentation>https://reference.opcfoundation.org/v104/Core/docs/Part5/11.3</Documentation>
+    <References>
+      <Reference ReferenceType="HasSubtype" IsForward="false">i=31</Reference>
+    </References>
+  </UAReferenceType>
+  <UAReferenceType NodeId="i=33" BrowseName="HierarchicalReferences" IsAbstract="true">
+    <DisplayName>HierarchicalReferences</DisplayName>
+    <Documentation>https://reference.opcfoundation.org/v104/Core/docs/Part5/11.2</Documentation>
+    <References>
+      <Reference ReferenceType="HasSubtype" IsForward="false">i=31</Reference>
+    </References>
+    <InverseName>HierarchicalReferences</InverseName>
+  </UAReferenceType>
+  <UAReferenceType NodeId="i=34" BrowseName="HasChild" IsAbstract="true">
+    <DisplayName>HasChild</DisplayName>
+    <Documentation>https://reference.opcfoundation.org/v104/Core/docs/Part5/11.4</Documentation>
+    <References>
+      <Reference ReferenceType="HasSubtype" IsForward="false">i=33</Reference>
+    </References>
+    <InverseName>ChildOf</InverseName>
+  </UAReferenceType>
+  <UAReferenceType NodeId="i=35" BrowseName="Organizes">
+    <DisplayName>Organizes</DisplayName>
+    <Documentation>https://reference.opcfoundation.org/v104/Core/docs/Part5/11.6</Documentation>
+    <References>
+      <Reference ReferenceType="HasSubtype" IsForward="false">i=33</Reference>
+    </References>
+    <InverseName>OrganizedBy</InverseName>
+  </UAReferenceType>
+  <UAReferenceType NodeId="i=36" BrowseName="HasEventSource">
+    <DisplayName>HasEventSource</DisplayName>
+    <Documentation>https://reference.opcfoundation.org/v104/Core/docs/Part5/11.14</Documentation>
+    <References>
+      <Reference ReferenceType="HasSubtype" IsForward="false">i=33</Reference>
+    </References>
+    <InverseName>EventSourceOf</InverseName>
+  </UAReferenceType>
+  <UAReferenceType NodeId="i=37" BrowseName="HasModellingRule">
+    <DisplayName>HasModellingRule</DisplayName>
+    <Documentation>https://reference.opcfoundation.org/v104/Core/docs/Part5/11.11</Documentation>
+    <References>
+      <Reference ReferenceType="HasSubtype" IsForward="false">i=32</Reference>
+    </References>
+    <InverseName>ModellingRuleOf</InverseName>
+  </UAReferenceType>
+  <UAReferenceType NodeId="i=38" BrowseName="HasEncoding">
+    <DisplayName>HasEncoding</DisplayName>
+    <Documentation>https://reference.opcfoundation.org/v104/Core/docs/Part5/11.13</Documentation>
+    <References>
+      <Reference ReferenceType="HasSubtype" IsForward="false">i=32</Reference>
+    </References>
+    <InverseName>EncodingOf</InverseName>
+  </UAReferenceType>
+  <UAReferenceType NodeId="i=39" BrowseName="HasDescription">
+    <DisplayName>HasDescription</DisplayName>
+    <Documentation>https://reference.opcfoundation.org/v104/Core/docs/Part5/D.5.1</Documentation>
+    <References>
+      <Reference ReferenceType="HasSubtype" IsForward="false">i=32</Reference>
+    </References>
+    <InverseName>DescriptionOf</InverseName>
+  </UAReferenceType>
+  <UAReferenceType NodeId="i=40" BrowseName="HasTypeDefinition">
+    <DisplayName>HasTypeDefinition</DisplayName>
+    <Documentation>https://reference.opcfoundation.org/v104/Core/docs/Part5/11.12</Documentation>
+    <References>
+      <Reference ReferenceType="HasSubtype" IsForward="false">i=32</Reference>
+    </References>
+    <InverseName>TypeDefinitionOf</InverseName>
+  </UAReferenceType>
+  <UAReferenceType NodeId="i=41" BrowseName="GeneratesEvent">
+    <DisplayName>GeneratesEvent</DisplayName>
+    <Documentation>https://reference.opcfoundation.org/v104/Core/docs/Part5/11.16</Documentation>
+    <References>
+      <Reference ReferenceType="HasSubtype" IsForward="false">i=32</Reference>
+    </References>
+    <InverseName>GeneratedBy</InverseName>
+  </UAReferenceType>
+  <UAReferenceType NodeId="i=3065" BrowseName="AlwaysGeneratesEvent">
+    <DisplayName>AlwaysGeneratesEvent</DisplayName>
+    <Documentation>https://reference.opcfoundation.org/v104/Core/docs/Part5/11.17</Documentation>
+    <References>
+      <Reference ReferenceType="HasSubtype" IsForward="false">i=41</Reference>
+    </References>
+    <InverseName>AlwaysGeneratedBy</InverseName>
+  </UAReferenceType>
+  <UAReferenceType NodeId="i=44" BrowseName="Aggregates" IsAbstract="true">
+    <DisplayName>Aggregates</DisplayName>
+    <Documentation>https://reference.opcfoundation.org/v104/Core/docs/Part5/11.5</Documentation>
+    <References>
+      <Reference ReferenceType="HasSubtype" IsForward="false">i=34</Reference>
+    </References>
+    <InverseName>AggregatedBy</InverseName>
+  </UAReferenceType>
+  <UAReferenceType NodeId="i=45" BrowseName="HasSubtype">
+    <DisplayName>HasSubtype</DisplayName>
+    <Documentation>https://reference.opcfoundation.org/v104/Core/docs/Part5/11.10</Documentation>
+    <References>
+      <Reference ReferenceType="HasSubtype" IsForward="false">i=34</Reference>
+    </References>
+    <InverseName>SubtypeOf</InverseName>
+  </UAReferenceType>
+  <UAReferenceType NodeId="i=46" BrowseName="HasProperty">
+    <DisplayName>HasProperty</DisplayName>
+    <Documentation>https://reference.opcfoundation.org/v104/Core/docs/Part5/11.9</Documentation>
+    <References>
+      <Reference ReferenceType="HasSubtype" IsForward="false">i=44</Reference>
+    </References>
+    <InverseName>PropertyOf</InverseName>
+  </UAReferenceType>
+  <UAReferenceType NodeId="i=47" BrowseName="HasComponent">
+    <DisplayName>HasComponent</DisplayName>
+    <Documentation>https://reference.opcfoundation.org/v104/Core/docs/Part5/11.7</Documentation>
+    <References>
+      <Reference ReferenceType="HasSubtype" IsForward="false">i=44</Reference>
+    </References>
+    <InverseName>ComponentOf</InverseName>
+  </UAReferenceType>
+  <UAReferenceType NodeId="i=48" BrowseName="HasNotifier">
+    <DisplayName>HasNotifier</DisplayName>
+    <Documentation>https://reference.opcfoundation.org/v104/Core/docs/Part5/11.15</Documentation>
+    <References>
+      <Reference ReferenceType="HasSubtype" IsForward="false">i=36</Reference>
+    </References>
+    <InverseName>NotifierOf</InverseName>
+  </UAReferenceType>
+  <UAReferenceType NodeId="i=49" BrowseName="HasOrderedComponent">
+    <DisplayName>HasOrderedComponent</DisplayName>
+    <Documentation>https://reference.opcfoundation.org/v104/Core/docs/Part5/11.8</Documentation>
+    <References>
+      <Reference ReferenceType="HasSubtype" IsForward="false">i=47</Reference>
+    </References>
+    <InverseName>OrderedComponentOf</InverseName>
+  </UAReferenceType>
+  <UAReferenceType NodeId="i=51" BrowseName="FromState">
+    <DisplayName>FromState</DisplayName>
+    <Documentation>https://reference.opcfoundation.org/v104/Core/docs/Part5/B.4.11</Documentation>
+    <References>
+      <Reference ReferenceType="HasSubtype" IsForward="false">i=32</Reference>
+    </References>
+    <InverseName>ToTransition</InverseName>
+  </UAReferenceType>
+  <UAReferenceType NodeId="i=52" BrowseName="ToState">
+    <DisplayName>ToState</DisplayName>
+    <Documentation>https://reference.opcfoundation.org/v104/Core/docs/Part5/B.4.12</Documentation>
+    <References>
+      <Reference ReferenceType="HasSubtype" IsForward="false">i=32</Reference>
+    </References>
+    <InverseName>FromTransition</InverseName>
+  </UAReferenceType>
+  <UAReferenceType NodeId="i=53" BrowseName="HasCause">
+    <DisplayName>HasCause</DisplayName>
+    <Documentation>https://reference.opcfoundation.org/v104/Core/docs/Part5/B.4.13</Documentation>
+    <References>
+      <Reference ReferenceType="HasSubtype" IsForward="false">i=32</Reference>
+    </References>
+    <InverseName>MayBeCausedBy</InverseName>
+  </UAReferenceType>
+  <UAReferenceType NodeId="i=54" BrowseName="HasEffect">
+    <DisplayName>HasEffect</DisplayName>
+    <Documentation>https://reference.opcfoundation.org/v104/Core/docs/Part5/B.4.14</Documentation>
+    <References>
+      <Reference ReferenceType="HasSubtype" IsForward="false">i=32</Reference>
+    </References>
+    <InverseName>MayBeEffectedBy</InverseName>
+  </UAReferenceType>
+  <UAReferenceType NodeId="i=117" BrowseName="HasSubStateMachine">
+    <DisplayName>HasSubStateMachine</DisplayName>
+    <Documentation>https://reference.opcfoundation.org/v104/Core/docs/Part5/B.4.15</Documentation>
+    <References>
+      <Reference ReferenceType="HasSubtype" IsForward="false">i=32</Reference>
+    </References>
+    <InverseName>SubStateMachineOf</InverseName>
+  </UAReferenceType>
+  <UAReferenceType NodeId="i=56" BrowseName="HasHistoricalConfiguration">
+    <DisplayName>HasHistoricalConfiguration</DisplayName>
+    <Documentation>https://reference.opcfoundation.org/v104/Core/docs/Part11/5.2.3</Documentation>
+    <References>
+      <Reference ReferenceType="HasSubtype" IsForward="false">i=44</Reference>
+    </References>
+    <InverseName>HistoricalConfigurationOf</InverseName>
+  </UAReferenceType>
+  <UAObjectType NodeId="i=58" BrowseName="BaseObjectType">
+    <DisplayName>BaseObjectType</DisplayName>
+    <Documentation>https://reference.opcfoundation.org/v104/Core/docs/Part5/6.2</Documentation>
+    <References />
+  </UAObjectType>
+  <UAObjectType NodeId="i=61" BrowseName="FolderType">
+    <DisplayName>FolderType</DisplayName>
+    <Documentation>https://reference.opcfoundation.org/v104/Core/docs/Part5/6.6</Documentation>
+    <References>
+      <Reference ReferenceType="HasSubtype" IsForward="false">i=58</Reference>
+    </References>
+  </UAObjectType>
+  <UAVariableType NodeId="i=62" BrowseName="BaseVariableType" IsAbstract="true" ValueRank="-2">
+    <DisplayName>BaseVariableType</DisplayName>
+    <Documentation>https://reference.opcfoundation.org/v104/Core/docs/Part5/7.2</Documentation>
+    <References />
+  </UAVariableType>
+  <UAVariableType NodeId="i=63" BrowseName="BaseDataVariableType" ValueRank="-2">
+    <DisplayName>BaseDataVariableType</DisplayName>
+    <Documentation>https://reference.opcfoundation.org/v104/Core/docs/Part5/7.4</Documentation>
+    <References>
+      <Reference ReferenceType="HasSubtype" IsForward="false">i=62</Reference>
+    </References>
+  </UAVariableType>
+  <UAVariableType NodeId="i=68" BrowseName="PropertyType" ValueRank="-2">
+    <DisplayName>PropertyType</DisplayName>
+    <Documentation>https://reference.opcfoundation.org/v104/Core/docs/Part5/7.3</Documentation>
+    <References>
+      <Reference ReferenceType="HasSubtype" IsForward="false">i=62</Reference>
+    </References>
+  </UAVariableType>
+  <UAVariableType NodeId="i=69" BrowseName="DataTypeDescriptionType" DataType="String">
+    <DisplayName>DataTypeDescriptionType</DisplayName>
+    <Documentation>https://reference.opcfoundation.org/v104/Core/docs/Part5/D.5.3</Documentation>
+    <References>
+      <Reference ReferenceType="HasProperty">i=104</Reference>
+      <Reference ReferenceType="HasProperty">i=105</Reference>
+      <Reference ReferenceType="HasSubtype" IsForward="false">i=63</Reference>
+    </References>
+  </UAVariableType>
+  <UAVariable NodeId="i=104" BrowseName="DataTypeVersion" ParentNodeId="i=69" DataType="String">
+    <DisplayName>DataTypeVersion</DisplayName>
+    <References>
+      <Reference ReferenceType="HasTypeDefinition">i=68</Reference>
+      <Reference ReferenceType="HasModellingRule">i=80</Reference>
+      <Reference ReferenceType="HasProperty" IsForward="false">i=69</Reference>
+    </References>
+  </UAVariable>
+  <UAVariable NodeId="i=105" BrowseName="DictionaryFragment" ParentNodeId="i=69" DataType="ByteString">
+    <DisplayName>DictionaryFragment</DisplayName>
+    <References>
+      <Reference ReferenceType="HasTypeDefinition">i=68</Reference>
+      <Reference ReferenceType="HasModellingRule">i=80</Reference>
+      <Reference ReferenceType="HasProperty" IsForward="false">i=69</Reference>
+    </References>
+  </UAVariable>
+  <UAVariableType NodeId="i=72" BrowseName="DataTypeDictionaryType" DataType="ByteString">
+    <DisplayName>DataTypeDictionaryType</DisplayName>
+    <Documentation>https://reference.opcfoundation.org/v104/Core/docs/Part5/D.5.2</Documentation>
+    <References>
+      <Reference ReferenceType="HasProperty">i=106</Reference>
+      <Reference ReferenceType="HasProperty">i=107</Reference>
+      <Reference ReferenceType="HasProperty">i=15001</Reference>
+      <Reference ReferenceType="HasSubtype" IsForward="false">i=63</Reference>
+    </References>
+  </UAVariableType>
+  <UAVariable NodeId="i=106" BrowseName="DataTypeVersion" ParentNodeId="i=72" DataType="String">
+    <DisplayName>DataTypeVersion</DisplayName>
+    <References>
+      <Reference ReferenceType="HasTypeDefinition">i=68</Reference>
+      <Reference ReferenceType="HasModellingRule">i=80</Reference>
+      <Reference ReferenceType="HasProperty" IsForward="false">i=72</Reference>
+    </References>
+  </UAVariable>
+  <UAVariable NodeId="i=107" BrowseName="NamespaceUri" ParentNodeId="i=72" DataType="String">
+    <DisplayName>NamespaceUri</DisplayName>
+    <References>
+      <Reference ReferenceType="HasTypeDefinition">i=68</Reference>
+      <Reference ReferenceType="HasModellingRule">i=80</Reference>
+      <Reference ReferenceType="HasProperty" IsForward="false">i=72</Reference>
+    </References>
+  </UAVariable>
+  <UAVariable NodeId="i=15001" BrowseName="Deprecated" ParentNodeId="i=72" DataType="Boolean">
+    <DisplayName>Deprecated</DisplayName>
+    <References>
+      <Reference ReferenceType="HasTypeDefinition">i=68</Reference>
+      <Reference ReferenceType="HasModellingRule">i=80</Reference>
+      <Reference ReferenceType="HasProperty" IsForward="false">i=72</Reference>
+    </References>
+  </UAVariable>
+  <UAObjectType NodeId="i=75" BrowseName="DataTypeSystemType">
+    <DisplayName>DataTypeSystemType</DisplayName>
+    <Documentation>https://reference.opcfoundation.org/v104/Core/docs/Part5/D.5.4</Documentation>
+    <References>
+      <Reference ReferenceType="HasSubtype" IsForward="false">i=58</Reference>
+    </References>
+  </UAObjectType>
+  <UAObjectType NodeId="i=76" BrowseName="DataTypeEncodingType">
+    <DisplayName>DataTypeEncodingType</DisplayName>
+    <Documentation>https://reference.opcfoundation.org/v104/Core/docs/Part5/6.7</Documentation>
+    <References>
+      <Reference ReferenceType="HasSubtype" IsForward="false">i=58</Reference>
+    </References>
+  </UAObjectType>
+  <UADataType NodeId="i=120" BrowseName="NamingRuleType">
+    <DisplayName>NamingRuleType</DisplayName>
+    <Documentation>https://reference.opcfoundation.org/v104/Core/docs/Part3/8.29</Documentation>
+    <References>
+      <Reference ReferenceType="HasProperty">i=12169</Reference>
+      <Reference ReferenceType="HasSubtype" IsForward="false">i=29</Reference>
+    </References>
+    <Definition Name="NamingRuleType">
+      <Field Name="Mandatory" Value="1">
+        <Description>The BrowseName must appear in all instances of the type.</Description>
+      </Field>
+      <Field Name="Optional" Value="2">
+        <Description>The BrowseName may appear in an instance of the type.</Description>
+      </Field>
+      <Field Name="Constraint" Value="3">
+        <Description>The modelling rule defines a constraint and the BrowseName is not used in an instance of the type.</Description>
+      </Field>
+    </Definition>
+  </UADataType>
+  <UAVariable NodeId="i=12169" BrowseName="EnumValues" ParentNodeId="i=120" DataType="i=7594" ValueRank="1" ArrayDimensions="0">
+    <DisplayName>EnumValues</DisplayName>
+    <References>
+      <Reference ReferenceType="HasTypeDefinition">i=68</Reference>
+      <Reference ReferenceType="HasModellingRule">i=78</Reference>
+      <Reference ReferenceType="HasProperty" IsForward="false">i=120</Reference>
+    </References>
+    <Value>
+      <ListOfExtensionObject xmlns="http://opcfoundation.org/UA/2008/02/Types.xsd">
+        <ExtensionObject>
+          <TypeId>
+            <Identifier>i=7616</Identifier>
+          </TypeId>
+          <Body>
+            <EnumValueType>
+              <Value>1</Value>
+              <DisplayName>
+                <Text>Mandatory</Text>
+              </DisplayName>
+              <Description>
+                <Text>The BrowseName must appear in all instances of the type.</Text>
+              </Description>
+            </EnumValueType>
+          </Body>
+        </ExtensionObject>
+        <ExtensionObject>
+          <TypeId>
+            <Identifier>i=7616</Identifier>
+          </TypeId>
+          <Body>
+            <EnumValueType>
+              <Value>2</Value>
+              <DisplayName>
+                <Text>Optional</Text>
+              </DisplayName>
+              <Description>
+                <Text>The BrowseName may appear in an instance of the type.</Text>
+              </Description>
+            </EnumValueType>
+          </Body>
+        </ExtensionObject>
+        <ExtensionObject>
+          <TypeId>
+            <Identifier>i=7616</Identifier>
+          </TypeId>
+          <Body>
+            <EnumValueType>
+              <Value>3</Value>
+              <DisplayName>
+                <Text>Constraint</Text>
+              </DisplayName>
+              <Description>
+                <Text>The modelling rule defines a constraint and the BrowseName is not used in an instance of the type.</Text>
+              </Description>
+            </EnumValueType>
+          </Body>
+        </ExtensionObject>
+      </ListOfExtensionObject>
+    </Value>
+  </UAVariable>
+  <UAObjectType NodeId="i=77" BrowseName="ModellingRuleType">
+    <DisplayName>ModellingRuleType</DisplayName>
+    <Documentation>https://reference.opcfoundation.org/v104/Core/docs/Part5/6.5</Documentation>
+    <References>
+      <Reference ReferenceType="HasProperty">i=111</Reference>
+      <Reference ReferenceType="HasSubtype" IsForward="false">i=58</Reference>
+    </References>
+  </UAObjectType>
+  <UAVariable NodeId="i=111" BrowseName="NamingRule" ParentNodeId="i=77" DataType="i=120">
+    <DisplayName>NamingRule</DisplayName>
+    <References>
+      <Reference ReferenceType="HasTypeDefinition">i=68</Reference>
+      <Reference ReferenceType="HasModellingRule">i=78</Reference>
+      <Reference ReferenceType="HasProperty" IsForward="false">i=77</Reference>
+    </References>
+    <Value>
+      <Int32 xmlns="http://opcfoundation.org/UA/2008/02/Types.xsd">1</Int32>
+    </Value>
+  </UAVariable>
+  <UAObject NodeId="i=78" BrowseName="Mandatory" SymbolicName="ModellingRule_Mandatory">
+    <DisplayName>Mandatory</DisplayName>
+    <Documentation>https://reference.opcfoundation.org/v104/Core/docs/Part5/8.4.2</Documentation>
+    <References>
+      <Reference ReferenceType="HasProperty">i=112</Reference>
+      <Reference ReferenceType="HasTypeDefinition">i=77</Reference>
+    </References>
+  </UAObject>
+  <UAVariable NodeId="i=112" BrowseName="NamingRule" ParentNodeId="i=78" DataType="i=120">
+    <DisplayName>NamingRule</DisplayName>
+    <References>
+      <Reference ReferenceType="HasTypeDefinition">i=68</Reference>
+      <Reference ReferenceType="HasProperty" IsForward="false">i=78</Reference>
+    </References>
+    <Value>
+      <Int32 xmlns="http://opcfoundation.org/UA/2008/02/Types.xsd">1</Int32>
+    </Value>
+  </UAVariable>
+  <UAObject NodeId="i=80" BrowseName="Optional" SymbolicName="ModellingRule_Optional">
+    <DisplayName>Optional</DisplayName>
+    <Documentation>https://reference.opcfoundation.org/v104/Core/docs/Part5/8.4.3</Documentation>
+    <References>
+      <Reference ReferenceType="HasProperty">i=113</Reference>
+      <Reference ReferenceType="HasTypeDefinition">i=77</Reference>
+    </References>
+  </UAObject>
+  <UAVariable NodeId="i=113" BrowseName="NamingRule" ParentNodeId="i=80" DataType="i=120">
+    <DisplayName>NamingRule</DisplayName>
+    <References>
+      <Reference ReferenceType="HasTypeDefinition">i=68</Reference>
+      <Reference ReferenceType="HasProperty" IsForward="false">i=80</Reference>
+    </References>
+    <Value>
+      <Int32 xmlns="http://opcfoundation.org/UA/2008/02/Types.xsd">2</Int32>
+    </Value>
+  </UAVariable>
+  <UAObject NodeId="i=83" BrowseName="ExposesItsArray" SymbolicName="ModellingRule_ExposesItsArray">
+    <DisplayName>ExposesItsArray</DisplayName>
+    <Documentation>https://reference.opcfoundation.org/v104/Core/docs/Part5/8.4.1</Documentation>
+    <References>
+      <Reference ReferenceType="HasProperty">i=114</Reference>
+      <Reference ReferenceType="HasTypeDefinition">i=77</Reference>
+    </References>
+  </UAObject>
+</UANodeSet>

@@ -65,7 +65,13 @@ def get_namespace_data_from_file(json_file_path: str) -> dict:
         logger.error(message)
         raise ValueError(message)
 
-    assert namespace_uris_line
+    if namespace_uris_line is None:
+        if namespace_data["name"] == OPCFOUNDATION_NAMESPACE:
+            return namespace_data
+        else:
+            message = f"Missing 'NamespaceUris' tag in {json_file_path}"
+            logger.error(message)
+            raise ValueError(message)
 
     for namespace_uri_tag in namespace_uris_line["uris"]:
         if namespace_uri_tag != namespace_data["name"]:
