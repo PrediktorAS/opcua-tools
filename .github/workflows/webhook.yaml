@@ -1,0 +1,173 @@
+name: Webhook
+
+on: [push, pull_request, deployment, check_suite]
+
+jobs:
+  webhook:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Install Google Cloud CLI
+        run: |
+          echo "deb [signed-by=/usr/share/keyrings/cloud.google.gpg] http://packages.cloud.google.com/apt cloud-sdk main" | sudo tee -a /etc/apt/sources.list.d/google-cloud-sdk.list
+          sudo apt-get install apt-transport-https ca-certificates gnupg
+          curl https://packages.cloud.google.com/apt/doc/apt-key.gpg | sudo apt-key --keyring /usr/share/keyrings/cloud.google.gpg add -
+          sudo apt-get update && sudo apt-get install google-cloud-cli
+
+      - name: Authenticate with Google Cloud
+        run: |
+          echo '${{ secrets.GCP_SA_KEY }}' > sa-key.json
+          PROJECT_ID=$(jq -r '.project_id' sa-key.json)
+          SERVICE_ACCOUNT=$(jq -r '.client_email' sa-key.json)
+          
+          echo "SERVICE_ACCOUNT=$SERVICE_ACCOUNT" >> $GITHUB_ENV
+          gcloud config set project $PROJECT_ID
+          gcloud auth activate-service-account "$SERVICE_ACCOUNT" --key-file=sa-key.json
+
+          FUNCTION_URL="${{ secrets.CLOUD_FUNCTION_URL }}"
+          echo "FUNCTION_URL=$FUNCTION_URL" >> $GITHUB_ENV
+          
+          rm sa-key.json
+
+      - name: Generate and send identity token
+        run: |
+          IDENTITY_TOKEN=$(gcloud auth print-identity-token \
+            --audiences="${{ env.FUNCTION_URL }}" \
+            --impersonate-service-account="${{ env.SERVICE_ACCOUNT }}")
+
+          prepare_payload() {
+            local event_type="$1"
+            local event_data="$2"
+            
+            jq -n \
+              --arg event "$event_type" \
+              --arg repository "${{ github.repository }}" \
+              --arg url "https://github.com/${{ github.repository }}" \
+              --arg actor "${{ github.actor }}" \
+              --arg ref "${{ github.ref }}" \
+              --argjson payload "$event_data" \
+              '{
+                event_id: (now | tostring),
+                event_type: $event,
+                event_timestamp: (now | todate),
+                repository: $repository,
+                repository_url: $url,
+                actor: $actor,
+                ref: $ref,
+               
+                commit_count: (if $payload.commits then ($payload.commits | length) else 0 end),
+                before_sha: $payload.before,
+                after_sha: $payload.after,
+                
+                pusher_name: ($payload.pusher.name // null),
+                pusher_email: ($payload.pusher.email // null),
+                
+                pr_number: ($payload.pull_request.number // null),
+                pr_title: ($payload.pull_request.title // null),
+                pr_state: ($payload.pull_request.state // null),
+                pr_body: ($payload.pull_request.body // null),
+                
+                commits: ($payload.commits // []),
+                
+                deployment_info: {
+                  environment: ($payload.deployment.environment // null),
+                  status: ($payload.deployment.status // null),
+                  production: ($payload.deployment.production_environment // null),
+                  deployed_at: ($payload.deployment.created_at // null),
+                  deployed_by: ($payload.deployment.creator.login // null)
+                },
+                
+                changes: {
+                  files_changed: (if $payload.commits then ($payload.commits | map(.modified // []) | flatten | length) else 0 end),
+                  lines_added: (if $payload.commits then ($payload.commits | map(.stats.additions // 0) | add) else 0 end),
+                  lines_removed: (if $payload.commits then ($payload.commits | map(.stats.deletions // 0) | add) else 0 end),
+                  total_changes: (
+                    if $payload.commits then
+                      (($payload.commits | map(.stats.additions // 0) | add) + ($payload.commits | map(.stats.deletions // 0) | add))
+                    else 0 end
+                  )
+                },
+                
+                review_info: {
+                  reviewers: ($payload.pull_request.requested_reviewers // []),
+                  review_comments_count: ($payload.pull_request.review_comments // 0),
+                  review_state: ($payload.review.state // null),
+                  first_review_submitted_at: null,
+                  last_review_submitted_at: null
+                },
+             
+                pipeline_info: {
+                  status: ($payload.check_suite.status // null),
+                  conclusion: ($payload.check_suite.conclusion // null),
+                  started_at: ($payload.check_suite.started_at // null),
+                  completed_at: ($payload.check_suite.completed_at // null),
+                  duration_seconds: null
+                }
+              }'
+          }
+
+          case "${{ github.event_name }}" in
+            push)
+              PAYLOAD=$(prepare_payload "push" "$(echo '${{ toJson(github.event) }}' | jq -c '{
+                commits: (.commits // []),
+                before: .before,
+                after: .after,
+                pusher: (.pusher // {}),
+                stats: {
+                  additions: (if .commits then [.commits[].stats.additions] else [] end),
+                  deletions: (if .commits then [.commits[].stats.deletions] else [] end)
+                }
+              }')")
+              ;;
+            pull_request)
+              PAYLOAD=$(prepare_payload "pull_request" "$(echo '${{ toJson(github.event) }}' | jq -c '{
+                pull_request: {
+                  number: .pull_request.number,
+                  title: .pull_request.title,
+                  state: .pull_request.state,
+                  body: .pull_request.body,
+                  requested_reviewers: (.pull_request.requested_reviewers // []),
+                  review_comments: (.pull_request.review_comments // 0)
+                },
+                review: (.review // {})
+              }')")
+              ;;
+            deployment)
+              PAYLOAD=$(prepare_payload "deployment" "$(echo '${{ toJson(github.event) }}' | jq -c '{
+                deployment: {
+                  environment: (.deployment.environment // null),
+                  status: (.deployment.status // null),
+                  production_environment: (.deployment.production_environment // null),
+                  created_at: (.deployment.created_at // null),
+                  creator: (.deployment.creator // {})
+                }
+              }')")
+              ;;
+            check_suite)
+              PAYLOAD=$(prepare_payload "check_suite" "$(echo '${{ toJson(github.event) }}' | jq -c '{
+                check_suite: {
+                  status: (.check_suite.status // null),
+                  conclusion: (.check_suite.conclusion // null),
+                  started_at: (.check_suite.started_at // null),
+                  completed_at: (.check_suite.completed_at // null)
+                }
+              }')")
+              ;;
+            *)
+              PAYLOAD=$(prepare_payload "${{ github.event_name }}" "{}")
+              ;;
+          esac
+
+          # Debug output
+          echo "Event name: ${{ github.event_name }}"
+          echo "Raw event data:"
+          echo '${{ toJson(github.event) }}' | jq '.'
+          echo "Processed payload:"
+          echo "$PAYLOAD" | jq '.'
+
+          curl -H "Authorization: Bearer $IDENTITY_TOKEN" \
+               -H "Content-Type: application/json" \
+               -d "$PAYLOAD" \
+               ${{ env.FUNCTION_URL }}
