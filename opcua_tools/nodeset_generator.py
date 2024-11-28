@@ -25,7 +25,7 @@ import numpy as np
 import pandas as pd
 import pytz
 
-from opcua_tools import memory_optimizer, ua_models
+from opcua_tools import memory_optimizer
 from opcua_tools.ua_data_types import UANodeId
 from opcua_tools.validator import value_validator
 
@@ -59,7 +59,7 @@ simplevariants = {
 def create_header_xml(
     namespaces,
     serialize_namespace,
-    models: List[ua_models.UAModel],
+    models: List[dict],
     xmlns_dict: Optional[dict] = None,
     last_modified: Optional[datetime] = None,
     publication_date: Optional[datetime] = None,
@@ -323,7 +323,7 @@ def encode_definitions(nodes: pd.DataFrame):
 def create_nodeset2_file(
     nodes: pd.DataFrame,
     references: pd.DataFrame,
-    models: List[ua_models.UAModel],
+    models: List[dict],
     namespaces: List[str],
     serialize_namespace: int,
     filename_or_stringio: Union[str, StringIO] = "nodeset2.xml",

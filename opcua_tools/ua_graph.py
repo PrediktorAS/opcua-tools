@@ -7,7 +7,7 @@ from typing import Dict, List, Optional, Union
 import pandas as pd
 
 import opcua_tools.nodes_manipulation as nodes_manipulation
-from opcua_tools import memory_optimizer, ua_models
+from opcua_tools import memory_optimizer
 from opcua_tools.navigation import (
     fast_transitive_closure,
     find_relatives,
@@ -34,7 +34,7 @@ class UAGraph:
         nodes: pd.DataFrame,
         references: pd.DataFrame,
         namespaces: List[str],
-        models: List[ua_models.UAModel],
+        models: List[dict],
     ):
         self.nodes = nodes
         self.nodes["id"] = self.nodes["id"].astype(pd.Int32Dtype())
