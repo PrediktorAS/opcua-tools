@@ -59,7 +59,7 @@ simplevariants = {
 def create_header_xml(
     namespaces,
     serialize_namespace,
-    models: List[dict],
+    models: list[dict],
     xmlns_dict: Optional[dict] = None,
     last_modified: Optional[datetime] = None,
     publication_date: Optional[datetime] = None,
@@ -323,8 +323,8 @@ def encode_definitions(nodes: pd.DataFrame):
 def create_nodeset2_file(
     nodes: pd.DataFrame,
     references: pd.DataFrame,
-    models: List[dict],
-    namespaces: List[str],
+    models: list[dict],
+    namespaces: list[str],
     serialize_namespace: int,
     filename_or_stringio: Union[str, StringIO] = "nodeset2.xml",
     xmlns_dict=None,

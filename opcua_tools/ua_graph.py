@@ -33,8 +33,8 @@ class UAGraph:
         self,
         nodes: pd.DataFrame,
         references: pd.DataFrame,
-        namespaces: List[str],
-        models: List[dict],
+        namespaces: list[str],
+        models: list[dict],
     ):
         self.nodes = nodes
         self.nodes["id"] = self.nodes["id"].astype(pd.Int32Dtype())
