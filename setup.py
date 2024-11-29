@@ -21,7 +21,7 @@ README = (HERE / "README.md").read_text()
 
 setup(
     name="opcua-tools",
-    version="1.6.5",
+    version="1.6.6",
     description="OPCUA Tools for Python using Pandas DataFrames",
     long_description=README,
     long_description_content_type="text/markdown",

@@ -23,7 +23,6 @@ import lxml.etree as ET
 import numpy as np
 import pandas as pd
 
-from opcua_tools import ua_models
 from opcua_tools.json_parser.type_hints import (
     ModelLine,
     ModelsLine,
@@ -266,23 +265,9 @@ def iterparse_xml(
             foundnses = True
         elif elem.tag == f"{uaxsd}Model":
             continue
-            if event == "start":
-                model = ua_models.UAModel(
-                    model_uri=elem.attrib["ModelUri"],
-                    version=elem.attrib.get("Version"),
-                    publication_date=elem.attrib.get("PublicationDate"),
-                )
-                current_model = model
-                models.append(model)
         elif elem.tag == f"{uaxsd}RequiredModel":
             if event == "start":
                 continue
-                required_model = ua_models.UARequiredModel(
-                    model_uri=elem.attrib["ModelUri"],
-                    version=elem.attrib.get("Version"),
-                    publication_date=elem.attrib.get("PublicationDate"),
-                )
-                current_model.required_models.append(required_model)
         elif event == "end" and elem.tag == uaxsd + "Alias":
             alias_map[elem.attrib["Alias"]] = parse_nodeid(elem.text, namespace_map)
             elem.clear()

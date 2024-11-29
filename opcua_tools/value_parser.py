@@ -255,11 +255,11 @@ def cached_parse_nodeid(
     if "ns" in nodeidstr:
         nodeidstr_split = nodeidstr.split(";")
         ns = int(nodeidstr_split[0].split("=")[1])
-        nodeid_type, value = nodeidstr_split[1].split("=")
+        nodeid_type, value = nodeidstr_split[1].split("=", maxsplit=1)
         nodeid_type = NodeIdType(nodeid_type)
         return ns, nodeid_type, str(value)
 
-    nodeidstr_split = nodeidstr.split("=")
+    nodeidstr_split = nodeidstr.split("=", maxsplit=1)
     if len(nodeidstr_split) == 2:
         nodeid_type = nodeidstr_split[0]
         value = nodeidstr_split[1]

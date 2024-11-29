@@ -18,9 +18,8 @@ import pandas as pd
 import pytest
 from definitions import get_project_root
 
-from opcua_tools.ua_data_types import UAEURange
+from opcua_tools import ua_data_types, value_parser
 from opcua_tools.ua_graph import UAGraph
-from opcua_tools.value_parser import parse_boolean
 
 
 @pytest.fixture(scope="session")
@@ -47,7 +46,9 @@ def test_parse_boolean(boolean_test_data):
     strings in python."""
 
     data = boolean_test_data.copy()
-    data["dataclass"] = data["input"].apply(lambda value: parse_boolean(value))
+    data["dataclass"] = data["input"].apply(
+        lambda value: value_parser.parse_boolean(value)
+    )
     data["output"] = data["dataclass"].apply(lambda bool_class: bool_class.value)
     pd.testing.assert_series_equal(data["output"], data["solution"], check_names=False)
 
@@ -60,7 +61,7 @@ def test_proper_initiation_of_eurange_class_when_reading_xml(ua_graph):
     non_none_eurange_nodes = eurange_nodes[~(eurange_nodes["Value"].isnull())]
     non_none_eurange_values = non_none_eurange_nodes["Value"]
     assert non_none_eurange_values.apply(
-        lambda value: isinstance(value, UAEURange)
+        lambda value: isinstance(value, ua_data_types.UAEURange)
     ).all()
 
 
@@ -97,3 +98,9 @@ def test_ua_graph_xml_encode_for_eurange(ua_graph):
                 output_eurange_xml_lines.append(line)
 
     assert set(output_eurange_xml_lines) == set(expected_eurange_xml_lines)
+
+
+def test_cached_parse_nodeid_parse_node_with_equal_sign_in_value():
+    nodeid = "ns=5;s=<MySite>=A1"
+    expected_output = (5, ua_data_types.NodeIdType.STRING, "<MySite>=A1")
+    assert value_parser.cached_parse_nodeid(nodeid) == expected_output
