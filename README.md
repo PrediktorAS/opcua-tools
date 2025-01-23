@@ -30,8 +30,8 @@ module.
 
 
 ## License
-The code in this repository is copyrighted to [Prediktor AS](http://prediktor.com), and is licensed under the Apache 2.0 license. \
+The code in this repository is copyrighted to [TGS Prediktor AS](https://prediktor.com), and is licensed under the Apache 2.0 license. \
 Exceptions apply to some of the test data and static files for parsing/generation (see document headers for license information).
 
-Author:
-[Magnus Bakken](mba@prediktor.com)
+Authors:
+Magnus Bakken, Hans Petter Ladim, Olav Landmark Pedersen, [Dawid Makar](mailto:dawid.makar@tgs.com), Mikaeil Orfanian
