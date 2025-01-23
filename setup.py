@@ -21,13 +21,13 @@ README = (HERE / "README.md").read_text()
 
 setup(
     name="opcua-tools",
-    version="1.6.6",
+    version="1.7.0",
     description="OPCUA Tools for Python using Pandas DataFrames",
     long_description=README,
     long_description_content_type="text/markdown",
     url="https://github.com/PrediktorAS/opcua-tools",
-    author="Magnus Bakken",
-    author_email="olav.pedersen@prediktor.com",
+    author="TGS Prediktor AS",
+    author_email="dawid.makar@tgs.com",
     license="Apache License 2.0",
     classifiers=[
         "License :: OSI Approved :: Apache Software License",

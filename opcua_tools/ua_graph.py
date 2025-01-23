@@ -248,6 +248,7 @@ class UAGraph:
         include_outgoing_instance_level_references: Optional[bool] = True,
         last_modified: Optional[datetime] = None,
         publication_date: Optional[datetime] = None,
+        new_model_version: Optional[str] = None,
     ):
         if namespace_uri not in self.namespaces:
             raise ValueError("Could not find namespace uri: " + namespace_uri)
@@ -292,6 +293,7 @@ class UAGraph:
             filename_or_stringio=filename_or_stringio,
             last_modified=last_modified,
             publication_date=publication_date,
+            new_model_version=new_model_version,
         )
 
     def get_normalized_nodes_df(self, namespace_uri: Optional[str] = None):

@@ -57,12 +57,13 @@ simplevariants = {
 
 
 def create_header_xml(
-    namespaces,
-    serialize_namespace,
-    models: list[dict],
+    namespaces: List[str],
+    serialize_namespace: int,
+    models: List[dict],
     xmlns_dict: Optional[dict] = None,
     last_modified: Optional[datetime] = None,
     publication_date: Optional[datetime] = None,
+    new_model_version: Optional[str] = None,
 ):
 
     if not xmlns_dict:
@@ -105,6 +106,9 @@ def create_header_xml(
             "version": None,
             "required_models": [],
         }
+
+    if new_model_version is not None:
+        model["version"] = new_model_version
 
     required_models = create_required_models(model)
     default_version = "1.0.0"
@@ -330,6 +334,7 @@ def create_nodeset2_file(
     xmlns_dict=None,
     last_modified: Optional[datetime] = None,
     publication_date: Optional[datetime] = None,
+    new_model_version: Optional[str] = None,
 ):
     nodes["ns"] = nodes["NodeId"].map(lambda x: x.namespace)
     namespaces_in_use = find_namespaces_in_use(
@@ -351,6 +356,7 @@ def create_nodeset2_file(
         xmlns_dict=xmlns_dict,
         last_modified=last_modified,
         publication_date=publication_date,
+        new_model_version=new_model_version,
     )
     start_time = time.time()
     logger.info("Creating nodeset2xml-node-string")

@@ -12,6 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 import os
+import re
 from pathlib import Path
 from unittest import mock
 
@@ -22,6 +23,7 @@ import opcua_tools as ot
 from opcua_tools import UAGraph
 from opcua_tools.json_parser.parse import pre_process_xml_to_json
 from opcua_tools.nodeset_generator import (
+    create_header_xml,
     denormalize_nodes_nodeids,
     denormalize_references_nodeids,
 )
@@ -146,3 +148,40 @@ def test_ua_graph_write_nodeset_with_required_models(create_required_models_mock
             ],
         }
     )
+
+
+def test_create_header_sets_optional_new_model_version_properly():
+    """
+    Test that the create_header function sets the optional new_model_version
+    """
+    models = [
+        {
+            "uri": "http://opcfoundation.org/UA/IEC61850-6",
+            "publication_date": "2018-02-05T00:00:00Z",
+            "version": None,
+            "required_models": [
+                {
+                    "uri": "http://opcfoundation.org/UA/IEC61850-7-3",
+                    "publication_date": None,
+                    "version": "2.0",
+                },
+                {
+                    "uri": "http://opcfoundation.org/UA/",
+                    "publication_date": "2019-05-01T00:00:00Z",
+                    "version": "1.04",
+                },
+            ],
+        },
+    ]
+    namespaces = ["http://opcfoundation.org/UA/IEC61850-6"]
+    new_model_version = "2.0.25"
+    header = create_header_xml(
+        namespaces=namespaces,
+        serialize_namespace=0,
+        models=models,
+        new_model_version=new_model_version,
+    )
+    version_pattern = re.compile(r"Version=\"(.+)\"")
+    match = version_pattern.search(header)
+    output_model_version_from_file = match.group(1)
+    assert output_model_version_from_file == new_model_version
