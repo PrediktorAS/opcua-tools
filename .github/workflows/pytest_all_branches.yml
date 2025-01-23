@@ -24,7 +24,7 @@ jobs:
       with:
         python-version: ${{ matrix.python-version }}
     - name: Install pre-commit
-      run: pip install pre-commit==3.6.0
+      run: pip install pre-commit==3.7.0
     - name: Run pre-commit
       run: pre-commit run --all-files
     - name: Install dependencies
