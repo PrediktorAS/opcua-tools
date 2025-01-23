@@ -34,4 +34,4 @@ The code in this repository is copyrighted to [TGS Prediktor AS](https://predikt
 Exceptions apply to some of the test data and static files for parsing/generation (see document headers for license information).
 
 Authors:
-Magnus Bakken, Hans Petter Ladim, Olav Landmark Pedersen, [Dawid Makar](dawid.makar@tgs.com), Mikaeil Orfanian
+Magnus Bakken, Hans Petter Ladim, Olav Landmark Pedersen, [Dawid Makar](mailto:dawid.makar@tgs.com), Mikaeil Orfanian
