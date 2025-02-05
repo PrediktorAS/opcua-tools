@@ -36,8 +36,7 @@ jobs:
           EVENT_DATA: ${{ toJson(github.event) }}
         run: |
           IDENTITY_TOKEN=$(gcloud auth print-identity-token \
-            --audiences="${{ env.FUNCTION_URL }}" \
-            --impersonate-service-account="${{ env.SERVICE_ACCOUNT }}")
+            --audiences="${{ env.FUNCTION_URL }}")
 
           prepare_payload() {
             local event_type="$1"
