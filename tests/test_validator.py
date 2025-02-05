@@ -1,4 +1,5 @@
 import os
+from unittest import mock
 
 import pandas as pd
 import pytest
@@ -12,8 +13,11 @@ from opcua_tools.validator import exceptions, value_validator
 
 
 class TestValidatorFeature:
+    @mock.patch(
+        "opcua_tools.ua_graph.UAGraph._UAGraph__validate_referenced_nodes_exists"
+    )
     def test_validator_raises_error_when_data_type_is_missing_for_uavariable(
-        self, invalid_files_root_path
+        self, _, invalid_files_root_path
     ):
         path_to_xmls = str(invalid_files_root_path / "missing_data_types")
         for f in get_list_of_xml_files(path_to_xmls):
@@ -34,8 +38,11 @@ class TestValidatorFeature:
                 output_file_path, "http://prediktor.com/paper_example"
             )
 
+    @mock.patch(
+        "opcua_tools.ua_graph.UAGraph._UAGraph__validate_referenced_nodes_exists"
+    )
     def test_validate_values_in_df_raises_validation_error(
-        self, invalid_files_root_path
+        self, _, invalid_files_root_path
     ):
         path_to_xmls = str(invalid_files_root_path / "non_matching_datatype")
         for f in get_list_of_xml_files(path_to_xmls):

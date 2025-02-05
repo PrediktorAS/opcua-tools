@@ -109,15 +109,17 @@ def test_ua_graph_write_nodeset_without_crash(paper_example_path):
 
 @mock.patch("opcua_tools.nodeset_generator.create_required_models")
 def test_ua_graph_write_nodeset_with_required_models(create_required_models_mock):
-    path_to_xml = str(
-        Path(PATH_HERE) / "testdata" / "parser" / "Opc.Ua.IEC61850-6.NodeSet2.xml"
-    )
-    pre_process_xml_to_json(path_to_xml)
-    path_to_type_library = str(
-        Path(PATH_HERE) / "testdata" / "parser" / "Opc.Ua.NodeSet2.xml"
-    )
-    pre_process_xml_to_json(path_to_type_library)
-    ua_graph = UAGraph.from_file_list([path_to_xml, path_to_type_library])
+    file_paths = [
+        str(Path(PATH_HERE) / "testdata" / "parser" / "Opc.Ua.IEC61850-6.NodeSet2.xml"),
+        str(Path(PATH_HERE) / "testdata" / "parser" / "Opc.Ua.NodeSet2.xml"),
+        str(
+            Path(PATH_HERE) / "testdata" / "parser" / "Opc.Ua.IEC61850-7-3.NodeSet2.xml"
+        ),
+    ]
+    for file_path in file_paths:
+        pre_process_xml_to_json(file_path)
+
+    ua_graph = UAGraph.from_file_list(file_paths)
 
     output_folder = get_project_root() / "tests" / "output"
     output_file_path = str(output_folder / "required_models_output.xml")

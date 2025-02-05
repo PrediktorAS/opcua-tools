@@ -13,10 +13,13 @@
 # limitations under the License.
 
 import os
+from pathlib import Path
 
 import pandas as pd
+import pytest
 
 import opcua_tools as ot
+from opcua_tools.json_parser.parse import pre_process_xml_to_json
 from opcua_tools.ua_data_types import NodeIdType, UANodeId
 
 PATH_HERE = os.path.dirname(__file__)
@@ -115,3 +118,17 @@ def test_ua_graph_get_instances_with_type_info(paper_example_path):
     )
 
     pd.testing.assert_frame_equal(expected_references, output_references)
+
+
+def test_ua_graph_should_not_be_instantiated_when_some_nodes_are_missing():
+    file_paths = [
+        str(Path(PATH_HERE) / "testdata" / "parser" / "Opc.Ua.IEC61850-6.NodeSet2.xml"),
+        str(Path(PATH_HERE) / "testdata" / "parser" / "Opc.Ua.NodeSet2.xml"),
+    ]
+    for file_path in file_paths:
+        pre_process_xml_to_json(file_path)
+
+    with pytest.raises(ValueError) as e:
+        ot.UAGraph.from_file_list(file_paths)
+
+    assert str(e.value) == "Some TargetIds or TargetKeys do not exist: {4085}"
