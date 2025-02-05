@@ -57,9 +57,14 @@ class UAGraph:
         else:
             parse_dict = parse_xml_dir(path)
 
+        nodes = parse_dict["nodes"]
+        references = parse_dict["references"]
+
+        cls.__validate_referenced_nodes_exists(nodes, references)
+
         ua_graph = cls(
-            nodes=parse_dict["nodes"],
-            references=parse_dict["references"],
+            nodes=nodes,
+            references=references,
             namespaces=parse_dict["namespaces"],
             models=parse_dict["models"],
         )
@@ -82,9 +87,18 @@ class UAGraph:
         else:
             parse_dict = parse_xml_files(file_list)
 
+        nodes = parse_dict["nodes"]
+        references = parse_dict["references"]
+
+        cls.__validate_referenced_nodes_exists(nodes, references)
+
+        del parse_dict["nodes"]
+        del parse_dict["references"]
+        gc.collect()
+
         return cls(
-            nodes=parse_dict["nodes"],
-            references=parse_dict["references"],
+            nodes=nodes,
+            references=references,
             namespaces=parse_dict["namespaces"],
             models=parse_dict["models"],
         )
@@ -99,6 +113,20 @@ class UAGraph:
             else:
                 namespace_list.append("None")
         return namespace_list
+
+    @staticmethod
+    def __validate_referenced_nodes_exists(
+        nodes_df: pd.DataFrame, references_df: pd.DataFrame
+    ) -> None:
+        node_ids = set(nodes_df["id"])
+
+        if not (source_refs_set := set(references_df["Src"])).issubset(node_ids):
+            diff = source_refs_set - node_ids
+            raise ValueError(f"Some SourceIds or SourceKeys do not exist: {diff}")
+
+        if not (target_refs_set := set(references_df["Trg"])).issubset(node_ids):
+            diff = target_refs_set - node_ids
+            raise ValueError(f"Some TargetIds or TargetKeys do not exist: {diff}")
 
     def all_references_of_type(self, browsename: str):
         return self.references[
