@@ -20,6 +20,7 @@ from opcua_tools.ua_data_types import (
     UAInt16,
     UAInt32,
     UAInt64,
+    UAListOf,
     UALocalizedText,
     UANodeId,
     UAQualifiedName,
@@ -1354,3 +1355,41 @@ def test_ua_eurange_json_encode_with_value():
     expected_json = '{"TypeId":{"Id":885},"Body":{"Low":0.0,"High":100.0}}'
     actual_json = ua_eurange.json_encode()
     assert actual_json == expected_json
+
+
+def test_ua_list_of_xml_encode_works_with_tuple():
+    ua_list_of = UAListOf(
+        value=(
+            UALocalizedText(text="Disabled", locale="en-US"),
+            UALocalizedText(text="Paused", locale="en"),
+            UALocalizedText(text="Operational"),
+            UALocalizedText(text="Error"),
+        ),
+        typename="UALocalizedText",
+    )
+    expected_xml = '<ListOfUALocalizedText  xmlns="http://opcfoundation.org/UA/2008/02/Types.xsd"><LocalizedText><Locale>en-US</Locale><Text>Disabled</Text></LocalizedText><LocalizedText><Locale>en</Locale><Text>Paused</Text></LocalizedText><LocalizedText><Locale></Locale><Text>Operational</Text></LocalizedText><LocalizedText><Locale></Locale><Text>Error</Text></LocalizedText></ListOfUALocalizedText>'
+    actual_xml = ua_list_of.xml_encode(include_xmlns=True)
+    assert actual_xml == expected_xml
+
+
+def test_ua_list_of_raises_type_error_when_value_is_not_tuple():
+    with pytest.raises(TypeError):
+        UAListOf(
+            value=[
+                UALocalizedText(text="Disabled", locale="en-US"),
+                UALocalizedText(text="Paused", locale="en"),
+                UALocalizedText(text="Operational"),
+                UALocalizedText(text="Error"),
+            ],
+            typename="UALocalizedText",
+        )
+
+
+def test_ua_list_of_raises_value_error_when_no_values_given():
+    with pytest.raises(ValueError):
+        UAListOf(value=(), typename="UALocalizedText")
+
+
+def test_ua_list_of_raises_type_error_when_invalid_value_given():
+    with pytest.raises(TypeError):
+        UAListOf(value=3000, typename="UALocalizedText")

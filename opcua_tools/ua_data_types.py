@@ -1196,6 +1196,10 @@ class UAListOf(UAData):
     typename: str
 
     def __post_init__(self):
+        if not self.value:
+            raise ValueError("UAListOf value must contain at least one element")
+        if not isinstance(self.value, Tuple):
+            raise TypeError("UAListOf value must be a Tuple")
         first_element_type = type(self.value[0])
         if any(
             not isinstance((_element := element), first_element_type)
@@ -1206,10 +1210,7 @@ class UAListOf(UAData):
             )
 
     def xml_encode(self, include_xmlns: bool) -> str:
-        encodedvalues = []
-        if not pd.isna(self.value):
-            encodedvalues = [v.xml_encode(include_xmlns=False) for v in self.value]
-
+        encodedvalues = [v.xml_encode(include_xmlns=False) for v in self.value]
         x = "<ListOf" + self.typename + " "
         if include_xmlns:
             x += " " + UAXMLNS_ATTRIB
