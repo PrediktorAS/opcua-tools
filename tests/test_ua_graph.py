@@ -120,7 +120,7 @@ def test_ua_graph_get_instances_with_type_info(paper_example_path):
     pd.testing.assert_frame_equal(expected_references, output_references)
 
 
-def test_ua_graph_should_not_be_instantiated_when_some_nodes_are_missing():
+def test_ua_graph_should_not_be_instantiated_when_some_target_nodes_are_missing():
     file_paths = [
         str(Path(PATH_HERE) / "testdata" / "parser" / "Opc.Ua.IEC61850-6.NodeSet2.xml"),
         str(Path(PATH_HERE) / "testdata" / "parser" / "Opc.Ua.NodeSet2.xml"),
@@ -131,4 +131,24 @@ def test_ua_graph_should_not_be_instantiated_when_some_nodes_are_missing():
     with pytest.raises(ValueError) as e:
         ot.UAGraph.from_file_list(file_paths)
 
-    assert str(e.value) == "Some TargetIds or TargetKeys do not exist: {4085}"
+    assert (
+        str(e.value)
+        == "Some target ids do not exist.\nThese are the source nodes with missing target nodes:\n  DisplayName (source) NodeId (source) DisplayName (reference) NodeId (reference)\n0                 <LN>        ns=2;i=9       HasTypeDefinition               i=40\n1                 <LN>       ns=2;i=12       HasTypeDefinition               i=40\n2                 <LN>       ns=2;i=14       HasTypeDefinition               i=40\n3                 <LN>       ns=2;i=17       HasTypeDefinition               i=40\n4              <LNode>       ns=2;i=40       HasTypeDefinition               i=40"
+    )
+
+
+def test_ua_graph_should_not_be_instantiated_when_some_source_nodes_are_missing():
+    file_paths = [
+        str(Path(PATH_HERE) / "testdata" / "paper_example" / "rds_og_fragment.xml"),
+        str(Path(PATH_HERE) / "testdata" / "paper_example" / "iec63131_fragment.xml"),
+    ]
+    for file_path in file_paths:
+        pre_process_xml_to_json(file_path)
+
+    with pytest.raises(ValueError) as e:
+        ot.UAGraph.from_file_list(file_paths)
+
+    assert (
+        str(e.value)
+        == "Some source ids do not exist.\nThese are the target nodes with missing source nodes:\n  DisplayName (target)          NodeId (target) DisplayName (reference) NodeId (reference)\n0    GeneralSystemType               ns=2;s=SYS                    <NA>                NaN\n1             SiteType          ns=2;s=SiteType                    <NA>                NaN\n2     FunctionalAspect  ns=2;s=FunctionalAspect                    <NA>                NaN\n3        ProductAspect     ns=2;s=ProductAspect                    <NA>                NaN"
+    )

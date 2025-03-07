@@ -22,6 +22,7 @@ from opcua_tools.nodeset_generator import (
 )
 from opcua_tools.nodeset_parser import parse_xml_dir, parse_xml_files
 from opcua_tools.ua_data_types import UANodeId
+from opcua_tools.validator import missing_nodes
 
 logger = logging.getLogger(__name__)
 logger.addHandler(logging.NullHandler())
@@ -122,11 +123,15 @@ class UAGraph:
 
         if not (source_refs_set := set(references_df["Src"])).issubset(node_ids):
             diff = source_refs_set - node_ids
-            raise ValueError(f"Some SourceIds or SourceKeys do not exist: {diff}")
+            missing_nodes.raise_missing_source_nodes_error(
+                diff, nodes_df, references_df
+            )
 
         if not (target_refs_set := set(references_df["Trg"])).issubset(node_ids):
             diff = target_refs_set - node_ids
-            raise ValueError(f"Some TargetIds or TargetKeys do not exist: {diff}")
+            missing_nodes.raise_missing_target_nodes_error(
+                diff, nodes_df, references_df
+            )
 
     def all_references_of_type(self, browsename: str):
         return self.references[
