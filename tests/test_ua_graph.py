@@ -152,3 +152,26 @@ def test_ua_graph_should_not_be_instantiated_when_some_source_nodes_are_missing(
         str(e.value)
         == "Some source ids do not exist.\nThese are the target nodes with missing source nodes:\n  DisplayName (target)          NodeId (target) DisplayName (reference) NodeId (reference)\n0    GeneralSystemType               ns=2;s=SYS                    <NA>                NaN\n1             SiteType          ns=2;s=SiteType                    <NA>                NaN\n2     FunctionalAspect  ns=2;s=FunctionalAspect                    <NA>                NaN\n3        ProductAspect     ns=2;s=ProductAspect                    <NA>                NaN"
     )
+
+
+def test_ua_graph_with_nested_nodeid_value():
+    file_paths = [
+        str(Path(PATH_HERE) / "testdata" / "parser" / "Opc.Ua.NodeSet2.xml"),
+        str(
+            Path(PATH_HERE)
+            / "testdata"
+            / "parser"
+            / "nested_nodeid"
+            / "nested_nodeid.xml"
+        ),
+    ]
+    for file_path in file_paths:
+        pre_process_xml_to_json(file_path)
+
+    graph = ot.UAGraph.from_file_list(file_paths)
+
+    requested_variable = graph.nodes[graph.nodes["BrowseName"] == "NestedNodeId"]
+    requested_variable_value = requested_variable.iloc[0]["Value"]
+    assert requested_variable_value == UANodeId(
+        namespace=0, nodeid_type=NodeIdType.NUMERIC, value="0"
+    )

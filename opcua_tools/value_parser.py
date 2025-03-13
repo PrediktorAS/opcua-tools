@@ -189,9 +189,11 @@ def parse_singular_value(val, tagtype):
 
         elif tagtype == "NodeId":
             if val.text is not None:
-                return parse_nodeid(val.text)
-
-            return None
+                if stripped:
+                    return parse_nodeid(val.text)
+                else:
+                    nested_element = next(n for n in val)
+                    return parse_nodeid(nested_element.text)
 
     elif tagtype == "TypeId":
         ident = val.find(uaxsd + "Identifier")
