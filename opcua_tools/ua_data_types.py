@@ -1196,10 +1196,10 @@ class UAListOf(UAData):
     typename: str
 
     def __post_init__(self):
-        if not self.value:
-            raise ValueError("UAListOf value must contain at least one element")
         if not isinstance(self.value, Tuple):
             raise TypeError("UAListOf value must be a Tuple")
+        if not self.value:
+            return
         first_element_type = type(self.value[0])
         if any(
             not isinstance((_element := element), first_element_type)

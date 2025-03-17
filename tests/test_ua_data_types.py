@@ -1385,9 +1385,9 @@ def test_ua_list_of_raises_type_error_when_value_is_not_tuple():
         )
 
 
-def test_ua_list_of_raises_value_error_when_no_values_given():
-    with pytest.raises(ValueError):
-        UAListOf(value=(), typename="UALocalizedText")
+def test_ua_list_of_can_be_instantiated_when_no_items_in_list():
+    ua_list_of = UAListOf(value=(), typename="UALocalizedText")
+    assert ua_list_of.value == ()
 
 
 def test_ua_list_of_raises_type_error_when_invalid_value_given():

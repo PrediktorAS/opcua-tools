@@ -104,3 +104,9 @@ def test_cached_parse_nodeid_parse_node_with_equal_sign_in_value():
     nodeid = "ns=5;s=<MySite>=A1"
     expected_output = (5, ua_data_types.NodeIdType.STRING, "<MySite>=A1")
     assert value_parser.cached_parse_nodeid(nodeid) == expected_output
+
+
+def test_cached_parse_nodeid_parse_node_with_semicolon_in_value():
+    nodeid = "ns=1;b=BQU+;BAAA6SsAAA=="
+    expected_output = (1, ua_data_types.NodeIdType.OPAQUE, "BQU+;BAAA6SsAAA==")
+    assert value_parser.cached_parse_nodeid(nodeid) == expected_output
