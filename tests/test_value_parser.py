@@ -13,6 +13,7 @@
 # limitations under the License.
 
 import os
+from unittest import mock
 
 import pandas as pd
 import pytest
@@ -110,3 +111,11 @@ def test_cached_parse_nodeid_parse_node_with_semicolon_in_value():
     nodeid = "ns=1;b=BQU+;BAAA6SsAAA=="
     expected_output = (1, ua_data_types.NodeIdType.OPAQUE, "BQU+;BAAA6SsAAA==")
     assert value_parser.cached_parse_nodeid(nodeid) == expected_output
+
+
+def test_parse_singular_value_node_id_when_text_is_none():
+    mocked_value = mock.Mock()
+    mocked_value.text = None
+
+    parsed_value = value_parser.parse_singular_value(val=mocked_value, tagtype="NodeId")
+    assert parsed_value is None
