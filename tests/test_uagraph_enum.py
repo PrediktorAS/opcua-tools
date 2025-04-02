@@ -4,16 +4,13 @@ import pytest
 from definitions import get_project_root
 
 from opcua_tools import UAEnumeration, UAGraph, UAInt32
-from opcua_tools.json_parser.parse import pre_process_xml_to_json
 from opcua_tools.nodes_manipulation import transform_ints_to_enums
-from opcua_tools.nodeset_parser import get_list_of_xml_files, parse_xml_files
+from opcua_tools.nodeset_parser import parse_xml_files
 
 
 @pytest.fixture(scope="session")
 def ua_graph(paper_example_path):
     path_to_xmls = str(paper_example_path)
-    for f in get_list_of_xml_files(path_to_xmls):
-        pre_process_xml_to_json(f)
     ua_graph = UAGraph.from_path(path_to_xmls)
     transform_ints_to_enums(ua_graph)
     return ua_graph
@@ -48,8 +45,6 @@ def test_enum_ua_graph_xml_encode(ua_graph):
         os.makedirs(str(output_folder))
 
     ua_graph.write_nodeset(output_file_path, "http://prediktor.com/paper_example")
-
-    pre_process_xml_to_json(output_file_path)
 
     # Reading the file back in, without transforming to enumerations
     parse_dict = parse_xml_files([output_file_path])
