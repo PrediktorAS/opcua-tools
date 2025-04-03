@@ -21,22 +21,17 @@ from definitions import get_project_root
 
 import opcua_tools as ot
 from opcua_tools import UAGraph
-from opcua_tools.json_parser.parse import pre_process_xml_to_json
 from opcua_tools.nodeset_generator import (
     create_header_xml,
     denormalize_nodes_nodeids,
     denormalize_references_nodeids,
 )
-from opcua_tools.nodeset_parser import get_list_of_xml_files
 
 PATH_HERE = os.path.dirname(__file__)
 
 
 def test_idempotency():
     xml_dir = PATH_HERE + "/testdata/generator"
-    files = get_list_of_xml_files(xml_dir)
-    for f in files:
-        pre_process_xml_to_json(f)
     parse_dict = ot.parse_xml_dir(xml_dir)
     ot.create_nodeset2_file(
         nodes=parse_dict["nodes"].copy(),
@@ -47,9 +42,6 @@ def test_idempotency():
         filename_or_stringio=PATH_HERE + "/expected/generator/nodeset2.xml",
     )
     xml_dir = PATH_HERE + "/expected/generator"
-    files = get_list_of_xml_files(xml_dir)
-    for f in files:
-        pre_process_xml_to_json(f)
 
     parse_dict2 = ot.parse_xml_dir(PATH_HERE + "/expected/generator")
 
@@ -90,10 +82,6 @@ def test_idempotency():
 
 
 def test_ua_graph_write_nodeset_without_crash(paper_example_path):
-    files = get_list_of_xml_files(paper_example_path)
-    for f in files:
-        pre_process_xml_to_json(f)
-
     path_to_xmls = str(paper_example_path)
     ua_graph = UAGraph.from_path(path_to_xmls)
 
@@ -116,8 +104,6 @@ def test_ua_graph_write_nodeset_with_required_models(create_required_models_mock
             Path(PATH_HERE) / "testdata" / "parser" / "Opc.Ua.IEC61850-7-3.NodeSet2.xml"
         ),
     ]
-    for file_path in file_paths:
-        pre_process_xml_to_json(file_path)
 
     ua_graph = UAGraph.from_file_list(file_paths)
 

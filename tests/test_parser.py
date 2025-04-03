@@ -19,7 +19,6 @@ import pandas as pd
 from definitions import get_project_root
 
 import opcua_tools as ot
-from opcua_tools.json_parser.parse import pre_process_xml_to_json
 from opcua_tools.nodeset_parser import (
     exclude_files_not_in_namespaces,
     get_list_of_xml_files,
@@ -32,8 +31,6 @@ PATH_HERE = os.path.dirname(__file__)
 def test_parsing_without_errors():
     xml_dir = PATH_HERE + "/testdata/parser"
     files = get_list_of_xml_files(xml_dir)
-    for f in files:
-        pre_process_xml_to_json(f)
     ot.parse_xml_dir(xml_dir)
 
 

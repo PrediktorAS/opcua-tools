@@ -23,6 +23,7 @@ import lxml.etree as ET
 import numpy as np
 import pandas as pd
 
+from opcua_tools.json_parser import parse
 from opcua_tools.json_parser.type_hints import (
     ModelLine,
     ModelsLine,
@@ -190,6 +191,9 @@ def iterparse_xml(
     else:
         json_file_path = xmlfile
 
+    if not os.path.isfile(json_file_path):
+        parse.pre_process_xml_to_json(file_path=xmlfile)
+
     uaxsd = "{http://opcfoundation.org/UA/2011/03/UANodeSet.xsd}"
 
     tags_to_find = list(
@@ -250,6 +254,8 @@ def iterparse_xml(
                     models.append(m)
             else:
                 break
+
+    os.remove(json_file_path)
 
     for event, elem in tagiter:
         if elem.tag == nodeset:
