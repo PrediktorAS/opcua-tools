@@ -4,8 +4,7 @@
 # https://aka.ms/yaml
 
 trigger:
-#- main
-  - '*'
+ - main
 
 pool:
  vmImage: 'ubuntu-latest'
@@ -46,6 +45,6 @@ steps:
     if [ "$(Build.SourceBranchName)" == "main" ]; then
       python report_coverage.py --webhook_url $(codeCoverageWebhookUrl)
     else
-      echo "Not on main branch, skipping Slack notification to $(codeCoverageWebhookUrl)."
+      echo "Not on main branch, skipping Slack notification."
     fi
   displayName: 'Send coverage report as a Slack notification'
