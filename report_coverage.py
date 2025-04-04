@@ -17,21 +17,25 @@ def report_coverage(coverage_reporter_url: str):
     covered_lines = coverage_data["totals"]["covered_lines"]
     total_lines = coverage_data["totals"]["num_statements"]
 
-    covered_branches_percentage = coverage_data["totals"]["percent_covered"]
     covered_lines_percentage = (covered_lines / total_lines) * 100
+    covered_branches_percentage = coverage_data["totals"]["percent_covered"]
+    formatted_line_coverage = f"{covered_lines_percentage:.2f}%"
+    formatted_branch_coverage = f"{covered_branches_percentage:.2f}%"
+
     httpx.post(
         coverage_reporter_url,
         json={
             "appName": "opcua-tools",
-            "linePercentage": str(covered_lines_percentage),
-            "branchPercentage": str(covered_branches_percentage),
+            "linePercentage": formatted_line_coverage,
+            "branchPercentage": formatted_branch_coverage,
+            "methodPercentage": "N/A",
         },
     )
 
     logger.info(
         f"Coverage report sent to Slack! URL: {coverage_reporter_url};\n"
-        f"LINE COVERAGE: {covered_lines_percentage};\n"
-        f"BRANCH COVERAGE: {covered_branches_percentage}"
+        f"LINE COVERAGE: {formatted_line_coverage}\n"
+        f"BRANCH COVERAGE: {formatted_branch_coverage}"
     )
 
 
