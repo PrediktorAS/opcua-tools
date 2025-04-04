@@ -39,7 +39,7 @@ steps:
   displayName: 'Run tests with coverage'
 
 - script: |
-    python -m coverage report json
+    python -m coverage json
   displayName: 'Generate coverage report'
 
 - script: |
