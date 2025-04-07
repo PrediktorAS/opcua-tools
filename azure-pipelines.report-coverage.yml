@@ -1,0 +1,46 @@
+trigger:
+ - main
+
+pool:
+ vmImage: 'ubuntu-latest'
+
+variables:
+  - group: 'code-coverage-webhook-url'
+
+strategy:
+  matrix:
+    Python312:
+      python.version: '3.12'
+
+steps:
+- checkout: self
+
+- task: UsePythonVersion@0
+  inputs:
+    versionSpec: '$(python.version)'
+  displayName: 'Use Python $(python.version)'
+
+- script: |
+    python -m pip install --upgrade pip
+    python -m pip install setuptools
+    python setup.py install
+  displayName: 'Install dependencies'
+
+- script: |
+    python -m pip install -r tests/requirements.txt
+    python -m pip install coverage==7.7.1
+    python -m coverage run --branch -m pytest
+  displayName: 'Run tests with coverage'
+
+- script: |
+    python -m coverage json
+  displayName: 'Generate coverage report'
+
+- script: |
+    python -m pip install httpx==0.28.1
+    if [ "$(Build.SourceBranchName)" == "main" ]; then
+      python report_coverage.py --webhook_url $(codeCoverageWebhookUrl)
+    else
+      echo "Not on main branch, skipping Slack notification."
+    fi
+  displayName: 'Send coverage report as a Slack notification'
