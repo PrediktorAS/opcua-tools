@@ -111,9 +111,16 @@ def instantiate_enum_class(row: pd.DataFrame) -> UAEnumeration:
     else:
         raise ValueError(f"row['Value']: {row['Value']} has not been handled properly")
 
-    # Find the enumeration type name for the variable
-    string = row["EnumDict"][ua_int]
-    data_type_name = row["EnumName"]
+    # # Find the enumeration type name for the variable - do not translate if the definition is missing
+    if pd.isna(row["EnumDict"]):
+        logger.warning(
+            f"Missing Enum allowed values for the following node's datatype: {row['NodeId']}!"
+        )
+        string = "Unknown"
+        data_type_name = "Unknown"
+    else:
+        string = row["EnumDict"][ua_int]
+        data_type_name = row["EnumName"]
 
     enum_class = UAEnumeration(value=ua_int, string=string, name=data_type_name)
 
@@ -160,10 +167,14 @@ def create_enum_definition_table(
     enum_table = enum_table.set_index("Trg", drop=True)
     enum_table = enum_table.join(nodes_subset, how="left")
 
-    enum_table["Value"] = enum_table["Value"].apply(lambda row: row.value)
+    enum_table = enum_table[enum_table["Value"].notna()]
+    enum_table["Value"] = enum_table["Value"].apply(
+        lambda row: row.value if hasattr(row, "value") else pd.NA
+    )
     enum_table["EnumDict"] = enum_table.apply(
         lambda row: create_enum_dict_from_enum_tuples(row), axis=1
     )
+
     enum_table = enum_table.drop(["Value"], axis=1)
 
     enum_table = enum_table.rename(columns={"BrowseName": "EnumName"})

@@ -1,0 +1,38 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<UANodeSet xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns="http://opcfoundation.org/UA/2011/03/UANodeSet.xsd">
+  <NamespaceUris>
+    <Uri>http://example.com/invalid-nodeset-file/</Uri>
+  </NamespaceUris>
+  <Models>
+    <Model ModelUri="http://example.com/invalid-nodeset-file/" Version="undefined">
+      <RequiredModel ModelUri="http://opcfoundation.org/UA/" Version="1.04.8" PublicationDate="2020-11-20T00:00:00Z" />
+    </Model>
+  </Models>
+  <UAVariable NodeId="ns=1;i=0" BrowseName="0:EnumValues" DataType="i=7594" AccessLevel="5">
+    <DisplayName>EnumValues</DisplayName>
+    <Description>EnumValues</Description>
+    <References>
+      <Reference ReferenceType="i=37">i=78</Reference>
+      <Reference ReferenceType="i=40">i=68</Reference>
+    </References>
+  </UAVariable>
+  <UADataType NodeId="ns=1;i=90023" BrowseName="1:OMAttributeType">
+    <DisplayName>OMAttributeType</DisplayName>
+    <Description></Description>
+    <References>
+      <Reference ReferenceType="i=46">ns=1;i=0</Reference>
+      <Reference ReferenceType="i=45" IsForward="false">i=29</Reference>
+    </References>
+  </UADataType>
+  <UAVariable NodeId="ns=1;b=BQUpBAAAfqK0bVcAVjLhlr5N" BrowseName="1:AttributeId" DataType="ns=1;i=90023" AccessLevel="5">
+    <DisplayName>AttributeId</DisplayName>
+    <Description></Description>
+    <References>
+      <Reference ReferenceType="i=37">i=78</Reference>
+      <Reference ReferenceType="i=40">i=68</Reference>
+    </References>
+    <Value>
+      <uax:Int32 xmlns:uax="http://opcfoundation.org/UA/2008/02/Types.xsd">13</uax:Int32>
+    </Value>
+  </UAVariable>
+</UANodeSet>
