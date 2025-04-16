@@ -97,12 +97,16 @@ class UAGraph:
         del parse_dict["references"]
         gc.collect()
 
-        return cls(
+        ua_graph = cls(
             nodes=nodes,
             references=references,
             namespaces=parse_dict["namespaces"],
             models=parse_dict["models"],
         )
+
+        nodes_manipulation.transform_ints_to_enums(ua_graph)
+
+        return ua_graph
 
     @staticmethod
     def _get_namespace_list(namespace_dict: dict) -> list:

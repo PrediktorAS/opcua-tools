@@ -56,3 +56,25 @@ def test_enum_ua_graph_xml_encode(ua_graph):
     # It should be read correctly read as UAInt32 and thus
     # the output was writing was to UAInt32
     assert type(enum_test_node["Value"].values[0]) == UAInt32
+
+
+def test_transform_no_value_enum():
+    opcua_base_file_path = (
+        get_project_root()
+        / "tests"
+        / "testdata"
+        / "paper_example"
+        / "Opc.Ua.NodeSet2.xml"
+    )
+    invalid_enum_file_path = (
+        get_project_root()
+        / "tests"
+        / "testdata"
+        / "uagraph_enum_no_value"
+        / "invalid_enum_type_nodeset2.xml"
+    )
+    files = [str(opcua_base_file_path), str(invalid_enum_file_path)]
+
+    graph = UAGraph.from_file_list(files)
+
+    assert graph is not None
