@@ -22,7 +22,6 @@ from typing import Any, Dict, List, Optional, Union
 import lxml.etree as ET
 import numpy as np
 import pandas as pd
-from validator import exceptions
 
 from opcua_tools.json_parser import parse
 from opcua_tools.json_parser.type_hints import (
@@ -32,6 +31,7 @@ from opcua_tools.json_parser.type_hints import (
     UANodeSetLine,
 )
 from opcua_tools.ua_data_types import UANodeId
+from opcua_tools.validator import exceptions
 from opcua_tools.value_parser import parse_nodeid, parse_value
 
 logger = logging.getLogger(__name__)
