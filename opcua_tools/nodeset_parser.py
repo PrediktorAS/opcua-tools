@@ -31,6 +31,7 @@ from opcua_tools.json_parser.type_hints import (
     UANodeSetLine,
 )
 from opcua_tools.ua_data_types import UANodeId
+from opcua_tools.validator import exceptions
 from opcua_tools.value_parser import parse_nodeid, parse_value
 
 logger = logging.getLogger(__name__)
@@ -298,6 +299,14 @@ def iterparse_xml(
         # Release memory
         list(map(lambda x: x.clear(), elems))
         df_list.append(df)
+
+    if not df_list:
+        namespace_uri_to_remove = models[0].get("uri")
+        namespace_uri_index_in_namespaces_map = desired_namespace_list.index(
+            namespace_uri_to_remove
+        )
+        desired_namespace_list.pop(namespace_uri_index_in_namespaces_map)
+        raise exceptions.ValidationError(f"No nodes found in the XML file: {xmlfile}")
 
     nodes = pd.concat(df_list)
 
@@ -731,7 +740,13 @@ def parse_xml_files(
             )
 
         logger.info("Started parsing " + str(file))
-        parse_dict = parse_xml_without_normalization(file, namespaces)
+
+        try:
+            parse_dict = parse_xml_without_normalization(file, namespaces)
+        except exceptions.ValidationError:
+            logger.warning(f"{file} has no nodes. Skipping...")
+            continue
+
         namespaces = parse_dict["namespaces"]
         df_nodes_list.append(parse_dict["nodes"])
         df_references_list.append((parse_dict["references"]))

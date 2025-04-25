@@ -168,3 +168,31 @@ def test_ua_graph_with_nested_nodeid_value():
     assert requested_variable_value == UANodeId(
         namespace=0, nodeid_type=NodeIdType.NUMERIC, value="0"
     )
+
+
+def test_ua_graph_can_be_created_with_nodeset2_file_without_nodes():
+    file_paths = [
+        str(Path(PATH_HERE) / "testdata" / "parser" / "Opc.Ua.NodeSet2.xml"),
+        str(
+            Path(PATH_HERE)
+            / "testdata"
+            / "invalid_example"
+            / "empty_nodeset2_file"
+            / "nodeset2_file_with_no_nodes.xml"
+        ),
+        str(
+            Path(PATH_HERE)
+            / "testdata"
+            / "invalid_example"
+            / "empty_nodeset2_file"
+            / "nodeset2_file_with_no_nodes_2.xml"
+        ),
+        str(Path(PATH_HERE) / "testdata" / "paper_example" / "rds_og_fragment.xml"),
+    ]
+
+    graph = ot.UAGraph.from_file_list(file_paths)
+
+    assert graph.namespaces == [
+        "http://opcfoundation.org/UA/",
+        "http://prediktor.com/RDS-OG-Fragment",
+    ]
