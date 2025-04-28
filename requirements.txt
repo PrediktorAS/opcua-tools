@@ -1,2 +1,2 @@
 -e .
-pre-commit==3.7.0
+pre-commit==4.1.0
