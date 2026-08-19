@@ -33,6 +33,7 @@ from opcua_tools.json_parser.type_hints import (
 from opcua_tools.ua_data_types import UANodeId
 from opcua_tools.validator import exceptions
 from opcua_tools.value_parser import parse_nodeid, parse_value
+from opcua_tools.xml_security import secure_xml_parser
 
 logger = logging.getLogger(__name__)
 logger.addHandler(logging.NullHandler())
@@ -225,6 +226,9 @@ def iterparse_xml(
         events=("start", "end"),
         tag=[nodeset] + nodeclasses_xsd + tags_to_find,
         encoding="utf-8",
+        resolve_entities=False,
+        no_network=True,
+        load_dtd=False,
     )
 
     elems = []
@@ -402,7 +406,7 @@ def get_xml_namespaces(xml_file: str) -> List[str]:
         return namespace_list
 
     # Adding tags which contain Models and ModelUri.
-    tree = ET.parse(xml_file)
+    tree = ET.parse(xml_file, parser=secure_xml_parser())
     root = tree.getroot()
 
     found_nses = False
@@ -417,7 +421,12 @@ def get_xml_namespaces(xml_file: str) -> List[str]:
 
     # Adding tags which contain NamespaceUris
     tag_namespace = ET.iterparse(
-        xml_file, events=("start", "end"), tag=[uaxsd + "Uri", uaxsd + "NamespaceUris"]
+        xml_file,
+        events=("start", "end"),
+        tag=[uaxsd + "Uri", uaxsd + "NamespaceUris"],
+        resolve_entities=False,
+        no_network=True,
+        load_dtd=False,
     )
 
     found_nses = False
@@ -466,7 +475,7 @@ def get_namespace_data_from_file(xml_file: str) -> dict:
     if xml_file.endswith("Opc.Ua.NodeSet2.xml"):
         return opcua_namespace_data
 
-    tree = ET.parse(xml_file)
+    tree = ET.parse(xml_file, parser=secure_xml_parser())
     root = tree.getroot()
 
     root_iter_models = root.iter(uaxsd + "Models")
