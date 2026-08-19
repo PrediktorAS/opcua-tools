@@ -13,6 +13,7 @@ from opcua_tools.json_parser.type_hints import (
 )
 from opcua_tools.ua_data_types import UANodeId
 from opcua_tools.value_parser import parse_nodeid
+from opcua_tools.xml_security import secure_xml_parser
 
 
 def pre_process_xml_to_json(file_path):
@@ -39,7 +40,7 @@ def pre_process_xml_to_json(file_path):
     aliases_tag = "{http://opcfoundation.org/UA/2011/03/UANodeSet.xsd}Aliases"
     alias_tag = "{http://opcfoundation.org/UA/2011/03/UANodeSet.xsd}Alias"
 
-    tree = ET.parse(file_path)
+    tree = ET.parse(file_path, parser=secure_xml_parser())
     root = tree.getroot()
 
     with open(output_file_name, "w") as f:
