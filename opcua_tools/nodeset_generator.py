@@ -196,9 +196,8 @@ def generate_nodes_xml(
     lookup_df: pd.DataFrame,
     data_type_nodes: pd.DataFrame,
 ):
-    assert (
-        nodes["BrowseNameNamespace"].isna().sum() == 0
-    ), "Should not have missing BrowseNameNamespaces"
+    if not (nodes["BrowseNameNamespace"].isna().sum() == 0):
+        raise AssertionError("Should not have missing BrowseNameNamespaces")
 
     replacer = lambda x: x.map(escape)
     nodes["DisplayName"] = replacer(nodes["DisplayName"])

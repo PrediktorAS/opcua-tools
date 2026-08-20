@@ -331,9 +331,8 @@ def fast_transitive_closure(references: pd.DataFrame) -> pd.DataFrame:
     # The transitive closure is given by iterative dot products of this matrix with itself until we reach a fixed point
     # At the end of each iteration, a cell is converted to 1 if it is above 0 or 0 otherwise.
     # This is in order to ensure that the algorithm terminates
-    assert (
-        references["Src"] == references["Trg"]
-    ).sum() == 0, "There should be no references r such that r(n,n)"
+    if not ((references["Src"] == references["Trg"]).sum() == 0):
+        raise AssertionError("There should be no references r such that r(n,n)")
     codes, uniques = pd.factorize(pd.concat([references["Src"], references["Trg"]]))
     src_codes = codes[0 : references.shape[0]]
     trg_codes = codes[references.shape[0] :]
