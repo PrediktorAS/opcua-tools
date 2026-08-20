@@ -28,7 +28,6 @@ import pytz
 from opcua_tools import memory_optimizer
 from opcua_tools.ua_data_types import UANodeId
 from opcua_tools.validator import value_validator
-from opcua_tools.xml_security import secure_xml_parser
 
 PATH_HERE = os.path.dirname(__file__)
 
@@ -414,9 +413,23 @@ def copy_browsename_with_new_namespace(uanodeid: UANodeId, new_ns: int):
 
 def validate_nodeset2_file(filename: str):
     start_time = time.time()
-    tree = ET.parse(PATH_HERE + "/static/UANodeSet.xsd", parser=secure_xml_parser())
+    xsd_parser = ET.XMLParser(
+        resolve_entities=False,
+        no_network=True,
+        load_dtd=False,
+        dtd_validation=False,
+        huge_tree=False,
+    )
+    tree = ET.parse(PATH_HERE + "/static/UANodeSet.xsd", parser=xsd_parser)
     schema = ET.XMLSchema(tree)
-    parser = secure_xml_parser(schema=schema)
+    parser = ET.XMLParser(
+        resolve_entities=False,
+        no_network=True,
+        load_dtd=False,
+        dtd_validation=False,
+        huge_tree=False,
+        schema=schema,
+    )
     try:
         ET.parse(filename, parser)
         logger.info("XML validated by nodeset2 xsd")
