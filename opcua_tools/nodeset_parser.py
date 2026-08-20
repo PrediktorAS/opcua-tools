@@ -33,7 +33,6 @@ from opcua_tools.json_parser.type_hints import (
 from opcua_tools.ua_data_types import UANodeId
 from opcua_tools.validator import exceptions
 from opcua_tools.value_parser import parse_nodeid, parse_value
-from opcua_tools.xml_security import secure_xml_parser
 
 logger = logging.getLogger(__name__)
 logger.addHandler(logging.NullHandler())
@@ -406,7 +405,14 @@ def get_xml_namespaces(xml_file: str) -> List[str]:
         return namespace_list
 
     # Adding tags which contain Models and ModelUri.
-    tree = ET.parse(xml_file, parser=secure_xml_parser())
+    parser = ET.XMLParser(
+        resolve_entities=False,
+        no_network=True,
+        load_dtd=False,
+        dtd_validation=False,
+        huge_tree=False,
+    )
+    tree = ET.parse(xml_file, parser=parser)
     root = tree.getroot()
 
     found_nses = False
@@ -475,7 +481,14 @@ def get_namespace_data_from_file(xml_file: str) -> dict:
     if xml_file.endswith("Opc.Ua.NodeSet2.xml"):
         return opcua_namespace_data
 
-    tree = ET.parse(xml_file, parser=secure_xml_parser())
+    parser = ET.XMLParser(
+        resolve_entities=False,
+        no_network=True,
+        load_dtd=False,
+        dtd_validation=False,
+        huge_tree=False,
+    )
+    tree = ET.parse(xml_file, parser=parser)
     root = tree.getroot()
 
     root_iter_models = root.iter(uaxsd + "Models")
