@@ -38,6 +38,9 @@ def get_namespace_data_from_file(json_file_path: str) -> dict:
     namespace_data = None
     namespace_uris_line = None
 
+    if ".." in json_file_path:
+        raise ValueError("Invalid file path")
+
     with open(json_file_path, "r") as f:
         for line in f.readlines():
             line = json.loads(line)

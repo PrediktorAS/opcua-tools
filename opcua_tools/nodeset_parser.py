@@ -239,6 +239,9 @@ def iterparse_xml(
     current_model = None
     models: List[ModelLine] = []
 
+    if ".." in json_file_path:
+        raise ValueError("Invalid file path")
+
     with open(json_file_path, "r") as f:
         for line in f.readlines():
             line = json.loads(line)

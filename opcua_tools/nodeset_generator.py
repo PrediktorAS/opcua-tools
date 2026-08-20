@@ -372,6 +372,8 @@ def create_nodeset2_file(
     outstr = header + "\n".join(nodes_df.values) + "\n" + "</UANodeSet>"
 
     if type(filename_or_stringio) == str:
+        if ".." in filename_or_stringio:
+            raise ValueError("Invalid file path")
         with open(filename_or_stringio, "w", encoding="utf-8") as f:
             f.write(outstr)
     else:

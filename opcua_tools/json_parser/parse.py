@@ -49,6 +49,9 @@ def pre_process_xml_to_json(file_path):
     tree = ET.parse(file_path, parser=parser)
     root = tree.getroot()
 
+    if ".." in output_file_name:
+        raise ValueError("Invalid file path")
+
     with open(output_file_name, "w") as f:
         root_iter = root.iter()
         for elem in root_iter:
