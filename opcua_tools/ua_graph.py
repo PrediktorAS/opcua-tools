@@ -445,6 +445,7 @@ class UAGraph:
             .set_index("Trg")
             .join(typeinfo)
         )
+        references_with_nodes = references_with_nodes.sort_index(kind="stable")
         return references_with_nodes
 
     def get_enum_dict(self, enum_name: str):
@@ -690,6 +691,7 @@ class UAGraph:
             right_on=["Trg", "Src"],
         )
         cyclic_refs = pd.DataFrame(cyclic_refs["Src_x"].unique(), columns=["Src"])
+        cyclic_refs = cyclic_refs.sort_values("Src", ignore_index=True)
         refcols = ["Src"]
         for col in refcols:
             uniques = lookup_df.rename(columns={"uniques": col}, errors="raise")
