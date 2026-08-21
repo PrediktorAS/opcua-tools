@@ -41,10 +41,10 @@ setup(
     packages=["opcua_tools", "opcua_tools.validator", "opcua_tools.json_parser"],
     include_package_data=True,
     install_requires=[
-        "lxml>=5.3.0,<6.0",
+        "lxml>=6.1.0,<7.0",
         "xmltodict>=0.14.2",
-        "numpy>=1.26.2,<2.0",
-        "pandas>=2.0.0,<2.2.0",
+        "numpy>=2.4.5,<3.0",
+        "pandas>=2.2.3,<3.0",
         "scipy>=1.14.1,<2.0",
     ],
 )

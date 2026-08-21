@@ -43,7 +43,7 @@ def test_find_circular_reference_nodes(circular_uag):
     uag = circular_uag
     circular_refs = uag.find_circular_reference_nodes("http://test.org/Circular/")
     assert len(circular_refs) == 4
-    assert str(circular_refs["NodeId"].values[0]) == "ns=1;i=5006"
-    assert str(circular_refs["NodeId"].values[1]) == "ns=1;i=5003"
-    assert str(circular_refs["NodeId"].values[2]) == "ns=1;i=5005"
-    assert str(circular_refs["NodeId"].values[3]) == "ns=1;i=5004"
+    assert str(circular_refs["NodeId"].values[0]) == "ns=1;i=5003"
+    assert str(circular_refs["NodeId"].values[1]) == "ns=1;i=5005"
+    assert str(circular_refs["NodeId"].values[2]) == "ns=1;i=5004"
+    assert str(circular_refs["NodeId"].values[3]) == "ns=1;i=5006"
