@@ -36,9 +36,7 @@ def test_parsing_without_errors():
 
 
 def test_get_attrib_df_full_access_level_and_event_notifier():
-    nodes = pd.DataFrame(
-        {"Attrib": [{"AccessLevel": "255", "EventNotifier": "255"}]}
-    )
+    nodes = pd.DataFrame({"Attrib": [{"AccessLevel": "255", "EventNotifier": "255"}]})
     attrib_df = get_attrib_df(nodes)
 
     assert attrib_df["AccessLevel"].iloc[0] == 255
