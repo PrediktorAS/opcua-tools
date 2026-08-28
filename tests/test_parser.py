@@ -21,6 +21,7 @@ from definitions import get_project_root
 import opcua_tools as ot
 from opcua_tools.nodeset_parser import (
     exclude_files_not_in_namespaces,
+    get_attrib_df,
     get_list_of_xml_files,
     get_xml_namespaces,
 )
@@ -32,6 +33,16 @@ def test_parsing_without_errors():
     xml_dir = PATH_HERE + "/testdata/parser"
     files = get_list_of_xml_files(xml_dir)
     ot.parse_xml_dir(xml_dir)
+
+
+def test_get_attrib_df_full_access_level_and_event_notifier():
+    nodes = pd.DataFrame(
+        {"Attrib": [{"AccessLevel": "255", "EventNotifier": "255"}]}
+    )
+    attrib_df = get_attrib_df(nodes)
+
+    assert attrib_df["AccessLevel"].iloc[0] == 255
+    assert attrib_df["EventNotifier"].iloc[0] == 255
 
 
 def test_parse_nodeid():

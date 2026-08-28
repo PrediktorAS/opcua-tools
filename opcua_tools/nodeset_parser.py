@@ -694,11 +694,11 @@ def get_attrib_df(nodes: pd.DataFrame) -> pd.DataFrame:
     if access_level_column_name in attrib_df.columns:
         attrib_df[access_level_column_name] = attrib_df[
             access_level_column_name
-        ].astype("Int8")
+        ].astype("UInt8")
 
     event_notifier_column_name = "EventNotifier"
     if event_notifier_column_name in attrib_df.columns:
-        attrib_df["EventNotifier"] = attrib_df["EventNotifier"].astype("Int8")
+        attrib_df["EventNotifier"] = attrib_df["EventNotifier"].astype("UInt8")
 
     return attrib_df
 
