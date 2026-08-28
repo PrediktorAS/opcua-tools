@@ -146,3 +146,6 @@ tests/expected/paper_example/nodes.csv
 
 # pre-processed xml to jsonl files
 *xml_parsed.json
+
+# AI cached session memory
+.claude/
