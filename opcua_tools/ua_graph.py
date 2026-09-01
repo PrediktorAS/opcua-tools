@@ -543,7 +543,6 @@ class UAGraph:
         the outgoing references of the node, while "parent" will provide the
         references which point to the specific node."""
 
-        id = None
         if node_type == "UAObject":
             id = self.object_by_browsename(browse_name)
         elif node_type == "UADataType":
@@ -559,9 +558,6 @@ class UAGraph:
                 f"node_type, {node_type}, is not one of the proper types: "
                 f"UAObject, UADataType, UAReferenceType, UAObjectType, UAVariableType"
             )
-
-        if not id:
-            raise ValueError(f"The id was not properly set and is {id}")
 
         return self.get_neighboring_nodes_by_id(id, relation)
 
